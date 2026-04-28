@@ -1,222 +1,36 @@
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-  Font,
-  Image,
-  Link,
-  Svg,
-  Path,
-  Circle,
-  Polyline,
-  Line,
-  Rect,
-  Polygon,
-  Ellipse,
-} from "@react-pdf/renderer";
 import { ResumeData, ResumeSettings } from "@/lib/types";
-import { darkenColor } from "@/lib/utils";
-import { pdfIconPack } from "@/lib/pdf-icons";
+import { Document, Font, Link, Page, Text, View } from "@react-pdf/renderer";
+import { ClassicLayout as ClassicPdfLayout } from "./layouts/pdf/ClassicLayout";
+import { CreativeLayout as CreativePdfLayout } from "./layouts/pdf/CreativeLayout";
+import { ExecutiveLayout as ExecutivePdfLayout } from "./layouts/pdf/ExecutiveLayout";
+import { MinimalLayout as MinimalPdfLayout } from "./layouts/pdf/MinimalLayout";
+import { Modern1ColLayout as Modern1ColPdfLayout } from "./layouts/pdf/Modern1ColLayout";
+import { Modern2ColLayout as Modern2ColPdfLayout } from "./layouts/pdf/Modern2ColLayout";
+import { PdfIcon } from "./pdf-components/pdf-icon";
 
 // Register fonts if not already registered
 if (!Font.getRegisteredFontFamilies().includes("Khand")) {
   Font.register({
     family: "Khand",
     fonts: [
-      {
-        src: "/fonts/Khand-Regular.ttf",
-        fontWeight: 400,
-      },
-      {
-        src: "/fonts/Khand-Medium.ttf",
-        fontWeight: 500,
-      },
-      {
-        src: "/fonts/Khand-SemiBold.ttf",
-        fontWeight: 600,
-      },
-      {
-        src: "/fonts/Khand-Bold.ttf",
-        fontWeight: 700,
-      },
+      { src: "/fonts/Khand-Regular.ttf", fontWeight: 400 },
+      { src: "/fonts/Khand-Medium.ttf", fontWeight: 500 },
+      { src: "/fonts/Khand-SemiBold.ttf", fontWeight: 600 },
+      { src: "/fonts/Khand-Bold.ttf", fontWeight: 700 },
     ],
   });
 }
-
 if (!Font.getRegisteredFontFamilies().includes("Inter")) {
   Font.register({
     family: "Inter",
     fonts: [
-      {
-        src: "/fonts/Inter.ttf",
-        fontWeight: 400,
-      },
-      {
-        src: "/fonts/Inter.ttf",
-        fontWeight: 500,
-      },
-      {
-        src: "/fonts/Inter.ttf",
-        fontWeight: 600,
-      },
-      {
-        src: "/fonts/Inter.ttf",
-        fontWeight: 700,
-      },
+      { src: "/fonts/Inter.ttf", fontWeight: 400 },
+      { src: "/fonts/Inter.ttf", fontWeight: 500 },
+      { src: "/fonts/Inter.ttf", fontWeight: 600 },
+      { src: "/fonts/Inter.ttf", fontWeight: 700 },
     ],
   });
 }
-
-// Register Google Fonts from CDN
-const registerGoogleFont = (family: string, url: string) => {
-  if (!Font.getRegisteredFontFamilies().includes(family)) {
-    Font.register({ family, src: url });
-  }
-};
-
-registerGoogleFont(
-  "Rubik",
-  "https://cdn.jsdelivr.net/npm/@fontsource/rubik/files/rubik-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Roboto",
-  "https://cdn.jsdelivr.net/npm/@fontsource/roboto/files/roboto-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Open Sans",
-  "https://cdn.jsdelivr.net/npm/@fontsource/open-sans/files/open-sans-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Lato",
-  "https://cdn.jsdelivr.net/npm/@fontsource/lato/files/lato-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Montserrat",
-  "https://cdn.jsdelivr.net/npm/@fontsource/montserrat/files/montserrat-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Source Sans Pro",
-  "https://cdn.jsdelivr.net/npm/@fontsource/source-sans-pro/files/source-sans-pro-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Nunito",
-  "https://cdn.jsdelivr.net/npm/@fontsource/nunito/files/nunito-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Poppins",
-  "https://cdn.jsdelivr.net/npm/@fontsource/poppins/files/poppins-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Merriweather",
-  "https://cdn.jsdelivr.net/npm/@fontsource/merriweather/files/merriweather-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Ubuntu",
-  "https://cdn.jsdelivr.net/npm/@fontsource/ubuntu/files/ubuntu-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Fira Sans",
-  "https://cdn.jsdelivr.net/npm/@fontsource/fira-sans/files/fira-sans-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Noto Sans Devanagari",
-  "https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-devanagari/files/noto-sans-devanagari-devanagari-400-normal.woff",
-);
-registerGoogleFont(
-  "Comic Neue",
-  "https://cdn.jsdelivr.net/npm/@fontsource/comic-neue/files/comic-neue-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Anton",
-  "https://cdn.jsdelivr.net/npm/@fontsource/anton/files/anton-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "EB Garamond",
-  "https://cdn.jsdelivr.net/npm/@fontsource/eb-garamond/files/eb-garamond-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Arimo",
-  "https://cdn.jsdelivr.net/npm/@fontsource/arimo/files/arimo-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Tinos",
-  "https://cdn.jsdelivr.net/npm/@fontsource/tinos/files/tinos-latin-400-normal.woff",
-);
-registerGoogleFont(
-  "Cousine",
-  "https://cdn.jsdelivr.net/npm/@fontsource/cousine/files/cousine-latin-400-normal.woff",
-);
-
-const PdfIcon = ({
-  name,
-  size = 12,
-  color = "#3e3e3e",
-  style,
-  fill = "none",
-}: {
-  name: string;
-  size?: number;
-  color?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  style?: any;
-  fill?: string;
-}) => {
-  let iconNodes = pdfIconPack[name];
-
-  if (!iconNodes) {
-    // Try case-insensitive match
-    const key = Object.keys(pdfIconPack).find(
-      (k) => k.toLowerCase() === name.toLowerCase(),
-    );
-    if (key) {
-      iconNodes = pdfIconPack[key];
-    }
-  }
-
-  // Fallback to Globe if still not found
-  if (!iconNodes) iconNodes = pdfIconPack["Globe"];
-
-  if (!iconNodes) return null;
-
-  return (
-    <Svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={style}
-    >
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      {iconNodes.map((node: any, index: number) => {
-        const [tag, attrs] = node;
-
-        const Component = {
-          path: Path,
-          circle: Circle,
-          line: Line,
-          polyline: Polyline,
-          rect: Rect,
-          polygon: Polygon,
-          ellipse: Ellipse,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        }[tag as string] as any;
-
-        if (!Component) return null;
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { key: _ignoredKey, ...safeAttrs } = attrs || {};
-
-        return <Component key={index} {...safeAttrs} fill={fill} />;
-      })}
-    </Svg>
-  );
-};
 
 const getBulletIcon = (style: string) => {
   switch (style) {
@@ -254,116 +68,45 @@ export const RenderResume = ({
   const getPdfFont = (fontFamily: string) => {
     if (!fontFamily) return "Inter";
     const family = fontFamily.toLowerCase();
-
-    // Registered Custom Fonts
     if (family.includes("khand")) return "Khand";
     if (family.includes("inter")) return "Inter";
-    if (family.includes("rubik")) return "Rubik";
-    if (family.includes("roboto")) return "Roboto";
-    if (family.includes("open sans")) return "Open Sans";
-    if (family.includes("lato")) return "Lato";
-    if (family.includes("montserrat")) return "Montserrat";
-    if (family.includes("source sans pro")) return "Source Sans Pro";
-    if (family.includes("nunito")) return "Nunito";
-    if (family.includes("poppins")) return "Poppins";
-    if (family.includes("merriweather")) return "Merriweather";
-    if (family.includes("ubuntu")) return "Ubuntu";
-    if (family.includes("fira sans")) return "Fira Sans";
-    if (family.includes("noto sans devanagari")) return "Noto Sans Devanagari";
-
-    // Mappings for proprietary fonts to free alternatives
-    if (family.includes("arial")) return "Arimo";
-    if (family.includes("times new roman")) return "Times-Roman";
-    if (family.includes("courier new")) return "Cousine";
-    if (family.includes("comic sans")) return "Comic Neue";
-    if (family.includes("impact")) return "Anton";
-    if (family.includes("garamond")) return "EB Garamond";
-    if (family.includes("lucida console")) return "Cousine";
-    if (family.includes("georgia")) return "Tinos"; // Fallback to Tinos (Times-like)
-    if (family.includes("verdana")) return "Arimo"; // Fallback to Arimo (Arial-like)
-    if (family.includes("tahoma")) return "Open Sans"; // Fallback
-    if (family.includes("trebuchet")) return "Fira Sans"; // Fallback
-    if (family.includes("palatino")) return "Merriweather"; // Fallback
-
-    // Standard PDF Fonts
-    if (family.includes("times")) return "Times-Roman";
-    if (family.includes("courier")) return "Courier";
-
-    // Serif Fallbacks
-    if (
-      family.includes("georgia") ||
-      family.includes("palatino") ||
-      family.includes("garamond")
-    ) {
-      return "Times-Roman";
-    }
-
-    // Sans-Serif Fallbacks (Arial, Helvetica, Verdana, Tahoma, etc.)
     return "Helvetica";
   };
+  const fontFamily = getPdfFont(settings.fontFamily);
 
-  const styles = StyleSheet.create({
-    page: {
-      flexDirection: "row",
-      backgroundColor: "#ffffff",
-      fontFamily: getPdfFont(settings.fontFamily),
-    },
-    leftColumn: {
-      width: "65%",
-      paddingLeft: 20,
-      paddingTop: 12,
-      paddingRight: 12,
-      display: "flex",
-      flexDirection: "column",
-      gap: 6,
-    },
-    rightColumn: {
-      width: "35%",
-      paddingLeft: 12,
-      paddingTop: 16,
-      paddingRight: 12,
-      display: "flex",
-      flexDirection: "column",
-      gap: 6,
-      color: "#ffffff",
-      minHeight: "100%",
-    },
-    header: {
-      marginBottom: 0,
-    },
-    name: {
-      fontSize: 24,
-      textTransform: "uppercase",
-      color: "#3e3e3e",
-      fontWeight: 500,
-      letterSpacing: 0,
-      padding: 0,
-      lineHeight: 1.2,
-    },
-    title: {
-      fontSize: 12,
-      color: "#008cff",
-      fontWeight: 500,
-      marginBottom: 2,
-      marginTop: 0,
-    },
-    contactInfo: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      columnGap: 8,
-      fontSize: 10,
-      color: "#3e3e3e",
-    },
-    contactItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-    },
-    section: {
-      marginBottom: 0,
-    },
-    sectionTitle: {
-      fontSize: 12,
+  const getPhotoBorderRadius = () => {
+    switch (settings.photoStyle) {
+      case "square":
+        return 0;
+      case "rounded":
+        return 8;
+      case "circle":
+      default:
+        return 999;
+    }
+  };
+  const photoBorderRadius = getPhotoBorderRadius();
+
+  const getBaseStyles = (fontSize: "sm" | "md" | "lg" | "xl") => {
+    switch (fontSize) {
+      case "sm":
+        return { base: 8, title: 10, name: 20 };
+      case "lg":
+        return { base: 12, title: 14, name: 28 };
+      case "xl":
+        return { base: 14, title: 16, name: 28 };
+      case "md":
+      default:
+        return { base: 10, title: 12, name: 24 };
+    }
+  };
+  const baseSize = getBaseStyles(settings.fontSize || "md");
+
+  const renderSectionById = (id: string, config: any) => {
+    const textColor = config.textColor || "#3e3e3e";
+    const accentColor = config.accentColor || settings.themeColor;
+    const headerStyle = config.headerStyle || {
+      fontSize: baseSize.title,
       textTransform: "uppercase",
       letterSpacing: 1,
       marginBottom: 4,
@@ -372,464 +115,416 @@ export const RenderResume = ({
       borderBottomColor: "#e5e7eb",
       paddingBottom: 4,
       fontWeight: 500,
-    },
-    sectionTitleRight: {
-      fontSize: 12,
-      textTransform: "uppercase",
-      letterSpacing: 1,
-      marginBottom: 6,
-      color: "rgba(255,255,255,0.9)",
-      borderBottomWidth: 1,
-      borderBottomColor: "#E5E5E5",
-      paddingBottom: 0,
-      fontWeight: 500,
-    },
-    text: {
-      fontSize: 10,
-      color: "#3e3e3e",
-      lineHeight: 1.5,
-      textAlign: "justify",
-    },
-    textRight: {
-      fontSize: 8,
-      color: "rgba(255,255,255,0.8)",
-      lineHeight: 1.5,
-    },
-    experienceItem: {
-      paddingLeft: 12,
-      marginTop: 4,
-      borderLeftWidth: 2,
-      borderLeftColor: "#e5e7eb",
-      marginLeft: 4,
-      position: "relative",
-      marginBottom: 12,
-    },
-    experienceDot: {
-      position: "absolute",
-      left: -5,
-      top: 6,
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: "#d1d5db",
-    },
-    jobHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "flex-end",
-      marginBottom: 0,
-    },
-    jobTitle: {
-      fontSize: 12,
-      color: "#3e3e3e",
-      fontWeight: 500,
-    },
-    date: {
-      fontSize: 10,
-      color: "#3e3e3e",
-      fontWeight: 500,
-    },
-    company: {
-      fontSize: 10,
-      color: "#008cff",
-      fontWeight: 500,
-      marginBottom: 0,
-    },
-    educationItem: {
-      borderBottomWidth: 1,
-      borderBottomColor: "#f3f4f6",
-      paddingBottom: 4,
-      marginBottom: 4,
-    },
-    photoContainer: {
-      alignItems: "center",
-      marginBottom: 8,
-    },
-    photo: {
-      width: 75,
-      height: 75,
-      borderRadius: 48,
-      borderWidth: 3,
-      border: "3px solid #ffffff",
-      borderColor: "#ffffff",
-      objectFit: "cover",
-    },
-    skillBadge: {
-      backgroundColor: "rgba(255,255,255,0.2)",
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 6,
-      fontSize: 9,
-      color: "#ffffff",
-      fontWeight: 500,
-    },
-    skillsContainer: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 4,
-    },
-    socialItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
-      marginBottom: 4,
-    },
-    socialIconBox: {
-      backgroundColor: "rgba(255,255,255,0.2)",
-      padding: 6,
-      borderRadius: 6,
-      height: 24,
-      width: 24,
-    },
-    languageItem: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 2,
-      fontSize: 10,
-    },
-    progressBar: {
-      flexDirection: "row",
-      gap: 4,
-    },
-    progressDot: {
-      width: 4,
-      height: 12,
-      borderRadius: 2,
-    },
-    link: {
-      textDecoration: "none",
-      color: "#3e3e3e",
-      fontSize: 10,
-    },
-  });
-  return (
-    <Document author="Resume Canvas" producer="Resume Canvas">
-      <Page
-        size={isLetter ? "LETTER" : "A4"}
-        style={styles.page}
-        orientation="portrait"
-      >
-        {/* Left Column */}
-        <View style={styles.leftColumn}>
-          {/* Header */}
+    };
+    const itemStyle = config.itemStyle || { marginBottom: 8 };
+
+    switch (id) {
+      case "summary":
+        if (!resumeData.personalInfo.summary) return null;
+        return (
           <View
-            style={[
-              styles.header,
-              { borderLeftWidth: 0, borderLeftColor: settings.themeColor },
-            ]}
+            style={config.containerStyle || { marginBottom: 12 }}
+            key="summary"
           >
-            <Text style={styles.name}>{resumeData.personalInfo.fullName}</Text>
-            <Text style={styles.title}>{resumeData.personalInfo.title}</Text>
-
-            <View style={styles.contactInfo}>
-              {resumeData.personalInfo.phone && (
-                <View style={styles.contactItem}>
-                  <PdfIcon name="Phone" size={10} color="#3e3e3e" />
-                  <Text>{resumeData.personalInfo.phone}</Text>
-                </View>
-              )}
-              {resumeData.personalInfo.email && (
-                <View style={styles.contactItem}>
-                  <PdfIcon name="Mail" size={10} color="#3e3e3e" />
-                  <Text>{resumeData.personalInfo.email}</Text>
-                </View>
-              )}
-              {resumeData.personalInfo.location && (
-                <View style={styles.contactItem}>
-                  <PdfIcon name="MapPin" size={10} color="#3e3e3e" />
-                  <Text>{resumeData.personalInfo.location}</Text>
-                </View>
-              )}
-
-              {resumeData.personalInfo.website && (
-                <View style={styles.contactItem}>
-                  <PdfIcon name="Globe" size={10} color="#3e3e3e" />
-                  <Link
-                    src={resumeData.personalInfo.website}
-                    style={styles.link}
-                  >
-                    <Text>{resumeData.personalInfo.website}</Text>
-                  </Link>
-                </View>
-              )}
-              {resumeData.personalInfo.linkedin && (
-                <View style={styles.contactItem}>
-                  <PdfIcon name="Linkedin" size={10} color="#3e3e3e" />
-                  <Link
-                    src={resumeData.personalInfo.linkedin}
-                    style={styles.link}
-                  >
-                    <Text>{resumeData.personalInfo.linkedin}</Text>
-                  </Link>
-                </View>
-              )}
-              {resumeData.personalInfo.twitter && (
-                <View style={styles.contactItem}>
-                  <PdfIcon name="Twitter" size={10} color="#3e3e3e" />
-                  <Link
-                    src={resumeData.personalInfo.twitter}
-                    style={styles.link}
-                  >
-                    <Text>{resumeData.personalInfo.twitter}</Text>
-                  </Link>
-                </View>
-              )}
-              {resumeData.personalInfo.github && (
-                <View style={styles.contactItem}>
-                  <PdfIcon name="Github" size={10} color="#3e3e3e" />
-                  <Link
-                    src={resumeData.personalInfo.github}
-                    style={styles.link}
-                  >
-                    <Text>{resumeData.personalInfo.github}</Text>
-                  </Link>
-                </View>
-              )}
-            </View>
+            <Text style={headerStyle}>Summary</Text>
+            <Text
+              style={{
+                fontSize: baseSize.base,
+                color: textColor,
+                lineHeight: 1.5,
+                textAlign: "justify",
+              }}
+            >
+              {resumeData.personalInfo.summary}
+            </Text>
           </View>
-
-          {/* Summary */}
-          {resumeData.personalInfo.summary && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Summary</Text>
-              <Text style={styles.text}>{resumeData.personalInfo.summary}</Text>
-            </View>
-          )}
-
-          {/* Experience */}
-          {resumeData.experience.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Work Experience</Text>
-              {resumeData.experience.map((exp) => (
-                <View key={exp.id} style={styles.experienceItem}>
-                  {/* Dot */}
-                  <View style={styles.experienceDot} />
-                  <View style={styles.jobHeader}>
-                    <Text style={styles.jobTitle}>{exp.title}</Text>
-                    <Text style={styles.date}>
-                      {exp.startDate} / {exp.current ? "Present" : exp.endDate}
-                    </Text>
-                  </View>
-                  <Text style={styles.company}>
-                    {exp.company} • {exp.location}
-                  </Text>
-                  {exp.description &&
-                  exp.bulletStyle &&
-                  exp.bulletStyle !== "none"
-                    ? exp.description
-                        .split("\n")
-                        .filter((i) => i.trim().length > 0)
-                        .map((item, index) => (
-                          <View
-                            key={index}
-                            style={{
-                              flexDirection: "row",
-                              marginBottom: 0,
-                              paddingLeft: 0,
-                              alignItems: "center",
-                            }}
-                          >
-                            <View style={{ marginRight: 6 }}>
-                              {getBulletIcon(exp.bulletStyle || "Dot")}
-                            </View>
-
-                            <Text
-                              style={{
-                                flex: 1,
-                                fontSize: 10,
-                                color: "#3e3e3e",
-                              }}
-                            >
-                              {item}
-                            </Text>
-                          </View>
-                        ))
-                    : null}
-                </View>
-              ))}
-            </View>
-          )}
-
-          {/* Education */}
-          {resumeData.education.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Education</Text>
-              {resumeData.education.map((edu) => (
+        );
+      case "experience":
+        if (!resumeData.experience.length) return null;
+        return (
+          <View
+            style={config.containerStyle || { marginBottom: 12 }}
+            key="experience"
+          >
+            <Text style={headerStyle}>Work Experience</Text>
+            {resumeData.experience.map((exp: any) => (
+              <View key={exp.id} style={itemStyle}>
                 <View
-                  key={edu.id}
                   style={{
-                    borderBottomWidth:
-                      resumeData.education.indexOf(edu) !==
-                      resumeData.education.length - 1
-                        ? 1
-                        : 0,
-                    borderBottomColor: "#f3f4f6",
-                    paddingBottom: 4,
-                    marginBottom: 4,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "flex-end",
                   }}
                 >
-                  <View style={styles.jobHeader}>
-                    <Text style={styles.jobTitle}>{edu.degree}</Text>
-                    <Text style={styles.date}>
-                      {edu.startDate} / {edu.current ? "Present" : edu.endDate}
-                    </Text>
-                  </View>
-                  <Text style={styles.company}>
-                    {edu.school}, {edu.location}
+                  <Text
+                    style={{
+                      fontSize: baseSize.base,
+                      color: textColor,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {exp.title}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: baseSize.base - 2,
+                      color: textColor,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {exp.startDate} / {exp.current ? "Present" : exp.endDate}
                   </Text>
                 </View>
-              ))}
-            </View>
-          )}
-
-          {/* Projects */}
-          {resumeData.projects.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Projects</Text>
-              {resumeData.projects.map((project) => (
-                <View
-                  key={project.id}
+                <Text
                   style={{
-                    marginBottom: 4,
-                    borderBottomWidth:
-                      resumeData.projects.indexOf(project) !==
-                      resumeData.projects.length - 1
-                        ? 1
-                        : 0,
-                    borderBottomColor: "#f3f4f6",
-                    paddingBottom: 4,
+                    fontSize: baseSize.base - 2,
+                    color: accentColor,
+                    fontWeight: 500,
                   }}
                 >
-                  <View style={styles.jobHeader}>
-                    <Text style={styles.jobTitle}>{project.name}</Text>
-                    <Text style={styles.date}>{project.date}</Text>
-                  </View>
-                  {project.link && (
-                    <Link src={project.link} style={{ textDecoration: "none" }}>
-                      <Text
+                  {exp.company} • {exp.location}
+                </Text>
+                {exp.description &&
+                  exp.bulletStyle !== "none" &&
+                  exp.description
+                    .split("\n")
+                    .filter((i: any) => i.trim().length > 0)
+                    .map((item: any, index: any) => (
+                      <View
+                        key={index}
                         style={{
-                          fontSize: 10,
-                          color: "#008cff",
-                          marginBottom: 2,
-                          fontWeight: 500,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginTop: 2,
                         }}
                       >
-                        {project.link}
-                      </Text>
-                    </Link>
-                  )}
-                  <Text style={styles.text}>{project.description}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-
-        {/* Right Column */}
-        <View
-          style={[styles.rightColumn, { backgroundColor: settings.themeColor }]}
-        >
-          {/* Top Bar */}
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: 10,
-              backgroundColor: darkenColor(settings.themeColor, 0.7),
-            }}
-          />
-
-          {/* Photo */}
-          <View style={styles.photoContainer}>
-            {resumeData.personalInfo.photoUrl && (
-              // eslint-disable-next-line jsx-a11y/alt-text
-              <Image
-                src={resumeData.personalInfo.photoUrl}
-                style={styles.photo}
-              />
-            )}
-          </View>
-
-          {/* Strengths */}
-          {resumeData.strengths.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitleRight}>Strengths</Text>
-              {resumeData.strengths.map((strength) => (
-                <View
-                  key={strength.id}
-                  style={{ flexDirection: "row", gap: 6, marginBottom: 4 }}
-                >
-                  {strength.icon && (
-                    <View style={styles.socialIconBox}>
-                      <PdfIcon name={strength.icon} size={12} color="#ffffff" />
-                    </View>
-                  )}
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        color: "#ffffff",
-                        fontWeight: 600,
-                        marginBottom: 2,
-                      }}
-                    >
-                      {strength.title}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 9,
-                        color: "rgba(255,255,255,0.8)",
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {strength.description}
-                    </Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {/* Skills */}
-          {resumeData.skills.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitleRight}>Skills</Text>
-              <View style={styles.skillsContainer}>
-                {resumeData.skills.map((skill) => (
-                  <Text key={skill.id} style={styles.skillBadge}>
-                    {skill.name}
-                  </Text>
-                ))}
+                        <View style={{ marginRight: 6 }}>
+                          {getBulletIcon(exp.bulletStyle || "Dot")}
+                        </View>
+                        <Text
+                          style={{
+                            flex: 1,
+                            fontSize: baseSize.base - 2,
+                            color: textColor,
+                          }}
+                        >
+                          {item.replace(/^[•\-\*•◦▪]\s*/, "")}
+                        </Text>
+                      </View>
+                    ))}
               </View>
+            ))}
+          </View>
+        );
+      case "education":
+        if (!resumeData.education.length) return null;
+        return (
+          <View
+            style={config.containerStyle || { marginBottom: 12 }}
+            key="education"
+          >
+            <Text style={headerStyle}>Education</Text>
+            {resumeData.education.map((edu: any) => (
+              <View key={edu.id} style={itemStyle}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "flex-end",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: baseSize.base,
+                      color: textColor,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {edu.degree}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: baseSize.base - 3,
+                      color: textColor,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {edu.startDate} / {edu.current ? "Present" : edu.endDate}
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    fontSize: baseSize.base - 2,
+                    color: accentColor,
+                    fontWeight: 500,
+                  }}
+                >
+                  {edu.school}, {edu.location}
+                </Text>
+              </View>
+            ))}
+          </View>
+        );
+      case "projects":
+        if (!resumeData.projects.length) return null;
+        return (
+          <View
+            style={config.containerStyle || { marginBottom: 12 }}
+            key="projects"
+          >
+            <Text style={headerStyle}>Projects</Text>
+            {resumeData.projects.map((project: any) => (
+              <View key={project.id} style={itemStyle}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "flex-end",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: baseSize.title,
+                      color: textColor,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {project.name}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: baseSize.base - 2,
+                      color: textColor,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {project.date}
+                  </Text>
+                </View>
+                {project.link && (
+                  <Link src={project.link} style={{ textDecoration: "none" }}>
+                    <Text
+                      style={{
+                        fontSize: baseSize.base - 2,
+                        color: accentColor,
+                        marginBottom: 2,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {project.link}
+                    </Text>
+                  </Link>
+                )}
+                <Text
+                  style={{
+                    fontSize: baseSize.base - 2,
+                    color: textColor,
+                    lineHeight: 1.5,
+                    textAlign: "justify",
+                  }}
+                >
+                  {project.description}
+                </Text>
+              </View>
+            ))}
+          </View>
+        );
+      case "strengths":
+        if (!resumeData.strengths.length) return null;
+        return (
+          <View
+            style={config.containerStyle || { marginBottom: 12 }}
+            key="strengths"
+          >
+            <Text style={headerStyle}>Strengths</Text>
+            {resumeData.strengths.map((str: any) => (
+              <View
+                key={str.id}
+                style={{ flexDirection: "row", gap: 6, marginBottom: 6 }}
+              >
+                {str.icon && (
+                  <View
+                    style={{
+                      backgroundColor: config.iconBg || "rgba(0,0,0,0.05)",
+                      padding: 6,
+                      borderRadius: 6,
+                      width: 20,
+                      height: 20,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <PdfIcon name={str.icon} size={8} color={textColor} />
+                  </View>
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: baseSize.base - 2,
+                      color: textColor,
+                      fontWeight: 600,
+                      marginBottom: 2,
+                    }}
+                  >
+                    {str.title}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: baseSize.base - 1,
+                      color: textColor,
+                      opacity: 0.8,
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {str.description}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        );
+      case "skills":
+        if (!resumeData.skills.length) return null;
+        return (
+          <View
+            style={config.containerStyle || { marginBottom: 12 }}
+            key="skills"
+          >
+            <Text style={headerStyle}>Skills</Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
+              {resumeData.skills.map((skill: any) => (
+                <Text
+                  key={skill.id}
+                  style={{
+                    backgroundColor: config.badgeBg || "rgba(0,0,0,0.05)",
+                    paddingHorizontal: 6,
+                    paddingVertical: 3,
+                    borderRadius: 4,
+                    fontSize: baseSize.base - 1,
+                    color: textColor,
+                    fontWeight: 500,
+                  }}
+                >
+                  {skill.name}
+                </Text>
+              ))}
             </View>
-          )}
-
-          {/* Find Me Online */}
-          {resumeData.socials.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitleRight}>Find Me Online</Text>
-              {resumeData.socials.map((social) => (
+          </View>
+        );
+      case "languages":
+        if (!resumeData.languages.length) return null;
+        return (
+          <View
+            style={config.containerStyle || { marginBottom: 12 }}
+            key="languages"
+          >
+            <Text style={headerStyle}>Languages</Text>
+            {resumeData.languages.map((lang: any) => (
+              <View
+                key={lang.id}
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 4,
+                }}
+              >
+                <View>
+                  <Text
+                    style={{
+                      fontSize: baseSize.base - 2,
+                      color: textColor,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {lang.name}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: baseSize.base - 1,
+                      color: textColor,
+                      opacity: 0.7,
+                    }}
+                  >
+                    {lang.proficiency}
+                  </Text>
+                </View>
+                <View style={{ flexDirection: "row", gap: 4 }}>
+                  {[1, 2, 3, 4, 5].map((i) => {
+                    const level = lang.proficiency.includes("Native")
+                      ? 5
+                      : lang.proficiency.includes("Fluent")
+                        ? 4
+                        : lang.proficiency.includes("Proficient")
+                          ? 3
+                          : lang.proficiency.includes("Intermediate")
+                            ? 2
+                            : 1;
+                    return (
+                      <View
+                        key={i}
+                        style={{
+                          width: 4,
+                          height: 10,
+                          borderRadius: 2,
+                          backgroundColor:
+                            i <= level ? textColor : "rgba(150,150,150,0.2)",
+                        }}
+                      />
+                    );
+                  })}
+                </View>
+              </View>
+            ))}
+          </View>
+        );
+      case "socials":
+        if (!resumeData.socials.length) return null;
+        return (
+          <View
+            style={config.containerStyle || { marginBottom: 12 }}
+            key="socials"
+          >
+            <Text style={headerStyle}>Find Me Online</Text>
+            <View
+              style={{
+                flexDirection: config.rowLayout ? "row" : "column",
+                flexWrap: config.rowLayout ? "wrap" : "nowrap",
+                gap: config.rowLayout ? 12 : 0,
+              }}
+            >
+              {resumeData.socials.map((social: any) => (
                 <Link
                   key={social.id}
                   src={social.url}
                   style={{ textDecoration: "none" }}
                 >
-                  <View style={styles.socialItem}>
-                    <View style={styles.socialIconBox}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 6,
+                      marginBottom: 4,
+                    }}
+                  >
+                    <View
+                      style={{
+                        backgroundColor: config.iconBg || "rgba(0,0,0,0.05)",
+                        padding: 4,
+                        borderRadius: 4,
+                      }}
+                    >
                       <PdfIcon
                         name={social.icon || social.platform}
-                        size={12}
-                        color="#ffffff"
+                        size={10}
+                        color={textColor}
                       />
                     </View>
                     <View>
                       <Text
                         style={{
-                          fontSize: 9,
-                          color: "#ffffff",
+                          fontSize: baseSize.base - 2,
+                          color: textColor,
                           fontWeight: 500,
                           lineHeight: 1.2,
                         }}
@@ -838,8 +533,9 @@ export const RenderResume = ({
                       </Text>
                       <Text
                         style={{
-                          fontSize: 8,
-                          color: "rgba(255,255,255,0.8)",
+                          fontSize: baseSize.base - 3,
+                          color: textColor,
+                          opacity: 0.8,
                         }}
                       >
                         {social.username || "Link"}
@@ -849,120 +545,85 @@ export const RenderResume = ({
                 </Link>
               ))}
             </View>
-          )}
-
-          {/* Languages */}
-          {resumeData.languages.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitleRight}>Languages</Text>
-              {resumeData.languages.map((lang) => (
-                <View key={lang.id} style={styles.languageItem}>
-                  <View>
-                    <Text
-                      style={{
-                        fontSize: 9,
-                        color: "#ffffff",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {lang.name}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 8,
-                        color: "rgba(255,255,255,0.7)",
-                      }}
-                    >
-                      {lang.proficiency}
-                    </Text>
-                  </View>
-                  <View style={styles.progressBar}>
-                    {[1, 2, 3, 4, 5].map((i) => {
-                      const level = lang.proficiency.includes("Native")
-                        ? 5
-                        : lang.proficiency.includes("Fluent")
-                          ? 4
-                          : lang.proficiency.includes("Proficient")
-                            ? 3
-                            : lang.proficiency.includes("Intermediate")
-                              ? 2
-                              : 1;
-                      return (
-                        <View
-                          key={i}
-                          style={[
-                            styles.progressDot,
-                            {
-                              backgroundColor:
-                                i <= level
-                                  ? "#ffffff"
-                                  : "rgba(255,255,255,0.2)",
-                            },
-                          ]}
-                        />
-                      );
-                    })}
-                  </View>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {/* Certifications */}
-          {resumeData.certifications.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitleRight}>Certification</Text>
-              {resumeData.certifications.map((cert) => (
-                <View key={cert.id} style={{ marginBottom: 12 }}>
+          </View>
+        );
+      case "certifications":
+        if (!resumeData.certifications.length) return null;
+        return (
+          <View
+            style={config.containerStyle || { marginBottom: 12 }}
+            key="certifications"
+          >
+            <Text style={headerStyle}>Certification</Text>
+            {resumeData.certifications.map((cert: any) => (
+              <View key={cert.id} style={{ marginBottom: 6 }}>
+                <Text
+                  style={{
+                    fontSize: baseSize.base - 2,
+                    color: textColor,
+                    fontWeight: 500,
+                  }}
+                >
+                  {cert.name}
+                </Text>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                >
                   <Text
                     style={{
-                      fontSize: 9,
-                      color: "#ffffff",
-                      fontWeight: 500,
-                      marginBottom: 2,
+                      fontSize: baseSize.base - 2,
+                      color: textColor,
+                      opacity: 0.8,
                     }}
                   >
-                    {cert.name}
+                    {cert.issuer}
                   </Text>
-
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 4,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 9,
-                        color: "rgba(255,255,255,0.8)",
-                      }}
-                    >
-                      {cert.issuer}
-                    </Text>
-
-                    <Link src={cert.link} style={styles.link}>
-                      <PdfIcon name="ExternalLink" size={8} color="#f7f7f7" />
-                    </Link>
-                  </View>
-
-                  {cert.description && (
-                    <Text
-                      style={{
-                        fontSize: 9,
-                        color: "rgba(255,255,255,0.7)",
-                        marginTop: 4,
-                        lineHeight: 1.4,
-                      }}
-                    >
-                      {cert.description}
-                    </Text>
-                  )}
+                  <Link src={cert.link} style={{ textDecoration: "none" }}>
+                    <PdfIcon name="ExternalLink" size={8} color={accentColor} />
+                  </Link>
                 </View>
-              ))}
-            </View>
-          )}
-        </View>
+              </View>
+            ))}
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderSelectedLayout = () => {
+    const layoutProps = {
+      resumeData,
+      settings,
+      photoBorderRadius,
+      baseSize,
+      renderSectionById,
+    };
+
+    switch (settings.template) {
+      case "minimal":
+        return <MinimalPdfLayout {...layoutProps} />;
+      case "modern":
+        return <Modern1ColPdfLayout {...layoutProps} />;
+      case "modern-2col":
+        return <Modern2ColPdfLayout {...layoutProps} />;
+      case "executive":
+        return <ExecutivePdfLayout {...layoutProps} />;
+      case "creative":
+        return <CreativePdfLayout {...layoutProps} />;
+      case "classic":
+      default:
+        return <ClassicPdfLayout {...layoutProps} />;
+    }
+  };
+
+  return (
+    <Document author="Resume Canvas" producer="Resume Canvas">
+      <Page
+        size={isLetter ? "LETTER" : "A4"}
+        style={{ flexDirection: "row", backgroundColor: "#ffffff", fontFamily }}
+      >
+        {renderSelectedLayout()}
       </Page>
     </Document>
   );

@@ -8,9 +8,11 @@ import { useResumeStore } from "@/lib/store/useResumeStore";
 import { Trash2, Upload, User } from "lucide-react";
 import Image from "next/image";
 import { useRef } from "react";
+import Select from "@/components/shared/select";
 
 export function PersonalInfoForm() {
-  const { resumeData, setPersonalInfo } = useResumeStore();
+  const { resumeData, setPersonalInfo, settings, updateSettings } =
+    useResumeStore();
   const { personalInfo } = resumeData;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -110,6 +112,28 @@ export function PersonalInfoForm() {
             </div>
           </div>
         </div>
+
+        {personalInfo.photoUrl && (
+          <div className="space-y-3 pb-2">
+            <Label>Photo Shape</Label>
+            <div className="w-1/2">
+              <Select
+                value={settings.photoStyle || "circle"}
+                onValueChange={(value) =>
+                  updateSettings({
+                    photoStyle: value as "circle" | "rounded" | "square",
+                  })
+                }
+                options={[
+                  { label: "Circle", value: "circle" },
+                  { label: "Rounded Corners", value: "rounded" },
+                  { label: "Square", value: "square" },
+                ]}
+                placeholder="Select photo shape"
+              />
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">

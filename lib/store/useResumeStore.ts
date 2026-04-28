@@ -1,19 +1,19 @@
+import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
+  Certification,
+  Education,
+  Experience,
+  Language,
+  PersonalInfo,
+  Project,
   ResumeData,
   ResumeSettings,
-  PersonalInfo,
-  Experience,
-  Education,
-  Project,
   Skill,
-  Language,
-  Certification,
-  Strength,
   Social,
+  Strength,
 } from "../types";
-import { v4 as uuidv4 } from "uuid";
 
 interface ResumeState {
   resumeData: ResumeData;
@@ -61,6 +61,14 @@ interface ResumeState {
   updateSocial: (id: string, social: Partial<Social>) => void;
   removeSocial: (id: string) => void;
 
+  updateLayoutSettings: (
+    layout: Partial<
+      Pick<
+        ResumeSettings,
+        "leftColumn" | "rightColumn" | "template" | "sectionTypography"
+      >
+    >,
+  ) => void;
   updateSettings: (settings: Partial<ResumeSettings>) => void;
   resetResume: () => void;
 }
@@ -208,6 +216,22 @@ const initialSettings: ResumeSettings = {
   fontFamily: "'Khand', sans-serif",
   fontSize: "md",
   documentSize: "A4",
+  template: "classic",
+  leftColumn: [
+    { id: "summary", name: "Summary", visible: true },
+    { id: "experience", name: "Work Experience", visible: true },
+    { id: "education", name: "Education", visible: true },
+    { id: "projects", name: "Projects", visible: true },
+  ],
+  rightColumn: [
+    { id: "strengths", name: "Strengths", visible: true },
+    { id: "skills", name: "Skills", visible: true },
+    { id: "socials", name: "Find Me Online", visible: true },
+    { id: "languages", name: "Languages", visible: true },
+    { id: "certifications", name: "Certification", visible: true },
+  ],
+  sectionTypography: {},
+  photoStyle: "circle",
 };
 
 export const useResumeStore = create<ResumeState>()(
@@ -467,6 +491,10 @@ export const useResumeStore = create<ResumeState>()(
           },
         })),
 
+      updateLayoutSettings: (layout) =>
+        set((state) => ({
+          settings: { ...state.settings, ...layout },
+        })),
       updateSettings: (settings) =>
         set((state) => ({
           settings: { ...state.settings, ...settings },

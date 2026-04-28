@@ -90,9 +90,33 @@ export interface ResumeData {
   socials: Social[];
 }
 
+export type TemplateType =
+  | "classic"
+  | "modern"
+  | "modern-2col"
+  | "minimal"
+  | "executive"
+  | "creative";
+
+export interface SectionConfig {
+  id: string;
+  name: string;
+  visible: boolean;
+}
+
+export interface SectionTypography {
+  fontSize?: "sm" | "md" | "lg" | "xl";
+  headingSize?: "sm" | "md" | "lg" | "xl";
+}
+
 export interface ResumeSettings {
   themeColor: string;
   fontFamily: string;
   fontSize: "sm" | "md" | "lg" | "xl";
   documentSize: "A4" | "Letter";
+  template: TemplateType;
+  leftColumn: SectionConfig[];
+  rightColumn: SectionConfig[];
+  sectionTypography: Record<string, SectionTypography>;
+  photoStyle?: "square" | "rounded" | "circle";
 }
