@@ -1,4 +1,8 @@
+import { useEditing } from "@/components/builder/inline/editing-context";
+import { PhotoPopover } from "@/components/builder/inline/photo-popover";
+import { User } from "lucide-react";
 import Image from "next/image";
+import { PersonalField } from "../../sections/personal-field";
 import { HtmlLayoutProps } from "../types";
 
 export const ExecutiveLayout = ({
@@ -8,6 +12,7 @@ export const ExecutiveLayout = ({
   renderSectionById,
   baseSize,
 }: HtmlLayoutProps) => {
+  const { editable } = useEditing();
   const config = {
     className: "mb-3",
     headerClass:
@@ -33,56 +38,63 @@ export const ExecutiveLayout = ({
       style={{ borderTop: `8px solid ${settings.themeColor}` }}
     >
       <header className="mb-6 flex space-x-6 items-center">
-        {resumeData.personalInfo.photoUrl && (
-          <div
-            className="w-24 h-24 shrink-0 overflow-hidden shadow-sm"
-            style={{
-              borderRadius: photoBorderRadius,
-              border: "1px solid #e5e7eb",
-            }}
-          >
-            <Image
-              src={resumeData.personalInfo.photoUrl}
-              alt="Profile"
-              className="w-full h-full object-cover"
-              width={96}
-              height={96}
-            />
-          </div>
-        )}
+        {settings.showPhoto !== false &&
+          (resumeData.personalInfo.photoUrl || editable) && (
+            <PhotoPopover>
+              <div
+                className="w-24 h-24 shrink-0 overflow-hidden shadow-sm"
+                style={{
+                  borderRadius: photoBorderRadius,
+                  border: "1px solid #e5e7eb",
+                }}
+              >
+                {resumeData.personalInfo.photoUrl ? (
+                  <Image
+                    src={resumeData.personalInfo.photoUrl}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                    width={96}
+                    height={96}
+                  />
+                ) : (
+                  <User className="w-full h-full p-5 opacity-40 bg-gray-100" />
+                )}
+              </div>
+            </PhotoPopover>
+          )}
         <div className="flex-1">
           <h1
             className="font-extrabold text-[#111827] leading-tight"
             style={{ fontSize: baseSize.name + 12 }}
           >
-            {resumeData.personalInfo.fullName}
+            <PersonalField name="fullName" />
           </h1>
           <p
             className="font-bold mt-1"
             style={{ color: settings.themeColor, fontSize: baseSize.base + 2 }}
           >
-            {resumeData.personalInfo.title}
+            <PersonalField name="title" />
           </p>
           <div
             className="flex flex-wrap gap-x-3 gap-y-1 font-medium text-gray-500 mt-2"
             style={{ fontSize: baseSize.base - 2 }}
           >
-            {resumeData.personalInfo.phone && (
-              <span>{resumeData.personalInfo.phone}</span>
+            {(editable || resumeData.personalInfo.phone) && (
+              <PersonalField name="phone" />
             )}
-            {resumeData.personalInfo.email && (
+            {(editable || resumeData.personalInfo.email) && (
               <span className="border-l border-gray-300 pl-3">
-                {resumeData.personalInfo.email}
+                <PersonalField name="email" />
               </span>
             )}
-            {resumeData.personalInfo.location && (
+            {(editable || resumeData.personalInfo.location) && (
               <span className="border-l border-gray-300 pl-3">
-                {resumeData.personalInfo.location}
+                <PersonalField name="location" />
               </span>
             )}
-            {resumeData.personalInfo.linkedin && (
+            {(editable || resumeData.personalInfo.linkedin) && (
               <span className="border-l border-gray-300 pl-3">
-                {resumeData.personalInfo.linkedin}
+                <PersonalField name="linkedin" />
               </span>
             )}
           </div>
@@ -90,8 +102,8 @@ export const ExecutiveLayout = ({
       </header>
       <div className="w-full">
         {allSections
-          .filter((s: any) => s.visible)
-          .map((s: any) => renderSectionById(s.id, config))}
+          .filter((s) => s.visible)
+          .map((s) => renderSectionById(s, config))}
       </div>
     </div>
   );

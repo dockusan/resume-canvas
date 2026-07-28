@@ -143,3 +143,14 @@
     page-break-inside: avoid !important;
   }
 }
+
+/* Inline editing (resume preview) */
+.editable-field[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  opacity: 0.4;
+  pointer-events: none;
+}
+.editable-field[contenteditable]:empty {
+  min-width: 2ch;
+  display: inline-block;
+}

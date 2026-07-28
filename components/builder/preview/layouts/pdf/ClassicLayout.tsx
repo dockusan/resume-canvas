@@ -1,3 +1,4 @@
+import { applyPdfOverride, resolvePathOverride } from "@/lib/style-overrides";
 import { darkenColor } from "@/lib/utils";
 import { Image, Text, View } from "@react-pdf/renderer";
 import { PdfIcon } from "../../pdf-components/pdf-icon";
@@ -44,6 +45,10 @@ export const ClassicLayout = ({
     badgeBg: "rgba(255,255,255,0.2)",
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pov = (style: any, path: string): any =>
+    applyPdfOverride(style, resolvePathOverride(settings.styleOverrides, path));
+
   return (
     <View style={{ flexDirection: "row", flex: 1, backgroundColor: "#ffffff" }}>
       <View style={{ width: "65%", padding: 24 }}>
@@ -55,23 +60,29 @@ export const ClassicLayout = ({
           }}
         >
           <Text
-            style={{
-              fontSize: baseSize.name,
-              textTransform: "uppercase",
-              color: "#3e3e3e",
-              fontWeight: 500,
-              letterSpacing: 0,
-            }}
+            style={pov(
+              {
+                fontSize: baseSize.name,
+                textTransform: "uppercase",
+                color: "#3e3e3e",
+                fontWeight: 500,
+                letterSpacing: 0,
+              },
+              "personalInfo.fullName",
+            )}
           >
             {resumeData.personalInfo.fullName}
           </Text>
           <Text
-            style={{
-              fontSize: baseSize.title,
-              color: settings.themeColor,
-              fontWeight: 500,
-              marginBottom: 4,
-            }}
+            style={pov(
+              {
+                fontSize: baseSize.title,
+                color: settings.themeColor,
+                fontWeight: 500,
+                marginBottom: 4,
+              },
+              "personalInfo.title",
+            )}
           >
             {resumeData.personalInfo.title}
           </Text>
@@ -89,7 +100,9 @@ export const ClassicLayout = ({
                 style={{ flexDirection: "row", alignItems: "center", gap: 3 }}
               >
                 <PdfIcon name="Phone" size={8} color="#3e3e3e" />
-                <Text>{resumeData.personalInfo.phone}</Text>
+                <Text style={pov({}, "personalInfo.phone")}>
+                  {resumeData.personalInfo.phone}
+                </Text>
               </View>
             )}
             {resumeData.personalInfo.email && (
@@ -97,7 +110,9 @@ export const ClassicLayout = ({
                 style={{ flexDirection: "row", alignItems: "center", gap: 3 }}
               >
                 <PdfIcon name="Mail" size={8} color="#3e3e3e" />
-                <Text>{resumeData.personalInfo.email}</Text>
+                <Text style={pov({}, "personalInfo.email")}>
+                  {resumeData.personalInfo.email}
+                </Text>
               </View>
             )}
             {resumeData.personalInfo.location && (
@@ -105,7 +120,9 @@ export const ClassicLayout = ({
                 style={{ flexDirection: "row", alignItems: "center", gap: 3 }}
               >
                 <PdfIcon name="MapPin" size={8} color="#3e3e3e" />
-                <Text>{resumeData.personalInfo.location}</Text>
+                <Text style={pov({}, "personalInfo.location")}>
+                  {resumeData.personalInfo.location}
+                </Text>
               </View>
             )}
             {resumeData.personalInfo.website && (
@@ -113,14 +130,16 @@ export const ClassicLayout = ({
                 style={{ flexDirection: "row", alignItems: "center", gap: 3 }}
               >
                 <PdfIcon name="Globe" size={8} color="#3e3e3e" />
-                <Text>{resumeData.personalInfo.website}</Text>
+                <Text style={pov({}, "personalInfo.website")}>
+                  {resumeData.personalInfo.website}
+                </Text>
               </View>
             )}
           </View>
         </View>
         {(settings.leftColumn || [])
           .filter((s: any) => s.visible)
-          .map((s: any) => renderSectionById(s.id, leftConfig))}
+          .map((s: any) => renderSectionById(s, leftConfig))}
       </View>
 
       <View
@@ -141,7 +160,7 @@ export const ClassicLayout = ({
           }}
         />
         <View style={{ alignItems: "center", marginBottom: 16 }}>
-          {resumeData.personalInfo.photoUrl && (
+          {settings.showPhoto !== false && resumeData.personalInfo.photoUrl && (
             <Image
               src={resumeData.personalInfo.photoUrl}
               style={{
@@ -155,7 +174,7 @@ export const ClassicLayout = ({
         </View>
         {(settings.rightColumn || [])
           .filter((s: any) => s.visible)
-          .map((s: any) => renderSectionById(s.id, rightConfig))}
+          .map((s: any) => renderSectionById(s, rightConfig))}
       </View>
     </View>
   );

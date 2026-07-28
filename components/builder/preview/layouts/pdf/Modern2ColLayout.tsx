@@ -1,3 +1,4 @@
+import { applyPdfOverride, resolvePathOverride } from "@/lib/style-overrides";
 import { Image, Text, View } from "@react-pdf/renderer";
 import { PdfIcon } from "../../pdf-components/pdf-icon";
 import { PdfLayoutProps } from "../types";
@@ -44,6 +45,11 @@ export const Modern2ColLayout = ({
     badgeBg: "rgba(0,0,0,0.05)",
     rowLayout: true,
   };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pov = (style: any, path: string): any =>
+    applyPdfOverride(style, resolvePathOverride(settings.styleOverrides, path));
+
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
       <View
@@ -58,7 +64,7 @@ export const Modern2ColLayout = ({
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-          {resumeData.personalInfo.photoUrl && (
+          {settings.showPhoto !== false && resumeData.personalInfo.photoUrl && (
             <Image
               src={resumeData.personalInfo.photoUrl}
               style={{
@@ -71,21 +77,27 @@ export const Modern2ColLayout = ({
           )}
           <View>
             <Text
-              style={{
-                fontSize: baseSize.name + 8,
-                fontWeight: 700,
-                color: "#1f2937",
-                marginBottom: 2,
-              }}
+              style={pov(
+                {
+                  fontSize: baseSize.name + 8,
+                  fontWeight: 700,
+                  color: "#1f2937",
+                  marginBottom: 2,
+                },
+                "personalInfo.fullName",
+              )}
             >
               {resumeData.personalInfo.fullName}
             </Text>
             <Text
-              style={{
-                fontSize: baseSize.base + 2,
-                color: settings.themeColor,
-                fontWeight: 600,
-              }}
+              style={pov(
+                {
+                  fontSize: baseSize.base + 2,
+                  color: settings.themeColor,
+                  fontWeight: 600,
+                },
+                "personalInfo.title",
+              )}
             >
               {resumeData.personalInfo.title}
             </Text>
@@ -103,7 +115,9 @@ export const Modern2ColLayout = ({
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
             >
-              <Text>{resumeData.personalInfo.phone}</Text>
+              <Text style={pov({}, "personalInfo.phone")}>
+                {resumeData.personalInfo.phone}
+              </Text>
               <PdfIcon name="Phone" size={9} color={settings.themeColor} />
             </View>
           )}
@@ -111,7 +125,9 @@ export const Modern2ColLayout = ({
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
             >
-              <Text>{resumeData.personalInfo.email}</Text>
+              <Text style={pov({}, "personalInfo.email")}>
+                {resumeData.personalInfo.email}
+              </Text>
               <PdfIcon name="Mail" size={9} color={settings.themeColor} />
             </View>
           )}
@@ -119,7 +135,9 @@ export const Modern2ColLayout = ({
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
             >
-              <Text>{resumeData.personalInfo.location}</Text>
+              <Text style={pov({}, "personalInfo.location")}>
+                {resumeData.personalInfo.location}
+              </Text>
               <PdfIcon name="MapPin" size={9} color={settings.themeColor} />
             </View>
           )}
@@ -127,7 +145,9 @@ export const Modern2ColLayout = ({
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
             >
-              <Text>{resumeData.personalInfo.website}</Text>
+              <Text style={pov({}, "personalInfo.website")}>
+                {resumeData.personalInfo.website}
+              </Text>
               <PdfIcon name="Globe" size={9} color={settings.themeColor} />
             </View>
           )}
@@ -137,7 +157,7 @@ export const Modern2ColLayout = ({
         <View style={{ width: "65%", padding: 24, paddingRight: 16 }}>
           {(settings.leftColumn || [])
             .filter((s: any) => s.visible)
-            .map((s: any) => renderSectionById(s.id, leftConfig))}
+            .map((s: any) => renderSectionById(s, leftConfig))}
         </View>
         <View
           style={{
@@ -151,7 +171,7 @@ export const Modern2ColLayout = ({
         >
           {(settings.rightColumn || [])
             .filter((s: any) => s.visible)
-            .map((s: any) => renderSectionById(s.id, rightConfig))}
+            .map((s: any) => renderSectionById(s, rightConfig))}
         </View>
       </View>
     </View>

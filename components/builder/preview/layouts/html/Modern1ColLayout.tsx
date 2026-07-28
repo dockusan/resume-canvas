@@ -1,5 +1,8 @@
-import { Globe, Mail, Phone } from "lucide-react";
+import { useEditing } from "@/components/builder/inline/editing-context";
+import { PhotoPopover } from "@/components/builder/inline/photo-popover";
+import { Globe, Mail, Phone, User } from "lucide-react";
 import Image from "next/image";
+import { PersonalField } from "../../sections/personal-field";
 import { HtmlLayoutProps } from "../types";
 
 export const Modern1ColLayout = ({
@@ -9,6 +12,7 @@ export const Modern1ColLayout = ({
   renderSectionById,
   baseSize,
 }: HtmlLayoutProps) => {
+  const { editable } = useEditing();
   const config = {
     className: "mb-3",
     headerClass:
@@ -37,53 +41,60 @@ export const Modern1ColLayout = ({
         className="px-8 py-6 text-white flex flex-col md:flex-row items-center gap-6"
         style={{ backgroundColor: settings.themeColor }}
       >
-        {resumeData.personalInfo.photoUrl && (
-          <div
-            className="w-20 h-20 shrink-0 border-2 border-white/50 overflow-hidden shadow-lg"
-            style={{ borderRadius: photoBorderRadius }}
-          >
-            <Image
-              src={resumeData.personalInfo.photoUrl}
-              alt="Profile"
-              className="w-full h-full object-cover"
-              width={80}
-              height={80}
-            />
-          </div>
-        )}
+        {settings.showPhoto !== false &&
+          (resumeData.personalInfo.photoUrl || editable) && (
+            <PhotoPopover>
+              <div
+                className="w-20 h-20 shrink-0 border-2 border-white/50 overflow-hidden shadow-lg"
+                style={{ borderRadius: photoBorderRadius }}
+              >
+                {resumeData.personalInfo.photoUrl ? (
+                  <Image
+                    src={resumeData.personalInfo.photoUrl}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                    width={80}
+                    height={80}
+                  />
+                ) : (
+                  <User className="w-full h-full p-4 opacity-40" />
+                )}
+              </div>
+            </PhotoPopover>
+          )}
         <div className="text-center md:text-left flex-1">
           <h1
             className="font-bold mb-0.5 tracking-wide leading-none"
             style={{ fontSize: baseSize.name + 8 }}
           >
-            {resumeData.personalInfo.fullName}
+            <PersonalField name="fullName" />
           </h1>
           <p
             className="opacity-90 font-medium mb-3"
             style={{ fontSize: baseSize.base + 2 }}
           >
-            {resumeData.personalInfo.title}
+            <PersonalField name="title" />
           </p>
           <div
             className="flex flex-wrap md:justify-start justify-center gap-x-4 gap-y-2 opacity-80"
             style={{ fontSize: baseSize.base - 2 }}
           >
-            {resumeData.personalInfo.phone && (
+            {(editable || resumeData.personalInfo.phone) && (
               <div className="flex items-center gap-1">
                 <Phone className="w-3 h-3" />
-                {resumeData.personalInfo.phone}
+                <PersonalField name="phone" />
               </div>
             )}
-            {resumeData.personalInfo.email && (
+            {(editable || resumeData.personalInfo.email) && (
               <div className="flex items-center gap-1">
                 <Mail className="w-3 h-3" />
-                {resumeData.personalInfo.email}
+                <PersonalField name="email" />
               </div>
             )}
-            {resumeData.personalInfo.website && (
+            {(editable || resumeData.personalInfo.website) && (
               <div className="flex items-center gap-1">
                 <Globe className="w-3 h-3" />
-                {resumeData.personalInfo.website}
+                <PersonalField name="website" />
               </div>
             )}
           </div>
@@ -92,8 +103,8 @@ export const Modern1ColLayout = ({
 
       <div className="p-8">
         {allSections
-          .filter((s: any) => s.visible)
-          .map((s: any) => renderSectionById(s.id, config))}
+          .filter((s) => s.visible)
+          .map((s) => renderSectionById(s, config))}
       </div>
     </div>
   );

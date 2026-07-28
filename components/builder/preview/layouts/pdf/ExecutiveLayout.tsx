@@ -1,3 +1,4 @@
+import { applyPdfOverride, resolvePathOverride } from "@/lib/style-overrides";
 import { Image, Text, View } from "@react-pdf/renderer";
 import { PdfLayoutProps } from "../types";
 
@@ -29,6 +30,10 @@ export const ExecutiveLayout = ({
     badgeBg: "rgba(0,0,0,0.04)",
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pov = (style: any, path: string): any =>
+    applyPdfOverride(style, resolvePathOverride(settings.styleOverrides, path));
+
   return (
     <View
       style={{
@@ -47,7 +52,7 @@ export const ExecutiveLayout = ({
           alignItems: "center",
         }}
       >
-        {resumeData.personalInfo.photoUrl && (
+        {settings.showPhoto !== false && resumeData.personalInfo.photoUrl && (
           <View
             style={{
               width: 80,
@@ -66,21 +71,27 @@ export const ExecutiveLayout = ({
         )}
         <View style={{ flex: 1 }}>
           <Text
-            style={{
-              fontSize: baseSize.name,
-              fontWeight: 700,
-              color: "#111827",
-            }}
+            style={pov(
+              {
+                fontSize: baseSize.name,
+                fontWeight: 700,
+                color: "#111827",
+              },
+              "personalInfo.fullName",
+            )}
           >
             {resumeData.personalInfo.fullName}
           </Text>
           <Text
-            style={{
-              fontSize: baseSize.base + 2,
-              color: settings.themeColor,
-              fontWeight: 600,
-              marginBottom: 6,
-            }}
+            style={pov(
+              {
+                fontSize: baseSize.base + 2,
+                color: settings.themeColor,
+                fontWeight: 600,
+                marginBottom: 6,
+              },
+              "personalInfo.title",
+            )}
           >
             {resumeData.personalInfo.title}
           </Text>
@@ -94,16 +105,24 @@ export const ExecutiveLayout = ({
             }}
           >
             {resumeData.personalInfo.phone && (
-              <Text>{resumeData.personalInfo.phone}</Text>
+              <Text style={pov({}, "personalInfo.phone")}>
+                {resumeData.personalInfo.phone}
+              </Text>
             )}
             {resumeData.personalInfo.email && (
-              <Text>| {resumeData.personalInfo.email}</Text>
+              <Text style={pov({}, "personalInfo.email")}>
+                | {resumeData.personalInfo.email}
+              </Text>
             )}
             {resumeData.personalInfo.location && (
-              <Text>| {resumeData.personalInfo.location}</Text>
+              <Text style={pov({}, "personalInfo.location")}>
+                | {resumeData.personalInfo.location}
+              </Text>
             )}
             {resumeData.personalInfo.linkedin && (
-              <Text>| {resumeData.personalInfo.linkedin}</Text>
+              <Text style={pov({}, "personalInfo.linkedin")}>
+                | {resumeData.personalInfo.linkedin}
+              </Text>
             )}
           </View>
         </View>
@@ -111,7 +130,7 @@ export const ExecutiveLayout = ({
       <View style={{ width: "100%" }}>
         {[...(settings.leftColumn || []), ...(settings.rightColumn || [])]
           .filter((s: any) => s.visible)
-          .map((s: any) => renderSectionById(s.id, config))}
+          .map((s: any) => renderSectionById(s, config))}
       </View>
     </View>
   );

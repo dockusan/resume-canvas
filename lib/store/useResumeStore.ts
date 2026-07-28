@@ -1,19 +1,33 @@
 import { v4 as uuidv4 } from "uuid";
+import { temporal } from "zundo";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
-  Certification,
-  Education,
-  Experience,
-  Language,
+  CustomSection,
+  CustomSectionItem,
   PersonalInfo,
-  Project,
   ResumeData,
   ResumeSettings,
-  Skill,
-  Social,
-  Strength,
+  SectionConfig,
+  StyleOverride,
 } from "../types";
+
+export type BuiltinSectionKey =
+  | "experience"
+  | "education"
+  | "projects"
+  | "skills"
+  | "languages"
+  | "certifications"
+  | "strengths"
+  | "socials";
+
+/** Addresses a collection of items: a built-in section or `custom:<uuid>`. */
+export type SectionKey = BuiltinSectionKey | `custom:${string}`;
+
+export type SectionDirection = "up" | "down" | "left" | "right";
+
+type ResumeItem = { id: string } & Record<string, unknown>;
 
 interface ResumeState {
   resumeData: ResumeData;
@@ -24,54 +38,92 @@ interface ResumeState {
   setHasHydrated: (state: boolean) => void;
   setPersonalInfo: (info: Partial<PersonalInfo>) => void;
 
-  addExperience: (experience: Omit<Experience, "id">) => void;
-  updateExperience: (id: string, experience: Partial<Experience>) => void;
-  removeExperience: (id: string) => void;
-  reorderExperience: (startIndex: number, endIndex: number) => void;
-
-  addEducation: (education: Omit<Education, "id">) => void;
-  updateEducation: (id: string, education: Partial<Education>) => void;
-  removeEducation: (id: string) => void;
-  reorderEducation: (startIndex: number, endIndex: number) => void;
-
-  addProject: (project: Omit<Project, "id">) => void;
-  updateProject: (id: string, project: Partial<Project>) => void;
-  removeProject: (id: string) => void;
-
-  addSkill: (skill: Omit<Skill, "id">) => void;
-  updateSkill: (id: string, skill: Partial<Skill>) => void;
-  removeSkill: (id: string) => void;
-
-  addLanguage: (language: Omit<Language, "id">) => void;
-  updateLanguage: (id: string, language: Partial<Language>) => void;
-  removeLanguage: (id: string) => void;
-
-  addCertification: (certification: Omit<Certification, "id">) => void;
-  updateCertification: (
+  // Generic item actions (work for all built-in sections and custom sections)
+  addItem: (section: SectionKey, item?: Record<string, unknown>) => string;
+  updateItem: (
+    section: SectionKey,
     id: string,
-    certification: Partial<Certification>,
+    patch: Record<string, unknown>,
   ) => void;
-  removeCertification: (id: string) => void;
+  removeItem: (section: SectionKey, id: string) => void;
+  duplicateItem: (section: SectionKey, id: string) => string | null;
+  reorderItem: (section: SectionKey, from: number, to: number) => void;
 
-  addStrength: (strength: Omit<Strength, "id">) => void;
-  updateStrength: (id: string, strength: Partial<Strength>) => void;
-  removeStrength: (id: string) => void;
+  // Section-level actions (operate on leftColumn/rightColumn configs)
+  moveSection: (sectionId: string, direction: SectionDirection) => void;
+  toggleSectionVisibility: (sectionId: string) => void;
+  renameSection: (sectionId: string, name: string) => void;
+  duplicateSection: (sectionId: string) => void;
+  removeSectionFromLayout: (sectionId: string) => void;
+  restoreSection: (sectionId: string) => void;
+  addCustomSection: () => string;
 
-  addSocial: (social: Omit<Social, "id">) => void;
-  updateSocial: (id: string, social: Partial<Social>) => void;
-  removeSocial: (id: string) => void;
+  // Style overrides (section / item / field level, keyed by path)
+  setStyleOverride: (path: string, patch: Partial<StyleOverride>) => void;
+  clearStyleOverride: (path: string) => void;
 
-  updateLayoutSettings: (
-    layout: Partial<
-      Pick<
-        ResumeSettings,
-        "leftColumn" | "rightColumn" | "template" | "sectionTypography"
-      >
-    >,
-  ) => void;
   updateSettings: (settings: Partial<ResumeSettings>) => void;
   resetResume: () => void;
 }
+
+export const DEFAULT_SECTION_NAMES: Record<string, string> = {
+  summary: "Summary",
+  experience: "Work Experience",
+  education: "Education",
+  projects: "Projects",
+  strengths: "Strengths",
+  skills: "Skills",
+  socials: "Find Me Online",
+  languages: "Languages",
+  certifications: "Certification",
+};
+
+/** Which column a built-in section lives in by default (for restore). */
+const DEFAULT_SECTION_COLUMN: Record<string, "leftColumn" | "rightColumn"> = {
+  summary: "leftColumn",
+  experience: "leftColumn",
+  education: "leftColumn",
+  projects: "leftColumn",
+  strengths: "rightColumn",
+  skills: "rightColumn",
+  socials: "rightColumn",
+  languages: "rightColumn",
+  certifications: "rightColumn",
+};
+
+/** Defaults for newly added items, per section. */
+const DEFAULT_ITEMS: Record<BuiltinSectionKey, Record<string, unknown>> = {
+  experience: {
+    title: "New Position",
+    company: "Company Name",
+    location: "",
+    startDate: "",
+    endDate: "",
+    current: false,
+    description: "",
+  },
+  education: {
+    degree: "Degree",
+    school: "School Name",
+    location: "",
+    startDate: "",
+    endDate: "",
+    current: false,
+  },
+  projects: { name: "New Project", link: "", date: "", description: "" },
+  skills: { name: "New Skill" },
+  languages: { name: "Language", proficiency: "Basic" },
+  certifications: { name: "New Certification", issuer: "", date: "" },
+  strengths: { title: "New Strength", description: "", icon: "Zap" },
+  socials: { platform: "Website", url: "", username: "", icon: "Globe" },
+};
+
+const DEFAULT_CUSTOM_ITEM: Omit<CustomSectionItem, "id"> = {
+  title: "",
+  subtitle: "",
+  date: "",
+  description: "",
+};
 
 const initialResumeData: ResumeData = {
   personalInfo: {
@@ -209,6 +261,7 @@ const initialResumeData: ResumeData = {
       username: "johndoe",
     },
   ],
+  customSections: [],
 };
 
 const initialSettings: ResumeSettings = {
@@ -230,287 +283,513 @@ const initialSettings: ResumeSettings = {
     { id: "languages", name: "Languages", visible: true },
     { id: "certifications", name: "Certification", visible: true },
   ],
-  sectionTypography: {},
+  styleOverrides: {},
+  showPhoto: true,
   photoStyle: "circle",
 };
 
+export const isCustomSectionId = (id: string): id is `custom:${string}` =>
+  id.startsWith("custom:");
+
+export const customSectionUuid = (id: string) => id.slice("custom:".length);
+
+function readItems(data: ResumeData, section: SectionKey): ResumeItem[] {
+  if (isCustomSectionId(section)) {
+    const custom = data.customSections.find(
+      (c) => c.id === customSectionUuid(section),
+    );
+    return (custom?.items ?? []) as ResumeItem[];
+  }
+  return data[section] as unknown as ResumeItem[];
+}
+
+function writeItems(
+  data: ResumeData,
+  section: SectionKey,
+  items: ResumeItem[],
+): ResumeData {
+  if (isCustomSectionId(section)) {
+    const uuid = customSectionUuid(section);
+    return {
+      ...data,
+      customSections: data.customSections.map((c) =>
+        c.id === uuid ? { ...c, items: items as CustomSectionItem[] } : c,
+      ),
+    };
+  }
+  return { ...data, [section]: items };
+}
+
+function findSectionConfig(
+  settings: ResumeSettings,
+  sectionId: string,
+): { column: "leftColumn" | "rightColumn"; index: number } | null {
+  const left = settings.leftColumn.findIndex((s) => s.id === sectionId);
+  if (left !== -1) return { column: "leftColumn", index: left };
+  const right = settings.rightColumn.findIndex((s) => s.id === sectionId);
+  if (right !== -1) return { column: "rightColumn", index: right };
+  return null;
+}
+
+function formatDateRange(start: string, end: string, current: boolean): string {
+  if (!start && !end && !current) return "";
+  return `${start}${start || end || current ? " - " : ""}${current ? "Present" : end}`;
+}
+
+/** Snapshot a built-in section's data as generic custom-section items. */
+function builtinToCustomItems(
+  data: ResumeData,
+  sectionId: string,
+): CustomSectionItem[] {
+  switch (sectionId) {
+    case "summary":
+      return [{ id: uuidv4(), description: data.personalInfo.summary }];
+    case "experience":
+      return data.experience.map((exp) => ({
+        id: uuidv4(),
+        title: exp.title,
+        subtitle: [exp.company, exp.location].filter(Boolean).join(" • "),
+        date: formatDateRange(exp.startDate, exp.endDate, exp.current),
+        description: exp.description,
+        bulletStyle: exp.bulletStyle,
+      }));
+    case "education":
+      return data.education.map((edu) => ({
+        id: uuidv4(),
+        title: edu.degree,
+        subtitle: [edu.school, edu.location].filter(Boolean).join(" • "),
+        date: formatDateRange(edu.startDate, edu.endDate, edu.current),
+      }));
+    case "projects":
+      return data.projects.map((proj) => ({
+        id: uuidv4(),
+        title: proj.name,
+        link: proj.link,
+        date: proj.date,
+        description: proj.description,
+      }));
+    case "skills":
+      return data.skills.map((s) => ({ id: uuidv4(), title: s.name }));
+    case "languages":
+      return data.languages.map((l) => ({
+        id: uuidv4(),
+        title: l.name,
+        subtitle: l.proficiency,
+      }));
+    case "certifications":
+      return data.certifications.map((c) => ({
+        id: uuidv4(),
+        title: c.name,
+        subtitle: c.issuer,
+        date: c.date,
+        link: c.link,
+        description: c.description,
+      }));
+    case "strengths":
+      return data.strengths.map((s) => ({
+        id: uuidv4(),
+        title: s.title,
+        description: s.description,
+        icon: s.icon,
+      }));
+    case "socials":
+      return data.socials.map((s) => ({
+        id: uuidv4(),
+        title: s.platform,
+        subtitle: s.username,
+        link: s.url,
+        icon: s.icon,
+      }));
+    default:
+      return [];
+  }
+}
+
+// Middleware order matters: persist must wrap temporal, otherwise persist's
+// synchronous rehydration `set` flows through zundo before the store state
+// exists and partialize throws, silently breaking hydration.
 export const useResumeStore = create<ResumeState>()(
   persist(
-    (set) => ({
-      resumeData: initialResumeData,
-      settings: initialSettings,
-      _hasHydrated: false,
+    temporal(
+      (set) => ({
+        resumeData: initialResumeData,
+        settings: initialSettings,
+        _hasHydrated: false,
 
-      setPersonalInfo: (info) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            personalInfo: { ...state.resumeData.personalInfo, ...info },
-          },
-        })),
-
-      addExperience: (experience) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            experience: [
-              ...state.resumeData.experience,
-              { ...experience, id: uuidv4() },
-            ],
-          },
-        })),
-      updateExperience: (id, experience) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            experience: state.resumeData.experience.map((exp) =>
-              exp.id === id ? { ...exp, ...experience } : exp,
-            ),
-          },
-        })),
-      removeExperience: (id) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            experience: state.resumeData.experience.filter(
-              (exp) => exp.id !== id,
-            ),
-          },
-        })),
-      reorderExperience: (startIndex, endIndex) =>
-        set((state) => {
-          const result = Array.from(state.resumeData.experience);
-          const [removed] = result.splice(startIndex, 1);
-          result.splice(endIndex, 0, removed);
-          return {
+        setPersonalInfo: (info) =>
+          set((state) => ({
             resumeData: {
               ...state.resumeData,
-              experience: result,
+              personalInfo: { ...state.resumeData.personalInfo, ...info },
             },
+          })),
+
+        // ------- Generic item actions -------
+
+        addItem: (section, item) => {
+          const id = uuidv4();
+          set((state) => {
+            const defaults = isCustomSectionId(section)
+              ? DEFAULT_CUSTOM_ITEM
+              : DEFAULT_ITEMS[section];
+            const items = readItems(state.resumeData, section);
+            return {
+              resumeData: writeItems(state.resumeData, section, [
+                ...items,
+                { ...defaults, ...item, id },
+              ]),
+            };
+          });
+          return id;
+        },
+        updateItem: (section, id, patch) =>
+          set((state) => ({
+            resumeData: writeItems(
+              state.resumeData,
+              section,
+              readItems(state.resumeData, section).map((it) =>
+                it.id === id ? { ...it, ...patch } : it,
+              ),
+            ),
+          })),
+        removeItem: (section, id) =>
+          set((state) => ({
+            resumeData: writeItems(
+              state.resumeData,
+              section,
+              readItems(state.resumeData, section).filter(
+                (it) => it.id !== id,
+              ),
+            ),
+          })),
+        duplicateItem: (section, id) => {
+          const newId = uuidv4();
+          let found = false;
+          set((state) => {
+            const items = readItems(state.resumeData, section);
+            const index = items.findIndex((it) => it.id === id);
+            if (index === -1) return {};
+            found = true;
+            const copy = { ...items[index], id: newId };
+            const next = [...items];
+            next.splice(index + 1, 0, copy);
+            return { resumeData: writeItems(state.resumeData, section, next) };
+          });
+          return found ? newId : null;
+        },
+        reorderItem: (section, from, to) =>
+          set((state) => {
+            const items = [...readItems(state.resumeData, section)];
+            if (
+              from < 0 ||
+              from >= items.length ||
+              to < 0 ||
+              to >= items.length
+            )
+              return {};
+            const [moved] = items.splice(from, 1);
+            items.splice(to, 0, moved);
+            return { resumeData: writeItems(state.resumeData, section, items) };
+          }),
+
+        // ------- Section-level actions -------
+
+        moveSection: (sectionId, direction) =>
+          set((state) => {
+            const pos = findSectionConfig(state.settings, sectionId);
+            if (!pos) return {};
+            const { column, index } = pos;
+            const oneColumn = !["classic", "modern-2col", "creative"].includes(
+              state.settings.template,
+            );
+            if (direction === "up" || direction === "down") {
+              const target = direction === "up" ? index - 1 : index + 1;
+              const list = [...state.settings[column]];
+              if (target < 0 || target >= list.length) {
+                // 1-col templates render [...leftColumn, ...rightColumn] as one
+                // list, so crossing the array boundary must move between them.
+                if (oneColumn) {
+                  if (direction === "down" && column === "leftColumn") {
+                    const source = [...state.settings.leftColumn];
+                    const [moved] = source.splice(index, 1);
+                    return {
+                      settings: {
+                        ...state.settings,
+                        leftColumn: source,
+                        rightColumn: [moved, ...state.settings.rightColumn],
+                      },
+                    };
+                  }
+                  if (direction === "up" && column === "rightColumn") {
+                    const source = [...state.settings.rightColumn];
+                    const [moved] = source.splice(index, 1);
+                    return {
+                      settings: {
+                        ...state.settings,
+                        leftColumn: [...state.settings.leftColumn, moved],
+                        rightColumn: source,
+                      },
+                    };
+                  }
+                }
+                return {};
+              }
+              [list[index], list[target]] = [list[target], list[index]];
+              return { settings: { ...state.settings, [column]: list } };
+            }
+            const targetColumn =
+              direction === "left" ? "leftColumn" : "rightColumn";
+            if (targetColumn === column) return {};
+            const source = [...state.settings[column]];
+            const [moved] = source.splice(index, 1);
+            const target = [...state.settings[targetColumn]];
+            target.splice(Math.min(index, target.length), 0, moved);
+            return {
+              settings: {
+                ...state.settings,
+                [column]: source,
+                [targetColumn]: target,
+              },
+            };
+          }),
+        toggleSectionVisibility: (sectionId) =>
+          set((state) => {
+            const pos = findSectionConfig(state.settings, sectionId);
+            if (!pos) return {};
+            const list = state.settings[pos.column].map((s) =>
+              s.id === sectionId ? { ...s, visible: !s.visible } : s,
+            );
+            return { settings: { ...state.settings, [pos.column]: list } };
+          }),
+        renameSection: (sectionId, name) =>
+          set((state) => {
+            const pos = findSectionConfig(state.settings, sectionId);
+            if (!pos) return {};
+            const list = state.settings[pos.column].map((s) =>
+              s.id === sectionId ? { ...s, name } : s,
+            );
+            return { settings: { ...state.settings, [pos.column]: list } };
+          }),
+        duplicateSection: (sectionId) =>
+          set((state) => {
+            const pos = findSectionConfig(state.settings, sectionId);
+            if (!pos) return {};
+            const config = state.settings[pos.column][pos.index];
+            const uuid = uuidv4();
+            const items = isCustomSectionId(sectionId)
+              ? readItems(state.resumeData, sectionId).map((it) => ({
+                  ...it,
+                  id: uuidv4(),
+                }))
+              : builtinToCustomItems(state.resumeData, sectionId);
+            const newSection: CustomSection = {
+              id: uuid,
+              items: items as CustomSectionItem[],
+            };
+            const list = [...state.settings[pos.column]];
+            list.splice(pos.index + 1, 0, {
+              id: `custom:${uuid}`,
+              name: `${config.name} (Copy)`,
+              visible: true,
+            });
+            return {
+              resumeData: {
+                ...state.resumeData,
+                customSections: [
+                  ...state.resumeData.customSections,
+                  newSection,
+                ],
+              },
+              settings: { ...state.settings, [pos.column]: list },
+            };
+          }),
+        removeSectionFromLayout: (sectionId) =>
+          set((state) => {
+            const pos = findSectionConfig(state.settings, sectionId);
+            if (!pos) return {};
+            const settings = {
+              ...state.settings,
+              [pos.column]: state.settings[pos.column].filter(
+                (s) => s.id !== sectionId,
+              ),
+            };
+            if (isCustomSectionId(sectionId)) {
+              const uuid = customSectionUuid(sectionId);
+              return {
+                settings,
+                resumeData: {
+                  ...state.resumeData,
+                  customSections: state.resumeData.customSections.filter(
+                    (c) => c.id !== uuid,
+                  ),
+                },
+              };
+            }
+            return { settings };
+          }),
+        restoreSection: (sectionId) =>
+          set((state) => {
+            if (findSectionConfig(state.settings, sectionId)) return {};
+            const column = DEFAULT_SECTION_COLUMN[sectionId] ?? "rightColumn";
+            return {
+              settings: {
+                ...state.settings,
+                [column]: [
+                  ...state.settings[column],
+                  {
+                    id: sectionId,
+                    name: DEFAULT_SECTION_NAMES[sectionId] ?? sectionId,
+                    visible: true,
+                  },
+                ],
+              },
+            };
+          }),
+        addCustomSection: () => {
+          const uuid = uuidv4();
+          set((state) => {
+            const column =
+              state.settings.leftColumn.length <=
+              state.settings.rightColumn.length
+                ? "leftColumn"
+                : "rightColumn";
+            return {
+              resumeData: {
+                ...state.resumeData,
+                customSections: [
+                  ...state.resumeData.customSections,
+                  { id: uuid, items: [{ ...DEFAULT_CUSTOM_ITEM, id: uuidv4() }] },
+                ],
+              },
+              settings: {
+                ...state.settings,
+                [column]: [
+                  ...state.settings[column],
+                  { id: `custom:${uuid}`, name: "New Section", visible: true },
+                ],
+              },
+            };
+          });
+          return `custom:${uuid}`;
+        },
+
+        // ------- Style overrides -------
+
+        setStyleOverride: (path, patch) =>
+          set((state) => {
+            const merged: StyleOverride = {
+              ...state.settings.styleOverrides[path],
+              ...patch,
+            };
+            (Object.keys(merged) as (keyof StyleOverride)[]).forEach((key) => {
+              if (merged[key] === undefined) delete merged[key];
+            });
+            const styleOverrides = { ...state.settings.styleOverrides };
+            if (Object.keys(merged).length === 0) delete styleOverrides[path];
+            else styleOverrides[path] = merged;
+            return { settings: { ...state.settings, styleOverrides } };
+          }),
+        clearStyleOverride: (path) =>
+          set((state) => {
+            if (!(path in state.settings.styleOverrides)) return {};
+            const styleOverrides = { ...state.settings.styleOverrides };
+            delete styleOverrides[path];
+            return { settings: { ...state.settings, styleOverrides } };
+          }),
+
+        updateSettings: (settings) =>
+          set((state) => ({
+            settings: { ...state.settings, ...settings },
+          })),
+        resetResume: () =>
+          set({
+            resumeData: initialResumeData,
+            settings: initialSettings,
+          }),
+        setHasHydrated: (state) => set({ _hasHydrated: state }),
+      }),
+      {
+        partialize: (state) => ({
+          resumeData: state.resumeData,
+          settings: state.settings,
+        }),
+        limit: 100,
+        equality: (past, current) =>
+          JSON.stringify(past) === JSON.stringify(current),
+        // Group rapid successive writes (e.g. color dragging) into one
+        // history entry: only record a snapshot every 300ms.
+        handleSet: (handleSet) => {
+          let lastRecorded = 0;
+          return (pastState) => {
+            const now = Date.now();
+            if (now - lastRecorded > 300) {
+              lastRecorded = now;
+              handleSet(pastState);
+            }
           };
-        }),
-
-      addEducation: (education) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            education: [
-              ...state.resumeData.education,
-              { ...education, id: uuidv4() },
-            ],
-          },
-        })),
-      updateEducation: (id, education) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            education: state.resumeData.education.map((edu) =>
-              edu.id === id ? { ...edu, ...education } : edu,
-            ),
-          },
-        })),
-      removeEducation: (id) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            education: state.resumeData.education.filter(
-              (edu) => edu.id !== id,
-            ),
-          },
-        })),
-      reorderEducation: (startIndex, endIndex) =>
-        set((state) => {
-          const result = Array.from(state.resumeData.education);
-          const [removed] = result.splice(startIndex, 1);
-          result.splice(endIndex, 0, removed);
-          return {
-            resumeData: {
-              ...state.resumeData,
-              education: result,
-            },
-          };
-        }),
-
-      addProject: (project) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            projects: [
-              ...state.resumeData.projects,
-              { ...project, id: uuidv4() },
-            ],
-          },
-        })),
-      updateProject: (id, project) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            projects: state.resumeData.projects.map((proj) =>
-              proj.id === id ? { ...proj, ...project } : proj,
-            ),
-          },
-        })),
-      removeProject: (id) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            projects: state.resumeData.projects.filter(
-              (proj) => proj.id !== id,
-            ),
-          },
-        })),
-
-      addSkill: (skill) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            skills: [...state.resumeData.skills, { ...skill, id: uuidv4() }],
-          },
-        })),
-      updateSkill: (id, skill) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            skills: state.resumeData.skills.map((s) =>
-              s.id === id ? { ...s, ...skill } : s,
-            ),
-          },
-        })),
-      removeSkill: (id) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            skills: state.resumeData.skills.filter((s) => s.id !== id),
-          },
-        })),
-
-      addLanguage: (language) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            languages: [
-              ...state.resumeData.languages,
-              { ...language, id: uuidv4() },
-            ],
-          },
-        })),
-      updateLanguage: (id, language) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            languages: state.resumeData.languages.map((l) =>
-              l.id === id ? { ...l, ...language } : l,
-            ),
-          },
-        })),
-      removeLanguage: (id) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            languages: state.resumeData.languages.filter((l) => l.id !== id),
-          },
-        })),
-
-      addCertification: (certification) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            certifications: [
-              ...state.resumeData.certifications,
-              { ...certification, id: uuidv4() },
-            ],
-          },
-        })),
-      updateCertification: (id, certification) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            certifications: state.resumeData.certifications.map((c) =>
-              c.id === id ? { ...c, ...certification } : c,
-            ),
-          },
-        })),
-      removeCertification: (id) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            certifications: state.resumeData.certifications.filter(
-              (c) => c.id !== id,
-            ),
-          },
-        })),
-
-      addStrength: (strength) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            strengths: [
-              ...state.resumeData.strengths,
-              { ...strength, id: uuidv4() },
-            ],
-          },
-        })),
-      updateStrength: (id, strength) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            strengths: state.resumeData.strengths.map((s) =>
-              s.id === id ? { ...s, ...strength } : s,
-            ),
-          },
-        })),
-      removeStrength: (id) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            strengths: state.resumeData.strengths.filter((s) => s.id !== id),
-          },
-        })),
-
-      addSocial: (social) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            socials: [...state.resumeData.socials, { ...social, id: uuidv4() }],
-          },
-        })),
-      updateSocial: (id, social) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            socials: state.resumeData.socials.map((s) =>
-              s.id === id ? { ...s, ...social } : s,
-            ),
-          },
-        })),
-      removeSocial: (id) =>
-        set((state) => ({
-          resumeData: {
-            ...state.resumeData,
-            socials: state.resumeData.socials.filter((s) => s.id !== id),
-          },
-        })),
-
-      updateLayoutSettings: (layout) =>
-        set((state) => ({
-          settings: { ...state.settings, ...layout },
-        })),
-      updateSettings: (settings) =>
-        set((state) => ({
-          settings: { ...state.settings, ...settings },
-        })),
-      resetResume: () =>
-        set({
-          resumeData: initialResumeData,
-          settings: initialSettings,
-        }),
-      setHasHydrated: (state) => set({ _hasHydrated: state }),
-    }),
+        },
+      },
+    ),
     {
       name: "resume-storage",
+      version: 1,
+      migrate: (persisted: unknown) => {
+        const state = persisted as {
+          resumeData?: Partial<ResumeData> & {
+            customSections?: CustomSection[];
+          };
+          settings?: Partial<ResumeSettings> & {
+            sectionTypography?: unknown;
+          };
+        };
+        if (state?.resumeData && !state.resumeData.customSections) {
+          state.resumeData.customSections = [];
+        }
+        if (state?.settings) {
+          delete state.settings.sectionTypography;
+          if (!state.settings.styleOverrides)
+            state.settings.styleOverrides = {};
+          if (state.settings.showPhoto === undefined)
+            state.settings.showPhoto = true;
+          const fillNames = (list?: SectionConfig[]) =>
+            list?.map((s) => ({
+              ...s,
+              name: s.name || DEFAULT_SECTION_NAMES[s.id] || s.id,
+            }));
+          state.settings.leftColumn = fillNames(state.settings.leftColumn);
+          state.settings.rightColumn = fillNames(state.settings.rightColumn);
+        }
+        return state;
+      },
+      // Deep-merge one level so returning users get defaults for keys
+      // added after their state was persisted (zustand's default merge
+      // is shallow and would drop new nested keys).
+      merge: (persisted, current) => {
+        const state = persisted as
+          | {
+              resumeData?: ResumeData;
+              settings?: ResumeSettings;
+            }
+          | undefined;
+        return {
+          ...current,
+          ...(state ?? {}),
+          resumeData: { ...current.resumeData, ...state?.resumeData },
+          settings: { ...current.settings, ...state?.settings },
+        };
+      },
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
+        // Clear undo history so users can't undo past the loaded state.
+        // Deferred: the store variable isn't initialized yet when
+        // hydration runs synchronously from localStorage.
+        setTimeout(() => {
+          useResumeStore.temporal.getState().clear();
+        }, 0);
       },
     },
   ),
 );
+
+/** Convenience hook for undo/redo state. */
+export const useTemporalStore = useResumeStore.temporal;

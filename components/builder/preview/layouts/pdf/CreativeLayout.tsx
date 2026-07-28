@@ -1,3 +1,4 @@
+import { applyPdfOverride, resolvePathOverride } from "@/lib/style-overrides";
 import { Image, Text, View } from "@react-pdf/renderer";
 import { PdfIcon } from "../../pdf-components/pdf-icon";
 import { PdfLayoutProps } from "../types";
@@ -49,11 +50,16 @@ export const CreativeLayout = ({
     badgeBg: "rgba(0,0,0,0.05)",
     rowLayout: true,
   };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pov = (style: any, path: string): any =>
+    applyPdfOverride(style, resolvePathOverride(settings.styleOverrides, path));
+
   return (
     <View style={{ flexDirection: "row", flex: 1, backgroundColor: "#ffffff" }}>
       <View style={{ width: "35%", backgroundColor: "#f3f4f6", padding: 16 }}>
         <View style={{ alignItems: "center", marginBottom: 24 }}>
-          {resumeData.personalInfo.photoUrl && (
+          {settings.showPhoto !== false && resumeData.personalInfo.photoUrl && (
             <Image
               src={resumeData.personalInfo.photoUrl}
               style={{
@@ -66,24 +72,30 @@ export const CreativeLayout = ({
             />
           )}
           <Text
-            style={{
-              fontSize: baseSize.name - 5,
-              fontWeight: 600,
-              color: "#111827",
-              textAlign: "center",
-              marginBottom: 4,
-            }}
+            style={pov(
+              {
+                fontSize: baseSize.name - 5,
+                fontWeight: 600,
+                color: "#111827",
+                textAlign: "center",
+                marginBottom: 4,
+              },
+              "personalInfo.fullName",
+            )}
           >
             {resumeData.personalInfo.fullName}
           </Text>
           <Text
-            style={{
-              fontSize: baseSize.base + 1,
-              color: settings.themeColor,
-              fontWeight: 600,
-              textAlign: "center",
-              marginBottom: 12,
-            }}
+            style={pov(
+              {
+                fontSize: baseSize.base + 1,
+                color: settings.themeColor,
+                fontWeight: 600,
+                textAlign: "center",
+                marginBottom: 12,
+              },
+              "personalInfo.title",
+            )}
           >
             {resumeData.personalInfo.title}
           </Text>
@@ -102,7 +114,12 @@ export const CreativeLayout = ({
                 style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
               >
                 <PdfIcon name="Phone" size={10} color={settings.themeColor} />
-                <Text style={{ fontSize: baseSize.base - 2, color: "#4b5563" }}>
+                <Text
+                  style={pov(
+                    { fontSize: baseSize.base - 2, color: "#4b5563" },
+                    "personalInfo.phone",
+                  )}
+                >
                   {resumeData.personalInfo.phone}
                 </Text>
               </View>
@@ -112,7 +129,12 @@ export const CreativeLayout = ({
                 style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
               >
                 <PdfIcon name="Mail" size={10} color={settings.themeColor} />
-                <Text style={{ fontSize: baseSize.base - 2, color: "#4b5563" }}>
+                <Text
+                  style={pov(
+                    { fontSize: baseSize.base - 2, color: "#4b5563" },
+                    "personalInfo.email",
+                  )}
+                >
                   {resumeData.personalInfo.email}
                 </Text>
               </View>
@@ -122,7 +144,12 @@ export const CreativeLayout = ({
                 style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
               >
                 <PdfIcon name="MapPin" size={10} color={settings.themeColor} />
-                <Text style={{ fontSize: baseSize.base - 2, color: "#4b5563" }}>
+                <Text
+                  style={pov(
+                    { fontSize: baseSize.base - 2, color: "#4b5563" },
+                    "personalInfo.location",
+                  )}
+                >
                   {resumeData.personalInfo.location}
                 </Text>
               </View>
@@ -132,7 +159,12 @@ export const CreativeLayout = ({
                 style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
               >
                 <PdfIcon name="Globe" size={10} color={settings.themeColor} />
-                <Text style={{ fontSize: baseSize.base - 2, color: "#4b5563" }}>
+                <Text
+                  style={pov(
+                    { fontSize: baseSize.base - 2, color: "#4b5563" },
+                    "personalInfo.website",
+                  )}
+                >
                   {resumeData.personalInfo.website}
                 </Text>
               </View>
@@ -142,13 +174,13 @@ export const CreativeLayout = ({
         <View>
           {(settings.rightColumn || [])
             .filter((s: any) => s.visible)
-            .map((s: any) => renderSectionById(s.id, rightConfig))}
+            .map((s: any) => renderSectionById(s, rightConfig))}
         </View>
       </View>
       <View style={{ width: "65%", padding: 16 }}>
         {(settings.leftColumn || [])
           .filter((s: any) => s.visible)
-          .map((s: any) => renderSectionById(s.id, leftConfig))}
+          .map((s: any) => renderSectionById(s, leftConfig))}
       </View>
     </View>
   );

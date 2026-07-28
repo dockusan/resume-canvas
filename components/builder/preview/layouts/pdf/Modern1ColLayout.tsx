@@ -1,3 +1,4 @@
+import { applyPdfOverride, resolvePathOverride } from "@/lib/style-overrides";
 import { Image, Text, View } from "@react-pdf/renderer";
 import { PdfIcon } from "../../pdf-components/pdf-icon";
 import { PdfLayoutProps } from "../types";
@@ -29,6 +30,11 @@ export const Modern1ColLayout = ({
     badgeBg: "rgba(0,0,0,0.05)",
     rowLayout: true,
   };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pov = (style: any, path: string): any =>
+    applyPdfOverride(style, resolvePathOverride(settings.styleOverrides, path));
+
   return (
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
       <View
@@ -41,7 +47,7 @@ export const Modern1ColLayout = ({
           gap: 20,
         }}
       >
-        {resumeData.personalInfo.photoUrl && (
+        {settings.showPhoto !== false && resumeData.personalInfo.photoUrl && (
           <View
             style={{
               width: 80,
@@ -60,22 +66,28 @@ export const Modern1ColLayout = ({
         )}
         <View style={{ flex: 1 }}>
           <Text
-            style={{
-              fontSize: baseSize.name + 8,
-              fontWeight: 700,
-              color: "#ffffff",
-              marginBottom: 2,
-            }}
+            style={pov(
+              {
+                fontSize: baseSize.name + 8,
+                fontWeight: 700,
+                color: "#ffffff",
+                marginBottom: 2,
+              },
+              "personalInfo.fullName",
+            )}
           >
             {resumeData.personalInfo.fullName}
           </Text>
           <Text
-            style={{
-              fontSize: baseSize.base + 2,
-              color: "rgba(255,255,255,0.9)",
-              fontWeight: 500,
-              marginBottom: 8,
-            }}
+            style={pov(
+              {
+                fontSize: baseSize.base + 2,
+                color: "rgba(255,255,255,0.9)",
+                fontWeight: 500,
+                marginBottom: 8,
+              },
+              "personalInfo.title",
+            )}
           >
             {resumeData.personalInfo.title}
           </Text>
@@ -93,7 +105,9 @@ export const Modern1ColLayout = ({
                 style={{ flexDirection: "row", alignItems: "center", gap: 3 }}
               >
                 <PdfIcon name="Phone" size={10} color="#fff" />
-                <Text>{resumeData.personalInfo.phone}</Text>
+                <Text style={pov({}, "personalInfo.phone")}>
+                  {resumeData.personalInfo.phone}
+                </Text>
               </View>
             )}
             {resumeData.personalInfo.email && (
@@ -101,7 +115,9 @@ export const Modern1ColLayout = ({
                 style={{ flexDirection: "row", alignItems: "center", gap: 3 }}
               >
                 <PdfIcon name="Mail" size={10} color="#fff" />
-                <Text>{resumeData.personalInfo.email}</Text>
+                <Text style={pov({}, "personalInfo.email")}>
+                  {resumeData.personalInfo.email}
+                </Text>
               </View>
             )}
             {resumeData.personalInfo.website && (
@@ -109,7 +125,9 @@ export const Modern1ColLayout = ({
                 style={{ flexDirection: "row", alignItems: "center", gap: 3 }}
               >
                 <PdfIcon name="Globe" size={10} color="#fff" />
-                <Text>{resumeData.personalInfo.website}</Text>
+                <Text style={pov({}, "personalInfo.website")}>
+                  {resumeData.personalInfo.website}
+                </Text>
               </View>
             )}
           </View>
@@ -118,7 +136,7 @@ export const Modern1ColLayout = ({
       <View style={{ padding: 24 }}>
         {[...(settings.leftColumn || []), ...(settings.rightColumn || [])]
           .filter((s: any) => s.visible)
-          .map((s: any) => renderSectionById(s.id, config))}
+          .map((s: any) => renderSectionById(s, config))}
       </View>
     </View>
   );

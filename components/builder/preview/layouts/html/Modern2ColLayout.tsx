@@ -1,5 +1,8 @@
-import { Globe, Linkedin, Mail, MapPin, Phone } from "lucide-react";
+import { useEditing } from "@/components/builder/inline/editing-context";
+import { PhotoPopover } from "@/components/builder/inline/photo-popover";
+import { Globe, Linkedin, Mail, MapPin, Phone, User } from "lucide-react";
 import Image from "next/image";
+import { PersonalField } from "../../sections/personal-field";
 import { HtmlLayoutProps } from "../types";
 
 export const Modern2ColLayout = ({
@@ -9,6 +12,7 @@ export const Modern2ColLayout = ({
   renderSectionById,
   baseSize,
 }: HtmlLayoutProps) => {
+  const { editable } = useEditing();
   const leftConfig = {
     className: "mb-3",
     headerClass:
@@ -48,24 +52,34 @@ export const Modern2ColLayout = ({
         }}
       >
         <div className="flex flex-col md:flex-row items-center gap-6">
-          {resumeData.personalInfo.photoUrl && (
-            <div className="w-20 h-20 overflow-hidden  shrink-0">
-              <Image
-                src={resumeData.personalInfo.photoUrl}
-                alt={resumeData.personalInfo.fullName}
-                className="w-full h-full object-cover bg-transparent"
-                width={80}
-                height={80}
-                style={{ borderRadius: photoBorderRadius }}
-              />
-            </div>
-          )}
+          {settings.showPhoto !== false &&
+            (resumeData.personalInfo.photoUrl || editable) && (
+              <PhotoPopover>
+                <div className="w-20 h-20 overflow-hidden  shrink-0">
+                  {resumeData.personalInfo.photoUrl ? (
+                    <Image
+                      src={resumeData.personalInfo.photoUrl}
+                      alt={resumeData.personalInfo.fullName}
+                      className="w-full h-full object-cover bg-transparent"
+                      width={80}
+                      height={80}
+                      style={{ borderRadius: photoBorderRadius }}
+                    />
+                  ) : (
+                    <User
+                      className="w-full h-full p-4 opacity-40 bg-gray-100"
+                      style={{ borderRadius: photoBorderRadius }}
+                    />
+                  )}
+                </div>
+              </PhotoPopover>
+            )}
           <div className="text-center md:text-left">
             <h1
               className="font-bold text-[#1f2937] tracking-tight"
               style={{ fontSize: baseSize.name + 8 }}
             >
-              {resumeData.personalInfo.fullName}
+              <PersonalField name="fullName" />
             </h1>
             <p
               className="font-medium mt-1"
@@ -74,7 +88,7 @@ export const Modern2ColLayout = ({
                 fontSize: baseSize.base + 2,
               }}
             >
-              {resumeData.personalInfo.title}
+              <PersonalField name="title" />
             </p>
           </div>
         </div>
@@ -82,45 +96,45 @@ export const Modern2ColLayout = ({
           className="flex flex-col gap-1.5 font-medium text-gray-500 mt-4 md:mt-0 items-end"
           style={{ fontSize: baseSize.base - 2 }}
         >
-          {resumeData.personalInfo.phone && (
+          {(editable || resumeData.personalInfo.phone) && (
             <div className="flex items-center gap-1.5">
-              {resumeData.personalInfo.phone}{" "}
+              <PersonalField name="phone" />{" "}
               <Phone
                 className="w-3.5 h-3.5"
                 style={{ color: settings.themeColor }}
               />
             </div>
           )}
-          {resumeData.personalInfo.email && (
+          {(editable || resumeData.personalInfo.email) && (
             <div className="flex items-center gap-1.5">
-              {resumeData.personalInfo.email}{" "}
+              <PersonalField name="email" />{" "}
               <Mail
                 className="w-3.5 h-3.5"
                 style={{ color: settings.themeColor }}
               />
             </div>
           )}
-          {resumeData.personalInfo.location && (
+          {(editable || resumeData.personalInfo.location) && (
             <div className="flex items-center gap-1.5">
-              {resumeData.personalInfo.location}{" "}
+              <PersonalField name="location" />{" "}
               <MapPin
                 className="w-3.5 h-3.5"
                 style={{ color: settings.themeColor }}
               />
             </div>
           )}
-          {resumeData.personalInfo.website && (
+          {(editable || resumeData.personalInfo.website) && (
             <div className="flex items-center gap-1.5">
-              {resumeData.personalInfo.website}{" "}
+              <PersonalField name="website" />{" "}
               <Globe
                 className="w-3.5 h-3.5"
                 style={{ color: settings.themeColor }}
               />
             </div>
           )}
-          {resumeData.personalInfo.linkedin && (
+          {(editable || resumeData.personalInfo.linkedin) && (
             <div className="flex items-center gap-1.5">
-              {resumeData.personalInfo.linkedin}{" "}
+              <PersonalField name="linkedin" />{" "}
               <Linkedin
                 className="w-3.5 h-3.5"
                 style={{ color: settings.themeColor }}
@@ -142,16 +156,16 @@ export const Modern2ColLayout = ({
           />
           <div className="modern-left">
             {(settings.leftColumn || [])
-              .filter((s: any) => s.visible)
-              .map((s: any) => renderSectionById(s.id, leftConfig))}
+              .filter((s) => s.visible)
+              .map((s) => renderSectionById(s, leftConfig))}
           </div>
         </div>
 
         {/* Right Column */}
         <div className="w-[35%] p-8 pl-6 bg-gray-50/50 border-l border-gray-100 min-h-full">
           {(settings.rightColumn || [])
-            .filter((s: any) => s.visible)
-            .map((s: any) => renderSectionById(s.id, rightConfig))}
+            .filter((s) => s.visible)
+            .map((s) => renderSectionById(s, rightConfig))}
         </div>
       </div>
     </div>

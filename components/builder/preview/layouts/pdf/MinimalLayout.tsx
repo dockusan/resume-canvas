@@ -1,3 +1,4 @@
+import { applyPdfOverride, resolvePathOverride } from "@/lib/style-overrides";
 import { Image, Text, View } from "@react-pdf/renderer";
 import { PdfLayoutProps } from "../types";
 
@@ -29,6 +30,10 @@ export const MinimalLayout = ({
     rowLayout: true,
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pov = (style: any, path: string): any =>
+    applyPdfOverride(style, resolvePathOverride(settings.styleOverrides, path));
+
   return (
     <View style={{ flex: 1, padding: 30, backgroundColor: "#ffffff" }}>
       <View
@@ -44,21 +49,27 @@ export const MinimalLayout = ({
       >
         <View style={{ flex: 1 }}>
           <Text
-            style={{
-              fontSize: baseSize.name + 4,
-              fontWeight: 700,
-              color: "#000000",
-            }}
+            style={pov(
+              {
+                fontSize: baseSize.name + 4,
+                fontWeight: 700,
+                color: "#000000",
+              },
+              "personalInfo.fullName",
+            )}
           >
             {resumeData.personalInfo.fullName}
           </Text>
           <Text
-            style={{
-              fontSize: baseSize.base + 1,
-              color: "#333333",
-              fontWeight: 500,
-              marginBottom: 6,
-            }}
+            style={pov(
+              {
+                fontSize: baseSize.base + 1,
+                color: "#333333",
+                fontWeight: 500,
+                marginBottom: 6,
+              },
+              "personalInfo.title",
+            )}
           >
             {resumeData.personalInfo.title}
           </Text>
@@ -72,23 +83,33 @@ export const MinimalLayout = ({
             }}
           >
             {resumeData.personalInfo.phone && (
-              <Text>{resumeData.personalInfo.phone}</Text>
+              <Text style={pov({}, "personalInfo.phone")}>
+                {resumeData.personalInfo.phone}
+              </Text>
             )}
             {resumeData.personalInfo.email && (
-              <Text>{resumeData.personalInfo.email}</Text>
+              <Text style={pov({}, "personalInfo.email")}>
+                {resumeData.personalInfo.email}
+              </Text>
             )}
             {resumeData.personalInfo.location && (
-              <Text>{resumeData.personalInfo.location}</Text>
+              <Text style={pov({}, "personalInfo.location")}>
+                {resumeData.personalInfo.location}
+              </Text>
             )}
             {resumeData.personalInfo.website && (
-              <Text>{resumeData.personalInfo.website}</Text>
+              <Text style={pov({}, "personalInfo.website")}>
+                {resumeData.personalInfo.website}
+              </Text>
             )}
             {resumeData.personalInfo.linkedin && (
-              <Text>{resumeData.personalInfo.linkedin}</Text>
+              <Text style={pov({}, "personalInfo.linkedin")}>
+                {resumeData.personalInfo.linkedin}
+              </Text>
             )}
           </View>
         </View>
-        {resumeData.personalInfo.photoUrl && (
+        {settings.showPhoto !== false && resumeData.personalInfo.photoUrl && (
           <Image
             src={resumeData.personalInfo.photoUrl}
             style={{
@@ -103,7 +124,7 @@ export const MinimalLayout = ({
       <View style={{ paddingHorizontal: 10 }}>
         {[...(settings.leftColumn || []), ...(settings.rightColumn || [])]
           .filter((s: any) => s.visible)
-          .map((s: any) => renderSectionById(s.id, config))}
+          .map((s: any) => renderSectionById(s, config))}
       </View>
     </View>
   );
