@@ -224,7 +224,10 @@ export function HeaderPanel() {
               className="flex w-full items-center justify-between gap-2 px-1 py-0.5"
             >
               <span
-                className={cn("text-xs", !visible && "text-muted-foreground")}
+                className={cn(
+                  "text-[13px]",
+                  !visible && "text-muted-foreground",
+                )}
               >
                 {label}
               </span>

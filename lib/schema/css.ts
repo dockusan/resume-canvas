@@ -132,8 +132,17 @@ export function boxStyle(b: BoxStyle): CSSProperties {
 }
 
 export function headingStyle(h: HeadingStyle, theme: Theme): CSSProperties {
+  // "inherit" on a section heading means "use the theme's heading face", not
+  // "use whatever the page is set in". Without this every paired choice —
+  // Merriweather over Inter, Playfair over Source Sans — rendered its headings
+  // in the body font, so half the picker produced identical documents.
+  const font =
+    h.font.family === "inherit"
+      ? { ...h.font, family: theme.fonts.heading.family }
+      : h.font;
+
   const base: CSSProperties = {
-    ...fontStyle(h.font),
+    ...fontStyle(font),
     fontSize: fontSizeAt(theme, h.step),
     color: h.color,
     ...fillStyle(h.background),

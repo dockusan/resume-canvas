@@ -179,13 +179,24 @@ export function useMeasuredSections(
   }, [schedule, layerRef, doc]);
 
   // Webfonts change every height; re-measure once they land.
+  //
+  // `fonts.ready` alone is not enough for a font the user picks mid-session:
+  // the face is only requested during the next layout, so at the moment this
+  // effect re-runs the promise can already be resolved, and the document would
+  // be paginated against the fallback metrics and never corrected. The event
+  // fires whenever a load actually completes, which is the signal that matters.
   useEffect(() => {
     let cancelled = false;
-    document.fonts?.ready.then(() => {
+    const fonts = document.fonts;
+    if (!fonts) return;
+    const onDone = () => {
       if (!cancelled) schedule();
-    });
+    };
+    fonts.ready.then(onDone);
+    fonts.addEventListener("loadingdone", onDone);
     return () => {
       cancelled = true;
+      fonts.removeEventListener("loadingdone", onDone);
     };
   }, [schedule]);
 

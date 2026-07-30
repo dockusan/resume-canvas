@@ -36,9 +36,9 @@ export function Row({
       )}
     >
       <div className="min-w-0">
-        <div className="text-xs">{label}</div>
+        <div className="text-[13px]">{label}</div>
         {hint && (
-          <div className="text-[10px] text-muted-foreground">{hint}</div>
+          <div className="text-[11px] text-muted-foreground">{hint}</div>
         )}
       </div>
       <div className={cn(stacked ? "w-full" : "shrink-0")}>{children}</div>
@@ -55,7 +55,7 @@ export function Group({
 }) {
   return (
     <div className="space-y-2.5 py-3 border-b last:border-b-0">
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+      <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
         {title}
       </div>
       {children}
@@ -90,10 +90,10 @@ export function NumberField({
           const n = parseFloat(e.target.value);
           onChange(Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : min);
         }}
-        className="h-7 w-16 px-2 text-xs"
+        className="h-8 w-16 px-2 text-[13px]"
       />
       {suffix && (
-        <span className="text-[10px] text-muted-foreground">{suffix}</span>
+        <span className="text-[11px] text-muted-foreground">{suffix}</span>
       )}
     </div>
   );
@@ -124,7 +124,7 @@ export function SliderField({
         onValueChange={([v]) => onChange(v)}
         className="flex-1"
       />
-      <span className="text-[10px] tabular-nums text-muted-foreground w-10 text-right">
+      <span className="text-[11px] tabular-nums text-muted-foreground w-10 text-right">
         {format ? format(value) : value}
       </span>
     </div>
@@ -152,7 +152,7 @@ export function Segmented<T extends string>({
           key={o.value}
           value={o.value}
           title={o.title ?? String(o.label)}
-          className="h-7 px-2 text-[11px]"
+          className="h-8 px-2 text-xs"
         >
           {o.label}
         </ToggleGroupItem>
@@ -178,7 +178,7 @@ export function ColorField({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="h-7 w-12 rounded border flex items-center justify-center overflow-hidden"
+          className="h-8 w-12 rounded border flex items-center justify-center overflow-hidden"
           style={{ backgroundColor: value || "transparent" }}
           title="Change colour"
         >
@@ -191,7 +191,7 @@ export function ColorField({
           <button
             type="button"
             onClick={onClear}
-            className="w-full text-xs flex items-center justify-center gap-1 py-1 rounded hover:bg-muted"
+            className="w-full text-[13px] flex items-center justify-center gap-1 py-1 rounded hover:bg-muted"
           >
             <Ban className="w-3 h-3" /> None
           </button>
@@ -272,7 +272,7 @@ export function BorderField({
     return (
       <button
         type="button"
-        className="text-xs px-2 py-1 rounded border border-dashed text-muted-foreground hover:bg-muted"
+        className="text-[13px] px-2 py-1 rounded border border-dashed text-muted-foreground hover:bg-muted"
         onClick={() =>
           onChange({
             width: 1,
@@ -313,7 +313,7 @@ export function BorderField({
           type="button"
           title="Remove border"
           onClick={() => onChange(null)}
-          className="h-7 w-7 rounded hover:bg-muted flex items-center justify-center"
+          className="h-8 w-8 rounded hover:bg-muted flex items-center justify-center"
         >
           <Ban className="w-3 h-3" />
         </button>
@@ -331,7 +331,7 @@ export function BorderField({
               })
             }
             className={cn(
-              "h-6 px-1.5 rounded text-[10px] capitalize",
+              "h-7 px-1.5 rounded text-[11px] capitalize",
               value.sides[side]
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground",
@@ -370,7 +370,7 @@ export function BoxField({
         type="button"
         title={linked ? "Edit sides separately" : "Link all sides"}
         onClick={() => setLinked((v) => !v)}
-        className="h-7 w-7 rounded hover:bg-muted flex items-center justify-center"
+        className="h-8 w-8 rounded hover:bg-muted flex items-center justify-center"
       >
         {linked ? (
           <Link2 className="w-3 h-3" />
@@ -427,7 +427,7 @@ export function IconField({
         <button
           type="button"
           title={value ? `Icon: ${value}` : "Choose an icon"}
-          className="h-7 min-w-7 px-1.5 rounded border hover:bg-muted flex items-center justify-center gap-1 text-[10px]"
+          className="h-8 min-w-8 px-1.5 rounded border hover:bg-muted flex items-center justify-center gap-1 text-[11px]"
         >
           {value ? (
             <DocIcon name={value} size={16} />
@@ -441,7 +441,7 @@ export function IconField({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search icons"
-          className="h-7 text-xs"
+          className="h-8 text-[13px]"
         />
         <div className="grid grid-cols-8 gap-1 max-h-48 overflow-auto">
           {filtered.map((name) => (
@@ -451,7 +451,7 @@ export function IconField({
               title={name}
               onClick={() => onChange(name)}
               className={cn(
-                "h-6 w-6 rounded flex items-center justify-center hover:bg-muted",
+                "h-7 w-7 rounded flex items-center justify-center hover:bg-muted",
                 value === name && "bg-primary text-primary-foreground",
               )}
             >
@@ -462,7 +462,7 @@ export function IconField({
         <button
           type="button"
           onClick={() => onChange(null)}
-          className="w-full text-xs flex items-center justify-center gap-1 py-1 rounded hover:bg-muted"
+          className="w-full text-[13px] flex items-center justify-center gap-1 py-1 rounded hover:bg-muted"
         >
           <X className="w-3 h-3" /> No icon
         </button>

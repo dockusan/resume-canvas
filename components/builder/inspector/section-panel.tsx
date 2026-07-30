@@ -67,7 +67,7 @@ export function SectionPanel({ node }: { node: SectionNode }) {
             }}
             options={variants.map((v) => ({ id: v.id, name: v.name }))}
           />
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground">
             {variants.find((v) => v.id === currentVariant(node.type, node))
               ?.hint ?? "Pick a shape for this section's entries."}
           </p>
@@ -229,7 +229,7 @@ export function SectionPanel({ node }: { node: SectionNode }) {
               >
                 <span
                   className={cn(
-                    "flex-1 text-xs",
+                    "flex-1 text-[13px]",
                     !visible && "text-muted-foreground",
                   )}
                 >
@@ -286,7 +286,7 @@ export function SectionPanel({ node }: { node: SectionNode }) {
         <button
           type="button"
           onClick={() => setAdvanced((v) => !v)}
-          className="w-full flex items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+          className="w-full flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
         >
           Advanced
           <ChevronDown

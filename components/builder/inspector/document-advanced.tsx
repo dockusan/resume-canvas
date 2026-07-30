@@ -155,7 +155,7 @@ export function DocumentAdvanced() {
         ))}
       </Group>
 
-      <Group title="Type">
+      <Group title="Type scale">
         <Row label="Base size" stacked>
           <SliderField
             value={theme.scale.base}

@@ -76,7 +76,9 @@ export function Inspector({
         data-keeps-selection
         className={cn(
           "border-l bg-card flex-col h-full",
-          "lg:static lg:flex lg:w-72 lg:shrink-0 lg:shadow-none",
+          // Wider than it was: the panel's type was stepped up a size, and at
+          // 288px the label/control rows had no slack left to absorb it.
+          "lg:static lg:flex lg:w-80 lg:shrink-0 lg:shadow-none",
           open
             ? "fixed inset-y-0 right-0 z-50 flex w-[86vw] max-w-sm shadow-2xl"
             : "hidden",
@@ -105,7 +107,7 @@ export function Inspector({
             type="button"
             title="Hide properties"
             onClick={() => onOpenChange(false)}
-            className="ml-auto h-7 w-7 rounded hover:bg-muted flex items-center justify-center lg:hidden"
+            className="ml-auto h-8 w-8 rounded hover:bg-muted flex items-center justify-center lg:hidden"
           >
             <PanelRightClose className="w-4 h-4" />
           </button>
@@ -117,8 +119,10 @@ export function Inspector({
           {showSelection && !personal && node && (
             <>
               <div className="px-3 pt-3">
-                <div className="text-sm font-medium truncate">{node.title}</div>
-                <div className="text-[10px] text-muted-foreground">
+                <div className="text-[15px] font-medium truncate">
+                  {node.title}
+                </div>
+                <div className="text-[11px] text-muted-foreground">
                   {node.placement.column === "full"
                     ? "Full width"
                     : `${node.placement.column} column`}
@@ -135,12 +139,12 @@ export function Inspector({
             <StylePopover path={override.path} label={override.label}>
               <button
                 type="button"
-                className="w-full text-xs rounded-md border px-2 py-1.5 hover:bg-muted"
+                className="w-full text-[13px] rounded-md border px-2 py-1.5 hover:bg-muted"
               >
                 {override.action}
               </button>
             </StylePopover>
-            <p className="text-[10px] text-muted-foreground text-center">
+            <p className="text-[11px] text-muted-foreground text-center">
               Overrides just this one, on top of the section settings above.
             </p>
           </div>
@@ -166,7 +170,7 @@ function TabButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs",
+        "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[13px]",
         active ? "bg-muted font-medium" : "hover:bg-muted/60",
       )}
     >

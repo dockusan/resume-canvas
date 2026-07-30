@@ -360,55 +360,143 @@ export interface FontPair {
   body: string;
 }
 
-/** Pairings that read well at resume sizes, rather than a list of 40 fonts. */
+/**
+ * Font stacks, keyed to the CSS variables app/fonts.ts registers. Naming a
+ * family here that nothing loads is the bug this indirection prevents.
+ */
+const SANS = {
+  khand: "var(--font-khand), sans-serif",
+  inter: "var(--font-inter), sans-serif",
+  roboto: "var(--font-roboto), sans-serif",
+  openSans: "var(--font-open-sans), sans-serif",
+  lato: "var(--font-lato), sans-serif",
+  sourceSans: "var(--font-source-sans), sans-serif",
+  workSans: "var(--font-work-sans), sans-serif",
+  nunitoSans: "var(--font-nunito-sans), sans-serif",
+  ibmPlex: "var(--font-ibm-plex-sans), sans-serif",
+  robotoCondensed: "var(--font-roboto-condensed), sans-serif",
+  montserrat: "var(--font-montserrat), sans-serif",
+  poppins: "var(--font-poppins), sans-serif",
+  raleway: "var(--font-raleway), sans-serif",
+} as const;
+
+const SERIF = {
+  merriweather: "var(--font-merriweather), serif",
+  lora: "var(--font-lora), serif",
+  playfair: "var(--font-playfair), serif",
+  ebGaramond: "var(--font-eb-garamond), serif",
+  libreBaskerville: "var(--font-libre-baskerville), serif",
+  georgia: "Georgia, 'Times New Roman', serif",
+} as const;
+
+/**
+ * Pairings that read well at resume sizes, rather than a list of forty fonts.
+ *
+ * Families are referenced through the CSS variables declared in app/fonts.ts,
+ * so a pairing can only name a face something actually loads. Values persisted
+ * before this — plain names like "Poppins, sans-serif" — still resolve, since
+ * those same families are now registered.
+ */
 export const FONT_PAIRS: FontPair[] = [
+  // --- Sans ---
+  { id: "khand", name: "Khand", heading: SANS.khand, body: SANS.khand },
+  { id: "inter", name: "Inter", heading: SANS.inter, body: SANS.inter },
+  { id: "roboto", name: "Roboto", heading: SANS.roboto, body: SANS.roboto },
   {
-    id: "khand",
-    name: "Khand",
-    heading: "Khand, sans-serif",
-    body: "Khand, sans-serif",
+    id: "open-sans",
+    name: "Open Sans",
+    heading: SANS.openSans,
+    body: SANS.openSans,
+  },
+  { id: "lato", name: "Lato", heading: SANS.lato, body: SANS.lato },
+  {
+    id: "source",
+    name: "Source Sans",
+    heading: SANS.sourceSans,
+    body: SANS.sourceSans,
   },
   {
-    id: "inter",
-    name: "Inter",
-    heading: "Inter, sans-serif",
-    body: "Inter, sans-serif",
+    id: "work-sans",
+    name: "Work Sans",
+    heading: SANS.workSans,
+    body: SANS.workSans,
   },
   {
-    id: "merriweather-inter",
-    name: "Merriweather + Inter",
-    heading: "Merriweather, serif",
-    body: "Inter, sans-serif",
+    id: "nunito-sans",
+    name: "Nunito Sans",
+    heading: SANS.nunitoSans,
+    body: SANS.nunitoSans,
   },
   {
-    id: "montserrat-lato",
-    name: "Montserrat + Lato",
-    heading: "Montserrat, sans-serif",
-    body: "Lato, sans-serif",
+    id: "ibm-plex",
+    name: "IBM Plex Sans",
+    heading: SANS.ibmPlex,
+    body: SANS.ibmPlex,
   },
   {
-    id: "lato",
-    name: "Lato",
-    heading: "Lato, sans-serif",
-    body: "Lato, sans-serif",
+    id: "roboto-condensed",
+    name: "Roboto Condensed",
+    heading: SANS.robotoCondensed,
+    body: SANS.robotoCondensed,
+  },
+
+  // --- Serif ---
+  { id: "lora", name: "Lora", heading: SERIF.lora, body: SERIF.lora },
+  {
+    id: "eb-garamond",
+    name: "EB Garamond",
+    heading: SERIF.ebGaramond,
+    body: SERIF.ebGaramond,
   },
   {
     id: "georgia",
     name: "Georgia",
-    heading: "Georgia, serif",
-    body: "Georgia, serif",
+    heading: SERIF.georgia,
+    body: SERIF.georgia,
+  },
+
+  // --- Mixed: a display face for headings over a workhorse for body text ---
+  {
+    id: "merriweather-inter",
+    name: "Merriweather + Inter",
+    heading: SERIF.merriweather,
+    body: SANS.inter,
   },
   {
-    id: "source",
-    name: "Source Sans",
-    heading: "'Source Sans Pro', sans-serif",
-    body: "'Source Sans Pro', sans-serif",
+    id: "playfair-source",
+    name: "Playfair + Source Sans",
+    heading: SERIF.playfair,
+    body: SANS.sourceSans,
+  },
+  {
+    id: "baskerville-lato",
+    name: "Baskerville + Lato",
+    heading: SERIF.libreBaskerville,
+    body: SANS.lato,
+  },
+  {
+    id: "montserrat-lato",
+    name: "Montserrat + Lato",
+    heading: SANS.montserrat,
+    body: SANS.lato,
   },
   {
     id: "poppins-opensans",
     name: "Poppins + Open Sans",
-    heading: "Poppins, sans-serif",
-    body: "'Open Sans', sans-serif",
+    heading: SANS.poppins,
+    body: SANS.openSans,
+  },
+  {
+    id: "raleway-inter",
+    name: "Raleway + Inter",
+    heading: SANS.raleway,
+    body: SANS.inter,
+  },
+  {
+    id: "montserrat-lora",
+    name: "Montserrat + Lora",
+    heading: SANS.montserrat,
+    body: SERIF.lora,
   },
 ];
 

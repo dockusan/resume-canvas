@@ -203,7 +203,7 @@ export function SectionAdvanced({ node }: { node: SectionNode }) {
           <div className="flex items-center gap-1">
             <button
               type="button"
-              className="h-7 w-7 rounded border hover:bg-muted flex items-center justify-center"
+              className="h-8 w-8 rounded border hover:bg-muted flex items-center justify-center"
               onClick={() =>
                 patch({
                   items: {
@@ -214,12 +214,12 @@ export function SectionAdvanced({ node }: { node: SectionNode }) {
             >
               <Minus className="w-3 h-3" />
             </button>
-            <span className="text-xs w-8 text-center tabular-nums">
+            <span className="text-[13px] w-8 text-center tabular-nums">
               {node.items.columns ?? "—"}
             </span>
             <button
               type="button"
-              className="h-7 w-7 rounded border hover:bg-muted flex items-center justify-center"
+              className="h-8 w-8 rounded border hover:bg-muted flex items-center justify-center"
               onClick={() =>
                 patch({
                   items: {

@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import {
   Download,
   FileText,
+  Home,
   LayoutTemplate,
   ListChecks,
   MoreHorizontal,
@@ -108,11 +109,12 @@ export function BuilderToolbar({
       data-editor-only
       className="sticky top-0 z-30 flex items-center gap-1.5 border-b bg-card px-2 py-2 sm:px-3"
     >
-      {/* Left: identity and history. */}
+      {/* Left: identity and history. Below sm the mark gives way to the
+          controls; "Home" moves into the overflow menu rather than vanishing. */}
       <Link
         href="/"
         title="Resume Canvas home"
-        className="mr-1 flex shrink-0 items-center gap-1.5 rounded-md px-1 py-1 hover:bg-muted"
+        className="mr-1 hidden shrink-0 items-center gap-1.5 rounded-md px-1 py-1 hover:bg-muted sm:flex"
       >
         <Image
           src="/favicon.ico"
@@ -126,7 +128,7 @@ export function BuilderToolbar({
         </span>
       </Link>
 
-      <div className="flex items-center rounded-lg border bg-muted/40 p-0.5">
+      <div className="flex shrink-0 items-center rounded-lg border bg-muted/40 p-0.5">
         <Button
           variant="ghost"
           size="icon-sm"
@@ -147,26 +149,31 @@ export function BuilderToolbar({
         </Button>
       </div>
 
-      {/* Centre: the primary navigation — which way you are working. */}
-      <div className="mx-auto flex items-center rounded-lg border bg-muted/40 p-0.5">
-        {MODES.map((m) => (
-          <button
-            key={m.id}
-            type="button"
-            title={m.hint}
-            aria-pressed={mode === m.id}
-            onClick={() => onMode(m.id)}
-            className={cn(
-              "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs transition-colors sm:px-3",
-              mode === m.id
-                ? "bg-background font-medium shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <m.icon className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">{m.label}</span>
-          </button>
-        ))}
+      {/* Centre: the primary navigation — which way you are working.
+          A flex-1 track rather than `mx-auto`: auto margins keep demanding
+          their share of a row that has none left, which pushed the output
+          buttons off the right edge instead of letting the row adapt. */}
+      <div className="flex min-w-0 flex-1 justify-center">
+        <div className="flex shrink-0 items-center rounded-lg border bg-muted/40 p-0.5">
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              title={m.hint}
+              aria-pressed={mode === m.id}
+              onClick={() => onMode(m.id)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-4 py-2.5 text-xs transition-colors md:px-3",
+                mode === m.id
+                  ? "bg-background font-medium shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <m.icon className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">{m.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Right: status, then output. */}
@@ -180,7 +187,7 @@ export function BuilderToolbar({
               {pageCount} {pageCount === 1 ? "page" : "pages"}
             </span>
             <SaveStatus />
-            <span className="hidden sm:flex">
+            <span className="hidden md:flex">
               <ZoomControl zoom={zoom} fitScale={fitScale} onZoom={onZoom} />
             </span>
           </>
@@ -189,18 +196,16 @@ export function BuilderToolbar({
         {/* A divider and a label keep this from reading as a second zoom-in
             button, which is what a bare "+" beside the zoom stepper does. */}
         {mode !== "arrange" && (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8"
-              title="Add a custom section"
-              onClick={() => addCustomSection()}
-            >
-              <SquarePlus className="h-3.5 w-3.5 md:mr-1" />
-              <span className="hidden md:inline">Section</span>
-            </Button>
-          </>
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden h-8 md:inline-flex"
+            title="Add a custom section"
+            onClick={() => addCustomSection()}
+          >
+            <SquarePlus className="h-3.5 w-3.5 md:mr-1" />
+            <span className="hidden md:inline">Section</span>
+          </Button>
         )}
 
         {mode === "design" && (
@@ -222,6 +227,23 @@ export function BuilderToolbar({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
+            {/* Whatever the row could not fit reappears here rather than
+                becoming unreachable, so every action has a home at any width. */}
+            <DropdownMenuItem
+              className="md:hidden"
+              onClick={() => setShareOpen(true)}
+            >
+              <Share2 className="h-3.5 w-3.5" /> Share a link
+            </DropdownMenuItem>
+            {mode !== "arrange" && (
+              <DropdownMenuItem
+                className="md:hidden"
+                onClick={() => addCustomSection()}
+              >
+                <SquarePlus className="h-3.5 w-3.5" /> Add a section
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator className="md:hidden" />
             <DropdownMenuItem
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
@@ -238,6 +260,11 @@ export function BuilderToolbar({
             <DropdownMenuItem onClick={onDownloadAts}>
               <FileText className="h-3.5 w-3.5" /> Plain text for ATS
             </DropdownMenuItem>
+            <DropdownMenuItem asChild className="sm:hidden">
+              <Link href="/">
+                <Home className="h-3.5 w-3.5" /> Resume Canvas home
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
@@ -251,14 +278,16 @@ export function BuilderToolbar({
         <Button
           variant="outline"
           size="sm"
-          className="h-8"
+          className="hidden h-8 md:inline-flex"
           title="Share a read-only link"
           onClick={() => setShareOpen(true)}
         >
-          <Share2 className="h-3.5 w-3.5 sm:mr-1" />
-          <span className="hidden sm:inline">Share</span>
+          <Share2 className="h-3.5 w-3.5 lg:mr-1" />
+          <span className="hidden lg:inline">Share</span>
         </Button>
 
+        {/* Never collapses into the overflow menu: exporting is the point of
+            the app, and it has to be one tap away on the smallest phone. */}
         <Button
           size="sm"
           className="h-8"
@@ -266,8 +295,8 @@ export function BuilderToolbar({
           onClick={onDownload}
           disabled={isDownloading}
         >
-          <Download className="h-3.5 w-3.5 sm:mr-1" />
-          <span className="hidden sm:inline">Download</span>
+          <Download className="h-3.5 w-3.5 lg:mr-1" />
+          <span className="hidden lg:inline">Download</span>
         </Button>
       </span>
 

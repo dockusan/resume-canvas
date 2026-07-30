@@ -54,13 +54,13 @@ export function SectionsOutline() {
               <button
                 type="button"
                 onClick={() => setActivePath(node.id)}
-                className="flex-1 min-w-0 text-left text-xs truncate"
+                className="flex-1 min-w-0 text-left text-[13px] truncate"
                 title="Select this section"
               >
                 {node.title}
               </button>
               {twoCol && (
-                <span className="text-[9px] uppercase text-muted-foreground shrink-0">
+                <span className="text-[10px] uppercase text-muted-foreground shrink-0">
                   {node.placement.column === "right" ? "R" : "L"}
                 </span>
               )}
@@ -96,7 +96,7 @@ export function SectionsOutline() {
         <button
           type="button"
           onClick={() => setActivePath(addCustomSection())}
-          className="w-full mt-1 flex items-center justify-center gap-1.5 rounded-md border border-dashed px-2 py-1.5 text-xs hover:bg-muted"
+          className="w-full mt-1 flex items-center justify-center gap-1.5 rounded-md border border-dashed px-2 py-1.5 text-[13px] hover:bg-muted"
         >
           <Plus className="w-3 h-3" /> Add a section
         </button>
@@ -109,7 +109,7 @@ export function SectionsOutline() {
               key={id}
               type="button"
               onClick={() => restoreSection(id)}
-              className="w-full flex items-center gap-1.5 rounded px-1 py-1 text-xs hover:bg-muted"
+              className="w-full flex items-center gap-1.5 rounded px-1 py-1 text-[13px] hover:bg-muted"
             >
               <RotateCcw className="w-3 h-3 shrink-0 text-muted-foreground" />
               <span className="truncate">{DEFAULT_SECTION_NAMES[id]}</span>
@@ -122,7 +122,7 @@ export function SectionsOutline() {
         <button
           type="button"
           onClick={() => setActivePath("personalInfo")}
-          className="w-full text-left text-xs rounded px-1 py-1 hover:bg-muted"
+          className="w-full text-left text-[13px] rounded px-1 py-1 hover:bg-muted"
         >
           Name, contacts and photo
         </button>

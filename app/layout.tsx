@@ -1,14 +1,8 @@
 import ThemeProvider from "@/providers/theme-provider";
 import { SITE } from "@/lib/seo";
 import type { Metadata, Viewport } from "next";
-import { Khand } from "next/font/google";
+import { FONT_VARIABLES } from "./fonts";
 import "./globals.css";
-
-const khand = Khand({
-  variable: "--font-khand",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -75,7 +69,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${khand.variable} font-sans antialiased`}>
+      <body className={`${FONT_VARIABLES} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark">
           {children}
         </ThemeProvider>

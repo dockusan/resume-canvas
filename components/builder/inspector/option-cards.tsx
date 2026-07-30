@@ -31,7 +31,7 @@ export function OptionCards({
 }) {
   return (
     <div className="space-y-1.5">
-      {label && <div className="text-xs">{label}</div>}
+      {label && <div className="text-[13px]">{label}</div>}
       <div
         className="grid gap-1.5"
         style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
@@ -50,11 +50,11 @@ export function OptionCards({
             )}
           >
             {option.preview && (
-              <div className="mb-1 flex min-h-7 items-center justify-center overflow-hidden">
+              <div className="mb-1 flex min-h-8 items-center justify-center overflow-hidden">
                 {option.preview}
               </div>
             )}
-            <div className="text-[10px] leading-tight text-center truncate">
+            <div className="text-[11px] leading-tight text-center truncate">
               {option.name}
             </div>
           </button>
@@ -92,7 +92,7 @@ export function SwatchCards({
               <span key={i} className="flex-1" style={{ background: c }} />
             ))}
           </div>
-          <div className="text-[9px] mt-0.5 truncate text-center">
+          <div className="text-[10px] mt-0.5 truncate text-center">
             {option.name}
           </div>
           {value === option.id && (
@@ -118,7 +118,7 @@ export function ChoiceRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
-      {label && <span className="text-xs shrink-0">{label}</span>}
+      {label && <span className="text-[13px] shrink-0">{label}</span>}
       <div className="flex gap-1 flex-wrap justify-end">
         {options.map((o) => (
           <button
@@ -126,7 +126,7 @@ export function ChoiceRow({
             type="button"
             onClick={() => onChange(o.id)}
             className={cn(
-              "rounded-md border px-2 py-1 text-[11px] transition-colors",
+              "rounded-md border px-2 py-1 text-xs transition-colors",
               value === o.id
                 ? "border-primary bg-primary/5 font-medium"
                 : "hover:bg-muted",

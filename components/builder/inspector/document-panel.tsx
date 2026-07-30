@@ -84,7 +84,7 @@ export function DocumentPanel() {
             ),
           }))}
         />
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-[11px] text-muted-foreground">
           A template is a starting point — everything below stays editable.
         </p>
       </Group>
@@ -106,7 +106,7 @@ export function DocumentPanel() {
         />
       </Group>
 
-      <Group title="Type">
+      <Group title="Font family">
         <OptionCards
           columns={2}
           value={activeFont}
@@ -126,7 +126,7 @@ export function DocumentPanel() {
             name: f.name,
             preview: (
               <span
-                className="text-[15px] leading-none"
+                className="text-[17px] leading-none"
                 style={{ fontFamily: f.heading }}
               >
                 Ag
@@ -209,7 +209,7 @@ export function DocumentPanel() {
         <button
           type="button"
           onClick={() => setAdvanced((v) => !v)}
-          className="w-full flex items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+          className="w-full flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
         >
           Advanced
           <ChevronDown
