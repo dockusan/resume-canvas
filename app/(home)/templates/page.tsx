@@ -11,7 +11,7 @@ import Link from "next/link";
 export const metadata = pageMetadata({
   title: "Resume templates",
   description:
-    "Six free resume templates — classic two-column, minimal, modern, executive and creative. Every one is a starting point you can restyle completely, and all export to PDF.",
+    "Six free resume templates: classic two-column, minimal, modern, executive and creative. Restyle any of them completely, then export to PDF.",
   path: "/templates",
 });
 

@@ -1,5 +1,5 @@
 import { LegalPage } from "@/components/legal-page";
-import { SITE, pageMetadata } from "@/lib/seo";
+import { SITE, UPDATED, pageMetadata, updatedLabel } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "Privacy policy",
@@ -8,14 +8,12 @@ export const metadata = pageMetadata({
   path: "/privacy",
 });
 
-const UPDATED = "31 July 2026";
-
 export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
       intro="The short version: your resume stays on your device unless you deliberately share a link — and even then we cannot read it."
-      updated={UPDATED}
+      updated={updatedLabel(UPDATED.privacy)}
     >
       <section>
         <h2>What we collect</h2>
@@ -44,11 +42,11 @@ export default function PrivacyPage() {
       <section>
         <h2>Sharing a resume</h2>
         <p>
-          If you choose to create a share link, your resume is encrypted in
-          your browser first. What is uploaded is the encrypted file and the
-          random value needed to decrypt it in combination with the key —
-          nothing else. We do not store your name, your IP address, your
-          browser or the page you came from alongside it.
+          If you choose to create a share link, your resume is encrypted in your
+          browser first. What is uploaded is the encrypted file and the random
+          value needed to decrypt it in combination with the key — nothing else.
+          We do not store your name, your IP address, your browser or the page
+          you came from alongside it.
         </p>
         <p>
           The decryption key is generated on your device and placed in the part
@@ -98,9 +96,9 @@ export default function PrivacyPage() {
         <p>
           The site is served by a hosting provider that, like any web server,
           may record standard request logs such as IP address and user agent.
-          Those logs are not linked to any resume content, which the server
-          only ever receives in a form it cannot decrypt. To limit abuse of the
-          share endpoint we count recent requests against a one-way hash of the
+          Those logs are not linked to any resume content, which the server only
+          ever receives in a form it cannot decrypt. To limit abuse of the share
+          endpoint we count recent requests against a one-way hash of the
           caller&rsquo;s address, held for an hour and never stored with a
           share.
         </p>

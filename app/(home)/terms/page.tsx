@@ -1,5 +1,5 @@
 import { LegalPage } from "@/components/legal-page";
-import { SITE, pageMetadata } from "@/lib/seo";
+import { SITE, UPDATED, pageMetadata, updatedLabel } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "Terms of service",
@@ -13,7 +13,7 @@ export default function TermsPage() {
     <LegalPage
       title="Terms of service"
       intro="Free, open-source software. You own what you write."
-      updated="31 July 2026"
+      updated={updatedLabel(UPDATED.terms)}
     >
       <section>
         <h2>Using the service</h2>

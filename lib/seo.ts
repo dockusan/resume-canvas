@@ -12,12 +12,41 @@ export const SITE = {
   name: "Resume Canvas",
   url: "https://resumecanvas.site",
   tagline: "Free, open-source resume builder",
+  // Kept under ~155 characters so search results show it whole rather than
+  // truncating mid-sentence, and worded to stay true now that share links
+  // exist: nothing is uploaded unless the user asks for a link, and even then
+  // it is encrypted before it leaves the device.
   description:
-    "Build a professional, ATS-friendly resume in your browser. Real-time preview, PDF export, six templates and full styling control. No sign-up, no paywall, and your data never leaves your device.",
+    "Build an ATS-friendly resume in your browser. Live paged preview, PDF export and six templates — free, no sign-up, and nothing uploaded.",
   repo: "https://github.com/kstmostofa/resume-canvas",
   author: "Md Mostafijur Rahman",
   ogImage: "/og-image.png",
 } as const;
+
+/**
+ * When each page's content last actually changed.
+ *
+ * Shared by the pages themselves and by the sitemap so the two can never
+ * disagree. `lastModified: new Date()` would claim every URL changed at the
+ * moment of every crawl, which teaches search engines to ignore the signal.
+ */
+export const UPDATED = {
+  home: "2026-07-31",
+  templates: "2026-07-30",
+  privacy: "2026-07-31",
+  terms: "2026-07-31",
+  cookies: "2026-07-30",
+} as const;
+
+/** "2026-07-31" → "31 July 2026", for the last-updated line on legal pages. */
+export function updatedLabel(iso: string): string {
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
 
 interface PageSeo {
   title: string;
@@ -89,6 +118,7 @@ export function softwareApplicationJsonLd() {
       "Live paged preview that matches the PDF exactly",
       "Drag-and-drop section arrangement",
       "Plain-text export for applicant tracking systems",
+      "Encrypted share links that expire",
       "Runs entirely in the browser with no account",
     ],
   };

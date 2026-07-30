@@ -6,11 +6,17 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // The builder is a single-page app whose content is user data; there is
-      // nothing there for a crawler to index. `/r/` is stronger than that:
-      // those are real people's resumes, and no one's should ever be
-      // reachable from a search result.
-      disallow: ["/builder", "/r/", "/api/"],
+      // `/builder` is deliberately NOT disallowed. It carries `noindex`, and a
+      // crawler forbidden from fetching a page can never read that — it would
+      // stay eligible for a bare-URL listing, which is exactly what the
+      // noindex is there to prevent. The home page links to it, so it will be
+      // found; letting it be crawled is what keeps it out of the index.
+      //
+      // `/r/` is the opposite case: those are real people's resumes, they are
+      // never linked from the site, and the ids are unguessable. Blocking the
+      // fetch outright is the point, and the `noindex, nofollow` on the page
+      // still catches any crawler that ignores this file.
+      disallow: ["/r/", "/api/"],
     },
     sitemap: `${SITE.url}/sitemap.xml`,
     host: SITE.url,
