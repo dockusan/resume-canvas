@@ -24,7 +24,12 @@ export const FAQS = [
   {
     question: "Where is my resume stored?",
     answer:
-      "In your own browser. There is no server that receives your resume, no sign-up and no analytics. The trade-off is that your work lives on one device and one browser, so export a PDF when you have something worth keeping.",
+      "In your own browser. Nothing is uploaded as you write, there is no sign-up and no analytics. The one exception is if you create a share link, and even then the resume is encrypted on your device first — see the next question. The trade-off is that your work lives on one device and one browser, so export a PDF when you have something worth keeping.",
+  },
+  {
+    question: "Can I share my resume with a link?",
+    answer:
+      "Yes. Creating a link encrypts your resume in your browser and uploads only the encrypted file; the key to decrypt it is placed after the # in the link, which browsers never send to a server. So we store something we cannot read, and anyone you give the full link to can view and download the resume. You choose how long the link lasts — after that the file is deleted automatically.",
   },
   {
     question: "Will the PDF look exactly like the preview?",

@@ -7,6 +7,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { downscaleImage } from "@/lib/image";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import { EyeOff, Trash2, Upload } from "lucide-react";
 import { useRef } from "react";
@@ -23,14 +24,13 @@ export function PhotoPopover({ children }: { children: React.ReactNode }) {
 
   if (!editable) return <>{children}</>;
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () =>
-      setPersonalInfo({ photoUrl: reader.result as string });
-    reader.readAsDataURL(file);
     e.target.value = "";
+    if (!file) return;
+    // Downscaled before it is stored: a full-size phone photo on its own can
+    // exhaust the localStorage budget the whole editor saves into.
+    setPersonalInfo({ photoUrl: await downscaleImage(file) });
   };
 
   return (

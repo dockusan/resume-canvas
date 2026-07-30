@@ -187,10 +187,22 @@
     visibility: hidden !important;
   }
 
+  /* The editor's focus ring is a box-shadow; neither it nor an outline is
+     ever part of the document. A background can be either, so it is handled
+     below rather than blanket-cleared — `background: none` here also erased
+     backgrounds the document itself sets, which is what flattened the skills
+     pills to bare text in every export. */
   .editable-field {
-    background: none !important;
     outline: none !important;
     box-shadow: none !important;
+  }
+
+  /* Only the hover / selection tint. Unlayered, so it beats the Tailwind
+     utility, and unprefixed by !important, so an inline background set by a
+     section (the skills pill, a heading fill) still wins. */
+  .editable-field:hover,
+  .editable-field:focus {
+    background-color: transparent;
   }
 }
 

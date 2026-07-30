@@ -13,7 +13,7 @@ export default function TermsPage() {
     <LegalPage
       title="Terms of service"
       intro="Free, open-source software. You own what you write."
-      updated="30 July 2026"
+      updated="31 July 2026"
     >
       <section>
         <h2>Using the service</h2>
@@ -28,8 +28,27 @@ export default function TermsPage() {
         <h2>Your content</h2>
         <p>
           You retain every right to the resumes you create. We claim no
-          ownership over your content and never receive a copy of it — it is
-          stored in your browser, not on a server.
+          ownership over your content, and while you are writing it is stored in
+          your browser rather than on a server. The one exception is a share
+          link you choose to create, described below.
+        </p>
+      </section>
+
+      <section>
+        <h2>Share links</h2>
+        <p>
+          Creating a share link uploads an encrypted copy of your resume so that
+          anyone holding the link can view it. Because the key stays in the link
+          and never reaches us, we cannot read what we store, cannot recover a
+          link you have lost, and cannot show you who has opened one. Every link
+          expires after the period you choose, up to one year, and is then
+          deleted.
+        </p>
+        <p>
+          Do not use share links to store or distribute anything other than a
+          resume, and do not upload content you have no right to share. We may
+          remove stored files and limit access to the feature to keep it working
+          for everyone.
         </p>
       </section>
 

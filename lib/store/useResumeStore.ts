@@ -1,6 +1,9 @@
+"use client";
+
+import { createContext, createElement, useContext } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { temporal } from "zundo";
-import { create } from "zustand";
+import { StateCreator, StoreApi, create, useStore } from "zustand";
 import { persist } from "zustand/middleware";
 import {
   CustomSection,
@@ -42,7 +45,7 @@ export type SectionDirection = "up" | "down" | "left" | "right";
 
 type ResumeItem = { id: string } & Record<string, unknown>;
 
-interface ResumeState {
+export interface ResumeState {
   resumeData: ResumeData;
   settings: ResumeSettings;
   /**
@@ -467,397 +470,392 @@ function builtinToCustomItems(
   }
 }
 
+/**
+ * Every piece of resume state and behaviour, independent of how it is stored.
+ *
+ * Extracted from the store so the same logic can back both the persisted
+ * editor store and a throwaway one built from a share link — see
+ * `createDetachedStore`.
+ */
+const createResumeState: StateCreator<ResumeState, [], []> = (set, get) => ({
+  resumeData: initialResumeData,
+  settings: initialSettings,
+  document: documentFromSettings(initialSettings),
+  _hasHydrated: false,
+
+  setPersonalInfo: (info) =>
+    set((state) => ({
+      resumeData: {
+        ...state.resumeData,
+        personalInfo: { ...state.resumeData.personalInfo, ...info },
+      },
+    })),
+
+  // ------- Generic item actions -------
+
+  addItem: (section, item) => {
+    const id = uuidv4();
+    set((state) => {
+      const defaults = isCustomSectionId(section)
+        ? DEFAULT_CUSTOM_ITEM
+        : DEFAULT_ITEMS[section];
+      const items = readItems(state.resumeData, section);
+      return {
+        resumeData: writeItems(state.resumeData, section, [
+          ...items,
+          { ...defaults, ...item, id },
+        ]),
+      };
+    });
+    return id;
+  },
+  updateItem: (section, id, patch) =>
+    set((state) => ({
+      resumeData: writeItems(
+        state.resumeData,
+        section,
+        readItems(state.resumeData, section).map((it) =>
+          it.id === id ? { ...it, ...patch } : it,
+        ),
+      ),
+    })),
+  removeItem: (section, id) =>
+    set((state) => ({
+      resumeData: writeItems(
+        state.resumeData,
+        section,
+        readItems(state.resumeData, section).filter((it) => it.id !== id),
+      ),
+    })),
+  duplicateItem: (section, id) => {
+    const newId = uuidv4();
+    let found = false;
+    set((state) => {
+      const items = readItems(state.resumeData, section);
+      const index = items.findIndex((it) => it.id === id);
+      if (index === -1) return {};
+      found = true;
+      const copy = { ...items[index], id: newId };
+      const next = [...items];
+      next.splice(index + 1, 0, copy);
+      return { resumeData: writeItems(state.resumeData, section, next) };
+    });
+    return found ? newId : null;
+  },
+  reorderItem: (section, from, to) =>
+    set((state) => {
+      const items = [...readItems(state.resumeData, section)];
+      if (from < 0 || from >= items.length || to < 0 || to >= items.length)
+        return {};
+      const [moved] = items.splice(from, 1);
+      items.splice(to, 0, moved);
+      return { resumeData: writeItems(state.resumeData, section, items) };
+    }),
+
+  // ------- Section-level actions -------
+
+  // Arrow buttons and drag-and-drop share one implementation, so they
+  // can never disagree about what "move left" means.
+  moveSection: (sectionId, direction) => {
+    const { document: doc, moveSectionTo } = get();
+    const node = doc.sections.find((s) => s.id === sectionId);
+    if (!node) return;
+    const singleColumn = doc.layout.columns === 1;
+    const column = singleColumn
+      ? ("full" as const)
+      : node.placement.column === "full"
+        ? ("left" as const)
+        : node.placement.column;
+
+    if (direction === "left" || direction === "right") {
+      if (singleColumn) return;
+      const target = direction === "left" ? "left" : "right";
+      if (target === column) return;
+      moveSectionTo(sectionId, { column: target });
+      return;
+    }
+
+    const siblings = doc.sections
+      .filter(
+        (s) =>
+          s.visible && (singleColumn ? true : s.placement.column === column),
+      )
+      .sort((a, b) => a.placement.order - b.placement.order);
+    const index = siblings.findIndex((s) => s.id === sectionId);
+    if (index < 0) return;
+    const next = direction === "up" ? index - 1 : index + 1;
+    if (next < 0 || next >= siblings.length) return;
+    moveSectionTo(sectionId, { column, index: next });
+  },
+  toggleSectionVisibility: (sectionId) =>
+    set((state) => {
+      const pos = findSectionConfig(state.settings, sectionId);
+      if (!pos) return {};
+      const list = state.settings[pos.column].map((s) =>
+        s.id === sectionId ? { ...s, visible: !s.visible } : s,
+      );
+      return { settings: { ...state.settings, [pos.column]: list } };
+    }),
+  toggleSectionPageBreak: (sectionId) =>
+    set((state) => {
+      const pos = findSectionConfig(state.settings, sectionId);
+      if (!pos) return {};
+      const list = state.settings[pos.column].map((s) =>
+        s.id === sectionId ? { ...s, pageBreakBefore: !s.pageBreakBefore } : s,
+      );
+      return { settings: { ...state.settings, [pos.column]: list } };
+    }),
+  renameSection: (sectionId, name) =>
+    set((state) => {
+      const pos = findSectionConfig(state.settings, sectionId);
+      if (!pos) return {};
+      const list = state.settings[pos.column].map((s) =>
+        s.id === sectionId ? { ...s, name } : s,
+      );
+      return { settings: { ...state.settings, [pos.column]: list } };
+    }),
+  duplicateSection: (sectionId) =>
+    set((state) => {
+      const pos = findSectionConfig(state.settings, sectionId);
+      if (!pos) return {};
+      const config = state.settings[pos.column][pos.index];
+      const uuid = uuidv4();
+      const items = isCustomSectionId(sectionId)
+        ? readItems(state.resumeData, sectionId).map((it) => ({
+            ...it,
+            id: uuidv4(),
+          }))
+        : builtinToCustomItems(state.resumeData, sectionId);
+      const newSection: CustomSection = {
+        id: uuid,
+        items: items as CustomSectionItem[],
+      };
+      const list = [...state.settings[pos.column]];
+      list.splice(pos.index + 1, 0, {
+        id: `custom:${uuid}`,
+        name: `${config.name} (Copy)`,
+        visible: true,
+      });
+      return {
+        resumeData: {
+          ...state.resumeData,
+          customSections: [...state.resumeData.customSections, newSection],
+        },
+        settings: { ...state.settings, [pos.column]: list },
+      };
+    }),
+  removeSectionFromLayout: (sectionId) =>
+    set((state) => {
+      const pos = findSectionConfig(state.settings, sectionId);
+      if (!pos) return {};
+      const settings = {
+        ...state.settings,
+        [pos.column]: state.settings[pos.column].filter(
+          (s) => s.id !== sectionId,
+        ),
+      };
+      if (isCustomSectionId(sectionId)) {
+        const uuid = customSectionUuid(sectionId);
+        return {
+          settings,
+          resumeData: {
+            ...state.resumeData,
+            customSections: state.resumeData.customSections.filter(
+              (c) => c.id !== uuid,
+            ),
+          },
+        };
+      }
+      return { settings };
+    }),
+  restoreSection: (sectionId) =>
+    set((state) => {
+      if (findSectionConfig(state.settings, sectionId)) return {};
+      const column = DEFAULT_SECTION_COLUMN[sectionId] ?? "rightColumn";
+      return {
+        settings: {
+          ...state.settings,
+          [column]: [
+            ...state.settings[column],
+            {
+              id: sectionId,
+              name: DEFAULT_SECTION_NAMES[sectionId] ?? sectionId,
+              visible: true,
+            },
+          ],
+        },
+      };
+    }),
+  addCustomSection: () => {
+    const uuid = uuidv4();
+    set((state) => {
+      const column =
+        state.settings.leftColumn.length <= state.settings.rightColumn.length
+          ? "leftColumn"
+          : "rightColumn";
+      return {
+        resumeData: {
+          ...state.resumeData,
+          customSections: [
+            ...state.resumeData.customSections,
+            {
+              id: uuid,
+              items: [{ ...DEFAULT_CUSTOM_ITEM, id: uuidv4() }],
+            },
+          ],
+        },
+        settings: {
+          ...state.settings,
+          [column]: [
+            ...state.settings[column],
+            { id: `custom:${uuid}`, name: "New Section", visible: true },
+          ],
+        },
+      };
+    });
+    return `custom:${uuid}`;
+  },
+
+  // ------- Style overrides -------
+
+  setStyleOverride: (path, patch) =>
+    set((state) => {
+      const merged: StyleOverride = {
+        ...state.settings.styleOverrides[path],
+        ...patch,
+      };
+      (Object.keys(merged) as (keyof StyleOverride)[]).forEach((key) => {
+        if (merged[key] === undefined) delete merged[key];
+      });
+      const styleOverrides = { ...state.settings.styleOverrides };
+      if (Object.keys(merged).length === 0) delete styleOverrides[path];
+      else styleOverrides[path] = merged;
+      return { settings: { ...state.settings, styleOverrides } };
+    }),
+  clearStyleOverride: (path) =>
+    set((state) => {
+      if (!(path in state.settings.styleOverrides)) return {};
+      const styleOverrides = { ...state.settings.styleOverrides };
+      delete styleOverrides[path];
+      return { settings: { ...state.settings, styleOverrides } };
+    }),
+
+  updateSettings: (settings) =>
+    set((state) => ({
+      settings: { ...state.settings, ...settings },
+    })),
+
+  // ------- Document schema (v2) -------
+
+  updateDocument: (patch) =>
+    set((state) => ({ document: { ...state.document, ...patch } })),
+  updateLayout: (patch) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        layout: deepMerge(state.document.layout, patch),
+      },
+    })),
+  updateTheme: (patch) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        theme: deepMerge(state.document.theme, patch),
+      },
+    })),
+  updatePage: (patch) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        page: deepMerge(state.document.page, patch),
+      },
+    })),
+  updateSectionNode: (sectionId, patch) =>
+    set((state) => ({
+      document: {
+        ...state.document,
+        sections: state.document.sections.map((s) =>
+          s.id === sectionId ? deepMerge(s, patch) : s,
+        ),
+      },
+    })),
+  moveSectionTo: (sectionId, target) =>
+    set((state) => {
+      // Reconcile first: a section added or restored in the same tick
+      // exists in `settings` but not yet in `document.sections`, and
+      // moving a node that isn't there yet would silently do nothing —
+      // which is why "add here" in the right column landed on the left.
+      const doc = reconcileSections(state.document, state.settings);
+      const moving = doc.sections.find((s) => s.id === sectionId);
+      if (!moving) return {};
+
+      const singleColumn = doc.layout.columns === 1;
+      const column: Placement =
+        target.column ?? (singleColumn ? "full" : moving.placement.column);
+      const page = target.page ?? moving.placement.page;
+
+      // Rebuild the destination column's order around the insert point,
+      // then renumber every column so orders stay dense and comparable.
+      const inColumn = doc.sections
+        .filter(
+          (s) =>
+            s.id !== sectionId &&
+            (singleColumn ? true : s.placement.column === column),
+        )
+        .sort((a, b) => a.placement.order - b.placement.order);
+
+      const index = Math.max(
+        0,
+        Math.min(target.index ?? inColumn.length, inColumn.length),
+      );
+      const ordered = [
+        ...inColumn.slice(0, index),
+        moving,
+        ...inColumn.slice(index),
+      ];
+      const orderById = new Map(ordered.map((s, i) => [s.id, i]));
+
+      const sections = doc.sections.map((s) => {
+        if (s.id === sectionId) {
+          return {
+            ...s,
+            placement: {
+              column,
+              page,
+              order: orderById.get(s.id) ?? s.placement.order,
+            },
+          };
+        }
+        const next = orderById.get(s.id);
+        return next === undefined
+          ? s
+          : { ...s, placement: { ...s.placement, order: next } };
+      });
+
+      return { document: { ...doc, sections } };
+    }),
+  setPreset: (presetId) =>
+    set((state) => ({
+      document: applyPreset(state.document, presetId),
+      settings: { ...state.settings, template: presetId as never },
+    })),
+
+  resetResume: () =>
+    set({
+      resumeData: initialResumeData,
+      settings: initialSettings,
+      document: documentFromSettings(initialSettings),
+    }),
+  setHasHydrated: (state) => set({ _hasHydrated: state }),
+});
+
 // Middleware order matters: persist must wrap temporal, otherwise persist's
 // synchronous rehydration `set` flows through zundo before the store state
 // exists and partialize throws, silently breaking hydration.
-export const useResumeStore = create<ResumeState>()(
-  persist(
-    temporal(
-      (set, get) => ({
-        resumeData: initialResumeData,
-        settings: initialSettings,
-        document: documentFromSettings(initialSettings),
-        _hasHydrated: false,
-
-        setPersonalInfo: (info) =>
-          set((state) => ({
-            resumeData: {
-              ...state.resumeData,
-              personalInfo: { ...state.resumeData.personalInfo, ...info },
-            },
-          })),
-
-        // ------- Generic item actions -------
-
-        addItem: (section, item) => {
-          const id = uuidv4();
-          set((state) => {
-            const defaults = isCustomSectionId(section)
-              ? DEFAULT_CUSTOM_ITEM
-              : DEFAULT_ITEMS[section];
-            const items = readItems(state.resumeData, section);
-            return {
-              resumeData: writeItems(state.resumeData, section, [
-                ...items,
-                { ...defaults, ...item, id },
-              ]),
-            };
-          });
-          return id;
-        },
-        updateItem: (section, id, patch) =>
-          set((state) => ({
-            resumeData: writeItems(
-              state.resumeData,
-              section,
-              readItems(state.resumeData, section).map((it) =>
-                it.id === id ? { ...it, ...patch } : it,
-              ),
-            ),
-          })),
-        removeItem: (section, id) =>
-          set((state) => ({
-            resumeData: writeItems(
-              state.resumeData,
-              section,
-              readItems(state.resumeData, section).filter((it) => it.id !== id),
-            ),
-          })),
-        duplicateItem: (section, id) => {
-          const newId = uuidv4();
-          let found = false;
-          set((state) => {
-            const items = readItems(state.resumeData, section);
-            const index = items.findIndex((it) => it.id === id);
-            if (index === -1) return {};
-            found = true;
-            const copy = { ...items[index], id: newId };
-            const next = [...items];
-            next.splice(index + 1, 0, copy);
-            return { resumeData: writeItems(state.resumeData, section, next) };
-          });
-          return found ? newId : null;
-        },
-        reorderItem: (section, from, to) =>
-          set((state) => {
-            const items = [...readItems(state.resumeData, section)];
-            if (
-              from < 0 ||
-              from >= items.length ||
-              to < 0 ||
-              to >= items.length
-            )
-              return {};
-            const [moved] = items.splice(from, 1);
-            items.splice(to, 0, moved);
-            return { resumeData: writeItems(state.resumeData, section, items) };
-          }),
-
-        // ------- Section-level actions -------
-
-        // Arrow buttons and drag-and-drop share one implementation, so they
-        // can never disagree about what "move left" means.
-        moveSection: (sectionId, direction) => {
-          const { document: doc, moveSectionTo } = get();
-          const node = doc.sections.find((s) => s.id === sectionId);
-          if (!node) return;
-          const singleColumn = doc.layout.columns === 1;
-          const column = singleColumn
-            ? ("full" as const)
-            : node.placement.column === "full"
-              ? ("left" as const)
-              : node.placement.column;
-
-          if (direction === "left" || direction === "right") {
-            if (singleColumn) return;
-            const target = direction === "left" ? "left" : "right";
-            if (target === column) return;
-            moveSectionTo(sectionId, { column: target });
-            return;
-          }
-
-          const siblings = doc.sections
-            .filter(
-              (s) =>
-                s.visible &&
-                (singleColumn ? true : s.placement.column === column),
-            )
-            .sort((a, b) => a.placement.order - b.placement.order);
-          const index = siblings.findIndex((s) => s.id === sectionId);
-          if (index < 0) return;
-          const next = direction === "up" ? index - 1 : index + 1;
-          if (next < 0 || next >= siblings.length) return;
-          moveSectionTo(sectionId, { column, index: next });
-        },
-        toggleSectionVisibility: (sectionId) =>
-          set((state) => {
-            const pos = findSectionConfig(state.settings, sectionId);
-            if (!pos) return {};
-            const list = state.settings[pos.column].map((s) =>
-              s.id === sectionId ? { ...s, visible: !s.visible } : s,
-            );
-            return { settings: { ...state.settings, [pos.column]: list } };
-          }),
-        toggleSectionPageBreak: (sectionId) =>
-          set((state) => {
-            const pos = findSectionConfig(state.settings, sectionId);
-            if (!pos) return {};
-            const list = state.settings[pos.column].map((s) =>
-              s.id === sectionId
-                ? { ...s, pageBreakBefore: !s.pageBreakBefore }
-                : s,
-            );
-            return { settings: { ...state.settings, [pos.column]: list } };
-          }),
-        renameSection: (sectionId, name) =>
-          set((state) => {
-            const pos = findSectionConfig(state.settings, sectionId);
-            if (!pos) return {};
-            const list = state.settings[pos.column].map((s) =>
-              s.id === sectionId ? { ...s, name } : s,
-            );
-            return { settings: { ...state.settings, [pos.column]: list } };
-          }),
-        duplicateSection: (sectionId) =>
-          set((state) => {
-            const pos = findSectionConfig(state.settings, sectionId);
-            if (!pos) return {};
-            const config = state.settings[pos.column][pos.index];
-            const uuid = uuidv4();
-            const items = isCustomSectionId(sectionId)
-              ? readItems(state.resumeData, sectionId).map((it) => ({
-                  ...it,
-                  id: uuidv4(),
-                }))
-              : builtinToCustomItems(state.resumeData, sectionId);
-            const newSection: CustomSection = {
-              id: uuid,
-              items: items as CustomSectionItem[],
-            };
-            const list = [...state.settings[pos.column]];
-            list.splice(pos.index + 1, 0, {
-              id: `custom:${uuid}`,
-              name: `${config.name} (Copy)`,
-              visible: true,
-            });
-            return {
-              resumeData: {
-                ...state.resumeData,
-                customSections: [
-                  ...state.resumeData.customSections,
-                  newSection,
-                ],
-              },
-              settings: { ...state.settings, [pos.column]: list },
-            };
-          }),
-        removeSectionFromLayout: (sectionId) =>
-          set((state) => {
-            const pos = findSectionConfig(state.settings, sectionId);
-            if (!pos) return {};
-            const settings = {
-              ...state.settings,
-              [pos.column]: state.settings[pos.column].filter(
-                (s) => s.id !== sectionId,
-              ),
-            };
-            if (isCustomSectionId(sectionId)) {
-              const uuid = customSectionUuid(sectionId);
-              return {
-                settings,
-                resumeData: {
-                  ...state.resumeData,
-                  customSections: state.resumeData.customSections.filter(
-                    (c) => c.id !== uuid,
-                  ),
-                },
-              };
-            }
-            return { settings };
-          }),
-        restoreSection: (sectionId) =>
-          set((state) => {
-            if (findSectionConfig(state.settings, sectionId)) return {};
-            const column = DEFAULT_SECTION_COLUMN[sectionId] ?? "rightColumn";
-            return {
-              settings: {
-                ...state.settings,
-                [column]: [
-                  ...state.settings[column],
-                  {
-                    id: sectionId,
-                    name: DEFAULT_SECTION_NAMES[sectionId] ?? sectionId,
-                    visible: true,
-                  },
-                ],
-              },
-            };
-          }),
-        addCustomSection: () => {
-          const uuid = uuidv4();
-          set((state) => {
-            const column =
-              state.settings.leftColumn.length <=
-              state.settings.rightColumn.length
-                ? "leftColumn"
-                : "rightColumn";
-            return {
-              resumeData: {
-                ...state.resumeData,
-                customSections: [
-                  ...state.resumeData.customSections,
-                  {
-                    id: uuid,
-                    items: [{ ...DEFAULT_CUSTOM_ITEM, id: uuidv4() }],
-                  },
-                ],
-              },
-              settings: {
-                ...state.settings,
-                [column]: [
-                  ...state.settings[column],
-                  { id: `custom:${uuid}`, name: "New Section", visible: true },
-                ],
-              },
-            };
-          });
-          return `custom:${uuid}`;
-        },
-
-        // ------- Style overrides -------
-
-        setStyleOverride: (path, patch) =>
-          set((state) => {
-            const merged: StyleOverride = {
-              ...state.settings.styleOverrides[path],
-              ...patch,
-            };
-            (Object.keys(merged) as (keyof StyleOverride)[]).forEach((key) => {
-              if (merged[key] === undefined) delete merged[key];
-            });
-            const styleOverrides = { ...state.settings.styleOverrides };
-            if (Object.keys(merged).length === 0) delete styleOverrides[path];
-            else styleOverrides[path] = merged;
-            return { settings: { ...state.settings, styleOverrides } };
-          }),
-        clearStyleOverride: (path) =>
-          set((state) => {
-            if (!(path in state.settings.styleOverrides)) return {};
-            const styleOverrides = { ...state.settings.styleOverrides };
-            delete styleOverrides[path];
-            return { settings: { ...state.settings, styleOverrides } };
-          }),
-
-        updateSettings: (settings) =>
-          set((state) => ({
-            settings: { ...state.settings, ...settings },
-          })),
-
-        // ------- Document schema (v2) -------
-
-        updateDocument: (patch) =>
-          set((state) => ({ document: { ...state.document, ...patch } })),
-        updateLayout: (patch) =>
-          set((state) => ({
-            document: {
-              ...state.document,
-              layout: deepMerge(state.document.layout, patch),
-            },
-          })),
-        updateTheme: (patch) =>
-          set((state) => ({
-            document: {
-              ...state.document,
-              theme: deepMerge(state.document.theme, patch),
-            },
-          })),
-        updatePage: (patch) =>
-          set((state) => ({
-            document: {
-              ...state.document,
-              page: deepMerge(state.document.page, patch),
-            },
-          })),
-        updateSectionNode: (sectionId, patch) =>
-          set((state) => ({
-            document: {
-              ...state.document,
-              sections: state.document.sections.map((s) =>
-                s.id === sectionId ? deepMerge(s, patch) : s,
-              ),
-            },
-          })),
-        moveSectionTo: (sectionId, target) =>
-          set((state) => {
-            // Reconcile first: a section added or restored in the same tick
-            // exists in `settings` but not yet in `document.sections`, and
-            // moving a node that isn't there yet would silently do nothing —
-            // which is why "add here" in the right column landed on the left.
-            const doc = reconcileSections(state.document, state.settings);
-            const moving = doc.sections.find((s) => s.id === sectionId);
-            if (!moving) return {};
-
-            const singleColumn = doc.layout.columns === 1;
-            const column: Placement =
-              target.column ??
-              (singleColumn ? "full" : moving.placement.column);
-            const page = target.page ?? moving.placement.page;
-
-            // Rebuild the destination column's order around the insert point,
-            // then renumber every column so orders stay dense and comparable.
-            const inColumn = doc.sections
-              .filter(
-                (s) =>
-                  s.id !== sectionId &&
-                  (singleColumn ? true : s.placement.column === column),
-              )
-              .sort((a, b) => a.placement.order - b.placement.order);
-
-            const index = Math.max(
-              0,
-              Math.min(target.index ?? inColumn.length, inColumn.length),
-            );
-            const ordered = [
-              ...inColumn.slice(0, index),
-              moving,
-              ...inColumn.slice(index),
-            ];
-            const orderById = new Map(ordered.map((s, i) => [s.id, i]));
-
-            const sections = doc.sections.map((s) => {
-              if (s.id === sectionId) {
-                return {
-                  ...s,
-                  placement: {
-                    column,
-                    page,
-                    order: orderById.get(s.id) ?? s.placement.order,
-                  },
-                };
-              }
-              const next = orderById.get(s.id);
-              return next === undefined
-                ? s
-                : { ...s, placement: { ...s.placement, order: next } };
-            });
-
-            return { document: { ...doc, sections } };
-          }),
-        setPreset: (presetId) =>
-          set((state) => ({
-            document: applyPreset(state.document, presetId),
-            settings: { ...state.settings, template: presetId as never },
-          })),
-
-        resetResume: () =>
-          set({
-            resumeData: initialResumeData,
-            settings: initialSettings,
-            document: documentFromSettings(initialSettings),
-          }),
-        setHasHydrated: (state) => set({ _hasHydrated: state }),
-      }),
-      {
+function createPersistedStore() {
+  return create<ResumeState>()(
+    persist(
+      temporal(createResumeState, {
         partialize: (state) => ({
           resumeData: state.resumeData,
           settings: state.settings,
@@ -878,85 +876,137 @@ export const useResumeStore = create<ResumeState>()(
             }
           };
         },
+      }),
+      {
+        name: "resume-storage",
+        version: 2,
+        migrate: (persisted: unknown) => {
+          const state = persisted as {
+            resumeData?: Partial<ResumeData> & {
+              customSections?: CustomSection[];
+            };
+            settings?: Partial<ResumeSettings> & {
+              sectionTypography?: unknown;
+            };
+          };
+          if (state?.resumeData && !state.resumeData.customSections) {
+            state.resumeData.customSections = [];
+          }
+          if (state?.settings) {
+            delete state.settings.sectionTypography;
+            if (!state.settings.styleOverrides)
+              state.settings.styleOverrides = {};
+            if (state.settings.showPhoto === undefined)
+              state.settings.showPhoto = true;
+            const fillNames = (list?: SectionConfig[]) =>
+              list?.map((s) => ({
+                ...s,
+                name: s.name || DEFAULT_SECTION_NAMES[s.id] || s.id,
+              }));
+            state.settings.leftColumn = fillNames(state.settings.leftColumn);
+            state.settings.rightColumn = fillNames(state.settings.rightColumn);
+          }
+          // v1 → v2: derive the presentation schema from the old template +
+          // column settings. Existing accent colour, page size, photo and
+          // per-section flags all carry over; nothing is lost.
+          const withDoc = state as typeof state & { document?: ResumeDocument };
+          if (state?.settings && !withDoc.document) {
+            withDoc.document = documentFromSettings(
+              state.settings as ResumeSettings,
+            );
+          }
+          return withDoc;
+        },
+        // Deep-merge one level so returning users get defaults for keys
+        // added after their state was persisted (zustand's default merge
+        // is shallow and would drop new nested keys).
+        merge: (persisted, current) => {
+          const state = persisted as
+            | {
+                resumeData?: ResumeData;
+                settings?: ResumeSettings;
+                document?: ResumeDocument;
+              }
+            | undefined;
+          const settings = { ...current.settings, ...state?.settings };
+          // A document persisted before a schema field was added is filled in
+          // from the preset it was seeded from, so new keys are never undefined.
+          const document = state?.document
+            ? deepMerge(documentFromSettings(settings), state.document)
+            : documentFromSettings(settings);
+          return {
+            ...current,
+            ...(state ?? {}),
+            resumeData: { ...current.resumeData, ...state?.resumeData },
+            settings,
+            document,
+          };
+        },
+        onRehydrateStorage: () => (state) => {
+          state?.setHasHydrated(true);
+          // Clear undo history so users can't undo past the loaded state.
+          // Deferred: the store variable isn't initialized yet when
+          // hydration runs synchronously from localStorage.
+          setTimeout(() => {
+            resumeStore().temporal.getState().clear();
+          }, 0);
+        },
       },
     ),
-    {
-      name: "resume-storage",
-      version: 2,
-      migrate: (persisted: unknown) => {
-        const state = persisted as {
-          resumeData?: Partial<ResumeData> & {
-            customSections?: CustomSection[];
-          };
-          settings?: Partial<ResumeSettings> & {
-            sectionTypography?: unknown;
-          };
-        };
-        if (state?.resumeData && !state.resumeData.customSections) {
-          state.resumeData.customSections = [];
-        }
-        if (state?.settings) {
-          delete state.settings.sectionTypography;
-          if (!state.settings.styleOverrides)
-            state.settings.styleOverrides = {};
-          if (state.settings.showPhoto === undefined)
-            state.settings.showPhoto = true;
-          const fillNames = (list?: SectionConfig[]) =>
-            list?.map((s) => ({
-              ...s,
-              name: s.name || DEFAULT_SECTION_NAMES[s.id] || s.id,
-            }));
-          state.settings.leftColumn = fillNames(state.settings.leftColumn);
-          state.settings.rightColumn = fillNames(state.settings.rightColumn);
-        }
-        // v1 → v2: derive the presentation schema from the old template +
-        // column settings. Existing accent colour, page size, photo and
-        // per-section flags all carry over; nothing is lost.
-        const withDoc = state as typeof state & { document?: ResumeDocument };
-        if (state?.settings && !withDoc.document) {
-          withDoc.document = documentFromSettings(
-            state.settings as ResumeSettings,
-          );
-        }
-        return withDoc;
-      },
-      // Deep-merge one level so returning users get defaults for keys
-      // added after their state was persisted (zustand's default merge
-      // is shallow and would drop new nested keys).
-      merge: (persisted, current) => {
-        const state = persisted as
-          | {
-              resumeData?: ResumeData;
-              settings?: ResumeSettings;
-              document?: ResumeDocument;
-            }
-          | undefined;
-        const settings = { ...current.settings, ...state?.settings };
-        // A document persisted before a schema field was added is filled in
-        // from the preset it was seeded from, so new keys are never undefined.
-        const document = state?.document
-          ? deepMerge(documentFromSettings(settings), state.document)
-          : documentFromSettings(settings);
-        return {
-          ...current,
-          ...(state ?? {}),
-          resumeData: { ...current.resumeData, ...state?.resumeData },
-          settings,
-          document,
-        };
-      },
-      onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
-        // Clear undo history so users can't undo past the loaded state.
-        // Deferred: the store variable isn't initialized yet when
-        // hydration runs synchronously from localStorage.
-        setTimeout(() => {
-          useResumeStore.temporal.getState().clear();
-        }, 0);
-      },
-    },
-  ),
-);
+  );
+}
 
-/** Convenience hook for undo/redo state. */
-export const useTemporalStore = useResumeStore.temporal;
+type PersistedResumeStore = ReturnType<typeof createPersistedStore>;
+
+let persisted: PersistedResumeStore | null = null;
+
+/**
+ * The user's own resume store, created on first use.
+ *
+ * Creating it rehydrates from (and writes back to) localStorage, so the
+ * shared-resume viewer must never reach this — it renders someone else's
+ * document through a detached store instead. Deferring construction is what
+ * makes "opening a share link does not touch your saved work" true rather
+ * than merely intended.
+ */
+export function resumeStore(): PersistedResumeStore {
+  return (persisted ??= createPersistedStore());
+}
+
+/**
+ * A store that holds a resume but is wired to nothing: no localStorage, no
+ * undo history. Used to render a document that isn't the visitor's own.
+ */
+export function createDetachedStore(
+  initial: Pick<ResumeState, "resumeData" | "settings" | "document">,
+): StoreApi<ResumeState> {
+  const store = create<ResumeState>()(createResumeState);
+  store.setState({ ...initial, _hasHydrated: true });
+  return store;
+}
+
+const StoreContext = createContext<StoreApi<ResumeState> | null>(null);
+
+/**
+ * Points every component below at a different store. Without a provider the
+ * hook reads the persisted store, which is what the builder wants.
+ */
+export function ResumeStoreProvider({
+  store,
+  children,
+}: {
+  store: StoreApi<ResumeState>;
+  children: React.ReactNode;
+}) {
+  return createElement(StoreContext.Provider, { value: store }, children);
+}
+
+export function useResumeStore(): ResumeState;
+export function useResumeStore<T>(selector: (state: ResumeState) => T): T;
+export function useResumeStore<T>(selector?: (state: ResumeState) => T) {
+  const override = useContext(StoreContext);
+  return useStore(
+    override ?? resumeStore(),
+    selector ?? ((state: ResumeState) => state as unknown as T),
+  );
+}

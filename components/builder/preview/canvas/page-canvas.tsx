@@ -14,6 +14,7 @@ import {
 } from "@/lib/schema/document";
 import {
   borderStyle,
+  contentWidth,
   fillStyle,
   fontStyle,
   isDarkFill,
@@ -337,9 +338,18 @@ export function PageCanvas({
         <div
           className="grid flex-1 min-h-0"
           style={{
-            gridTemplateColumns: `${layout.ratio * 100}% ${
-              (1 - layout.ratio) * 100 - (layout.gap / 794) * 100
-            }%`,
+            // One measured track and one that takes whatever is left.
+            //
+            // Two proportional tracks — percentages or fr — each round down to
+            // 1/64px, so together they stop ~0.016px short of the full width
+            // and leak a hairline of page background down the right edge.
+            // Sizing the left column in whole pixels and giving the right one
+            // `1fr` leaves no remainder to lose. It also drops the old
+            // hardcoded 794, which was wrong for Letter and for any page
+            // margin.
+            gridTemplateColumns: `${Math.round(
+              layout.ratio * (contentWidth(page) - layout.gap),
+            )}px 1fr`,
             gap: layout.gap,
           }}
         >

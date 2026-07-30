@@ -1,6 +1,6 @@
 "use client";
 
-import { useResumeStore } from "@/lib/store/useResumeStore";
+import { resumeStore } from "@/lib/store/useResumeStore";
 import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -25,7 +25,7 @@ export function SaveStatus() {
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [label, setLabel] = useState("Saved");
 
-  useEffect(() => useResumeStore.subscribe(() => setSavedAt(Date.now())), []);
+  useEffect(() => resumeStore().subscribe(() => setSavedAt(Date.now())), []);
 
   useEffect(() => {
     if (savedAt === null) return;

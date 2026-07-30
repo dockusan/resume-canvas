@@ -68,16 +68,24 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
                   style={{ color: colors.text }}
                   path={`socials.${social.id}.platform`}
                 />
-                {editable && showLink && (
-                  <span data-editor-only>
-                    <EditableLink
-                      url={social.url}
-                      onCommit={(v) =>
-                        updateItem("socials", social.id, { url: v })
-                      }
-                    >
+                {/* The icon marks "this opens somewhere", so it belongs in the
+                    export too — only the empty-URL affordance is editor-only.
+                    Outside the editor the whole row is already an anchor, so
+                    the glyph stays plain rather than nesting a second one. */}
+                {showLink && (social.url || editable) && (
+                  <span data-editor-only={social.url ? undefined : ""}>
+                    {editable ? (
+                      <EditableLink
+                        url={social.url}
+                        onCommit={(v) =>
+                          updateItem("socials", social.id, { url: v })
+                        }
+                      >
+                        <Icon name={linkIcon} className="w-3 h-3 opacity-40" />
+                      </EditableLink>
+                    ) : (
                       <Icon name={linkIcon} className="w-3 h-3 opacity-40" />
-                    </EditableLink>
+                    )}
                   </span>
                 )}
               </div>

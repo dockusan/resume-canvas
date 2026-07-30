@@ -9,10 +9,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ShareDialog } from "./share-dialog";
 import Image from "next/image";
 import Link from "next/link";
 import { SaveStatus } from "./save-status";
-import { useResumeStore } from "@/lib/store/useResumeStore";
+import { resumeStore, useResumeStore } from "@/lib/store/useResumeStore";
 import { cn } from "@/lib/utils";
 import {
   Download,
@@ -21,6 +22,7 @@ import {
   ListChecks,
   MoreHorizontal,
   Rows3,
+  Share2,
   SquarePlus,
   Moon,
   Minus,
@@ -72,9 +74,10 @@ export function BuilderToolbar({
   const resetResume = useResumeStore((s) => s.resetResume);
   const { theme, setTheme } = useTheme();
   const [confirmReset, setConfirmReset] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const { undo, redo, pastStates, futureStates } = useStore(
-    useResumeStore.temporal,
+    resumeStore().temporal,
   );
   const canUndo = pastStates.length > 0;
   const canRedo = futureStates.length > 0;
@@ -246,6 +249,17 @@ export function BuilderToolbar({
         </DropdownMenu>
 
         <Button
+          variant="outline"
+          size="sm"
+          className="h-8"
+          title="Share a read-only link"
+          onClick={() => setShareOpen(true)}
+        >
+          <Share2 className="h-3.5 w-3.5 sm:mr-1" />
+          <span className="hidden sm:inline">Share</span>
+        </Button>
+
+        <Button
           size="sm"
           className="h-8"
           title="Save as PDF"
@@ -256,6 +270,8 @@ export function BuilderToolbar({
           <span className="hidden sm:inline">Download</span>
         </Button>
       </span>
+
+      <ShareDialog open={shareOpen} onClose={() => setShareOpen(false)} />
 
       <ConfirmDialog
         open={confirmReset}
