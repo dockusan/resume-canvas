@@ -1,5 +1,5 @@
 import { LegalPage } from "@/components/legal-page";
-import { pageMetadata } from "@/lib/seo";
+import { UPDATED, pageMetadata, updatedLabel } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "Cookie policy",
@@ -13,7 +13,7 @@ export default function CookiesPage() {
     <LegalPage
       title="Cookie policy"
       intro="No tracking cookies, no advertising cookies, no consent banner needed."
-      updated="30 July 2026"
+      updated={updatedLabel(UPDATED.cookies)}
     >
       <section>
         <h2>What we store</h2>
