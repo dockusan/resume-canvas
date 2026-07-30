@@ -20,7 +20,9 @@ export function PersonalShell({
   as?: React.ElementType;
   children: React.ReactNode;
 } & Record<string, unknown>) {
-  const { editable, setActivePath } = useEditing();
+  const { editable, activePath, setActivePath } = useEditing();
+  const selected =
+    activePath === "personalInfo" || !!activePath?.startsWith("personalInfo.");
 
   if (!editable) {
     return (
@@ -32,9 +34,22 @@ export function PersonalShell({
 
   return (
     <Tag
-      className={cn("relative group/section", className)}
+      className={cn(
+        "relative group/section rounded-[3px]",
+        // Without this the header gave no sign it was selectable, so its
+        // settings — the background band among them — were unreachable
+        // unless you already knew to click it.
+        "hover:outline hover:outline-1 hover:outline-sky-300/40 hover:outline-offset-4",
+        selected && "outline outline-1 outline-sky-400/70 outline-offset-4",
+        className,
+      )}
       style={style}
-      onClick={() => setActivePath("personalInfo")}
+      onClick={(e: React.MouseEvent) => {
+        // Clicking the header's own padding still selects it — unlike a
+        // section, there is nothing else the blank area could mean.
+        e.stopPropagation();
+        setActivePath("personalInfo");
+      }}
       {...rest}
     >
       {children}

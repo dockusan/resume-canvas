@@ -61,7 +61,10 @@ export function HeaderPanel() {
             ]}
           />
         </Row>
-        <Row label="Fill">
+      </Group>
+
+      <Group title="Background">
+        <Row label="Colour" hint="The band behind your name">
           <FillField
             value={header.background}
             onChange={(background) => updateLayout({ header: { background } })}
