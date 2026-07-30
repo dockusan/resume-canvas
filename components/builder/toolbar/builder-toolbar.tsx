@@ -1,44 +1,31 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ColorPicker } from "@/components/ui/color-picker";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { documentSizes } from "@/data/document-size";
-import { fontFamilies } from "@/data/font-family";
-import { fontSizes } from "@/data/font-size";
-import {
-  DEFAULT_SECTION_NAMES,
-  useResumeStore,
-} from "@/lib/store/useResumeStore";
-import { ResumeSettings, TemplateType } from "@/lib/types";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useResumeStore } from "@/lib/store/useResumeStore";
+import { cn } from "@/lib/utils";
 import {
   Download,
-  Eye,
   FileText,
-  Layers,
+  LayoutTemplate,
+  ListChecks,
+  Rows3,
   Moon,
-  Palette,
+  Minus,
   Plus,
+  Plus as PlusIcon,
   Printer,
+  SlidersHorizontal,
   Redo2,
   RotateCcw,
   Sun,
@@ -48,39 +35,36 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useStore } from "zustand";
 
-const TEMPLATES: { value: TemplateType; label: string }[] = [
-  { value: "classic", label: "Classic" },
-  { value: "modern", label: "Modern" },
-  { value: "modern-2col", label: "Modern 2-Column" },
-  { value: "minimal", label: "Minimal" },
-  { value: "executive", label: "Executive" },
-  { value: "creative", label: "Creative" },
-];
-
-const BUILTIN_SECTION_IDS = Object.keys(DEFAULT_SECTION_NAMES);
-
 interface BuilderToolbarProps {
-  showPdf: boolean;
-  onTogglePdf: () => void;
+  showPdf?: boolean;
+  onTogglePdf?: () => void;
   onPrint: () => void;
   onDownload: () => void;
+  onDownloadAts: () => void;
+  /** "fit" or a scale factor. */
+  zoom: "fit" | number;
+  fitScale: number;
+  onZoom: (zoom: "fit" | number) => void;
+  /** Opens the properties drawer; only reachable below the lg breakpoint. */
+  onOpenPanel: () => void;
+  mode: "design" | "content" | "arrange";
+  onMode: (mode: "design" | "content" | "arrange") => void;
   isDownloading: boolean;
 }
 
 export function BuilderToolbar({
-  showPdf,
-  onTogglePdf,
   onPrint,
   onDownload,
+  onDownloadAts,
   isDownloading,
+  zoom,
+  fitScale,
+  onZoom,
+  onOpenPanel,
+  mode,
+  onMode,
 }: BuilderToolbarProps) {
-  const settings = useResumeStore((s) => s.settings);
-  const updateSettings = useResumeStore((s) => s.updateSettings);
   const addCustomSection = useResumeStore((s) => s.addCustomSection);
-  const toggleSectionVisibility = useResumeStore(
-    (s) => s.toggleSectionVisibility,
-  );
-  const restoreSection = useResumeStore((s) => s.restoreSection);
   const resetResume = useResumeStore((s) => s.resetResume);
   const { theme, setTheme } = useTheme();
   const [confirmReset, setConfirmReset] = useState(false);
@@ -112,15 +96,11 @@ export function BuilderToolbar({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [undo, redo]);
 
-  const allSections = [...settings.leftColumn, ...settings.rightColumn];
-  const hiddenSections = allSections.filter((s) => !s.visible);
-  const removedBuiltins = BUILTIN_SECTION_IDS.filter(
-    (id) => !allSections.some((s) => s.id === id),
-  );
-  const showPhotoHidden = settings.showPhoto === false;
-
   return (
-    <div className="p-2 sm:p-3 border-b flex flex-wrap items-center gap-1.5 bg-card sticky top-0 z-30">
+    <div
+      data-editor-only
+      className="p-2 sm:p-3 border-b flex flex-wrap items-center gap-1.5 bg-card sticky top-0 z-30"
+    >
       <Button
         variant="ghost"
         size="icon-sm"
@@ -140,219 +120,231 @@ export function BuilderToolbar({
         <Redo2 className="h-4 w-4" />
       </Button>
 
-      <Select
-        value={settings.template}
-        onValueChange={(v) => updateSettings({ template: v as TemplateType })}
-      >
-        <SelectTrigger className="w-[150px] h-8" size="sm">
-          <Layers className="h-3.5 w-3.5 opacity-60" />
-          <SelectValue placeholder="Template" />
-        </SelectTrigger>
-        <SelectContent>
-          {TEMPLATES.map((t) => (
-            <SelectItem key={t.value} value={t.value}>
-              {t.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <span className="mx-1 h-5 w-px bg-border" />
 
-      <Select
-        // Older persisted values quote the family name ("'Khand', sans-serif");
-        // fall back to a label match so the select still shows the right font.
-        value={
-          fontFamilies.find((f) => f.value === settings.fontFamily)?.value ??
-          fontFamilies.find((f) =>
-            settings.fontFamily
-              ?.toLowerCase()
-              .includes(f.label.toLowerCase()),
-          )?.value
-        }
-        onValueChange={(v) => updateSettings({ fontFamily: v })}
-      >
-        <SelectTrigger className="w-[130px] h-8" size="sm">
-          <SelectValue placeholder="Font" />
-        </SelectTrigger>
-        <SelectContent className="max-h-72">
-          {fontFamilies.map((f) => (
-            <SelectItem key={f.value} value={f.value}>
-              <span style={{ fontFamily: f.value }}>{f.label}</span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select
-        value={settings.fontSize}
-        onValueChange={(v) =>
-          updateSettings({ fontSize: v as ResumeSettings["fontSize"] })
-        }
-      >
-        <SelectTrigger className="w-[110px] h-8" size="sm">
-          <SelectValue placeholder="Size" />
-        </SelectTrigger>
-        <SelectContent>
-          {fontSizes.map((f) => (
-            <SelectItem key={f.value} value={f.value}>
-              {f.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select
-        value={settings.documentSize}
-        onValueChange={(v) =>
-          updateSettings({ documentSize: v as ResumeSettings["documentSize"] })
-        }
-      >
-        <SelectTrigger className="w-[90px] h-8" size="sm">
-          <FileText className="h-3.5 w-3.5 opacity-60" />
-          <SelectValue placeholder="Size" />
-        </SelectTrigger>
-        <SelectContent>
-          {documentSizes.map((d) => (
-            <SelectItem key={d.value} value={d.value}>
-              {d.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-8" title="Theme color">
-            <Palette className="h-3.5 w-3.5" />
-            <span
-              className="w-3.5 h-3.5 rounded-full border"
-              style={{ backgroundColor: settings.themeColor }}
-            />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-64">
-          <ColorPicker
-            value={settings.themeColor}
-            onChange={(themeColor) => updateSettings({ themeColor })}
-          />
-        </PopoverContent>
-      </Popover>
-
-      <Button
-        variant="outline"
-        size="sm"
-        className="h-8"
-        onClick={() => addCustomSection()}
-      >
-        <Plus className="h-3.5 w-3.5 mr-1" /> Section
-      </Button>
-
-      {(hiddenSections.length > 0 ||
-        removedBuiltins.length > 0 ||
-        showPhotoHidden) && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8">
-              <Eye className="h-3.5 w-3.5 mr-1" /> Restore
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            {hiddenSections.length > 0 && (
-              <>
-                <DropdownMenuLabel className="text-xs">
-                  Hidden sections
-                </DropdownMenuLabel>
-                {hiddenSections.map((s) => (
-                  <DropdownMenuItem
-                    key={s.id}
-                    onClick={() => toggleSectionVisibility(s.id)}
-                  >
-                    {s.name}
-                  </DropdownMenuItem>
-                ))}
-              </>
+      {/* Three ways to work on the same document: lay it out, write it, or
+          restructure it. Writing and restructuring are what a phone can
+          actually do well. */}
+      <div className="flex items-center rounded-md border p-0.5">
+        {MODES.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            title={m.hint}
+            onClick={() => onMode(m.id)}
+            className={cn(
+              "flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors",
+              mode === m.id
+                ? "bg-muted font-medium"
+                : "text-muted-foreground hover:text-foreground",
             )}
-            {removedBuiltins.length > 0 && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs">
-                  Removed sections
-                </DropdownMenuLabel>
-                {removedBuiltins.map((id) => (
-                  <DropdownMenuItem key={id} onClick={() => restoreSection(id)}>
-                    {DEFAULT_SECTION_NAMES[id]}
-                  </DropdownMenuItem>
-                ))}
-              </>
-            )}
-            {showPhotoHidden && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => updateSettings({ showPhoto: true })}
-                >
-                  Show photo
-                </DropdownMenuItem>
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          >
+            <m.icon className="h-3.5 w-3.5" />
+            <span className="hidden md:inline">{m.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {mode === "design" && (
+        <>
+          <span className="mx-1 hidden h-5 w-px bg-border sm:block" />
+          <span className="hidden sm:flex">
+            <ZoomControl zoom={zoom} fitScale={fitScale} onZoom={onZoom} />
+          </span>
+        </>
       )}
 
-      <Popover open={confirmReset} onOpenChange={setConfirmReset}>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon-sm" title="Reset resume">
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-60 space-y-2" align="start">
-          <p className="text-xs">
-            Reset the whole resume to the sample data? You can undo this.
-          </p>
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setConfirmReset(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => {
-                resetResume();
-                setConfirmReset(false);
-              }}
-            >
-              Reset
-            </Button>
-          </div>
-        </PopoverContent>
-      </Popover>
+      {mode !== "arrange" && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8"
+          title="Add a custom section"
+          onClick={() => addCustomSection()}
+        >
+          <Plus className="h-3.5 w-3.5 sm:mr-1" />
+          <span className="hidden sm:inline">Section</span>
+        </Button>
+      )}
 
-      <div className="flex-1" />
+      {/* Everything about how the document looks lives in the properties
+          panel, so the bar keeps only document-wide actions. */}
+      <span className="ml-auto flex items-center gap-1.5">
+        <Popover open={confirmReset} onOpenChange={setConfirmReset}>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon-sm" title="Start over">
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-60 space-y-2" align="end">
+            <p className="text-xs">
+              Reset the resume to the sample content? This cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmReset(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  resetResume();
+                  setConfirmReset(false);
+                }}
+              >
+                Reset
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
 
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          title={theme === "dark" ? "Light mode" : "Dark mode"}
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        >
+          {theme === "dark" ? (
+            <Sun className="h-4 w-4" />
+          ) : (
+            <Moon className="h-4 w-4" />
+          )}
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn("h-8 lg:hidden", mode !== "design" && "hidden")}
+          title="Design and sections"
+          onClick={onOpenPanel}
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5 sm:mr-1" />
+          <span className="hidden sm:inline">Design</span>
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8"
+          title="Print"
+          onClick={onPrint}
+        >
+          <Printer className="h-3.5 w-3.5 sm:mr-1" />
+          <span className="hidden sm:inline">Print</span>
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8"
+          title="Plain-text copy for applicant tracking systems, which parse multi-column PDFs poorly"
+          onClick={onDownloadAts}
+        >
+          <FileText className="h-3.5 w-3.5 sm:mr-1" />
+          <span className="hidden sm:inline">ATS</span>
+        </Button>
+        <Button
+          size="sm"
+          className="h-8"
+          title="Save as PDF"
+          onClick={onDownload}
+          disabled={isDownloading}
+        >
+          <Download className="h-3.5 w-3.5 sm:mr-1" />
+          <span className="hidden sm:inline">Download</span>
+        </Button>
+      </span>
+    </div>
+  );
+}
+
+const MODES = [
+  {
+    id: "design" as const,
+    label: "Design",
+    icon: LayoutTemplate,
+    hint: "Lay out and style the page",
+  },
+  {
+    id: "content" as const,
+    label: "Content",
+    icon: ListChecks,
+    hint: "Write and edit your details",
+  },
+  {
+    id: "arrange" as const,
+    label: "Arrange",
+    icon: Rows3,
+    hint: "Reorder and move sections",
+  },
+];
+
+const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5];
+
+/** Paged documents need a zoom that is not just fit-to-width. */
+function ZoomControl({
+  zoom,
+  fitScale,
+  onZoom,
+}: {
+  zoom: "fit" | number;
+  /** What "fit" currently resolves to, so stepping from it moves sensibly. */
+  fitScale: number;
+  onZoom: (zoom: "fit" | number) => void;
+}) {
+  const label = zoom === "fit" ? "Fit" : `${Math.round(zoom * 100)}%`;
+  const step = (delta: number) => {
+    // "Fit" is not a rung on the ladder, so resolve it to the scale it
+    // currently produces before looking for the next step.
+    const current = zoom === "fit" ? fitScale : zoom;
+    const next =
+      delta > 0
+        ? ZOOM_LEVELS.find((l) => l > current + 0.001)
+        : [...ZOOM_LEVELS].reverse().find((l) => l < current - 0.001);
+    if (next) onZoom(next);
+  };
+
+  return (
+    <div className="flex items-center gap-0.5">
       <Button
         variant="ghost"
         size="icon-sm"
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        title="Zoom out"
+        onClick={() => step(-1)}
       >
-        <Sun className="h-4 w-4 dark:hidden" />
-        <Moon className="h-4 w-4 hidden dark:block" />
+        <Minus className="h-3.5 w-3.5" />
       </Button>
-      <Button variant="outline" size="sm" className="h-8" onClick={onTogglePdf}>
-        {showPdf ? "Hide PDF" : "Show PDF"}
-      </Button>
-      <Button variant="outline" size="sm" className="h-8" onClick={onPrint}>
-        <Printer className="h-3.5 w-3.5 mr-1" /> Print
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-14 tabular-nums text-xs"
+            title="Zoom"
+          >
+            {label}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuItem onClick={() => onZoom("fit")}>
+            Fit to width
+          </DropdownMenuItem>
+          {ZOOM_LEVELS.map((level) => (
+            <DropdownMenuItem key={level} onClick={() => onZoom(level)}>
+              {Math.round(level * 100)}%
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Button
-        size="sm"
-        className="h-8"
-        onClick={onDownload}
-        disabled={isDownloading}
+        variant="ghost"
+        size="icon-sm"
+        title="Zoom in"
+        onClick={() => step(1)}
       >
-        <Download className="h-3.5 w-3.5 mr-1" /> Download
+        <PlusIcon className="h-3.5 w-3.5" />
       </Button>
     </div>
   );

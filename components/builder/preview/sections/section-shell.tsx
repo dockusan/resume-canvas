@@ -2,79 +2,136 @@
 
 import { EditableText } from "@/components/builder/inline/editable-text";
 import { useEditing } from "@/components/builder/inline/editing-context";
-import { SectionChrome } from "@/components/builder/inline/section-chrome";
+import { boxStyle, headingStyle } from "@/lib/schema/css";
+import { SectionNode, Theme } from "@/lib/schema/document";
 import {
   SectionKey,
   isCustomSectionId,
   useResumeStore,
 } from "@/lib/store/useResumeStore";
-import { SectionConfig } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
-import { SectionStyleConfig } from "../layouts/types";
+import { Icon } from "./primitives";
+import { SectionProvider } from "./section-context";
 
 interface SectionShellProps {
-  section: SectionConfig;
-  config?: SectionStyleConfig;
-  /** When true, renders a dashed placeholder instead of children so an
-   *  emptied section stays visible (and editable) in the preview. */
+  node: SectionNode;
+  theme: Theme;
+  /** The section sits on a dark column fill. */
+  onFill: boolean;
+  /** Renders a dashed placeholder so an emptied section stays editable. */
   isEmpty?: boolean;
+  /** Continuation slot: the heading reads "… (cont.)". */
+  continued?: boolean;
   children?: React.ReactNode;
 }
 
+/**
+ * The frame around one section: container box, heading and editor chrome, all
+ * driven by `node.style`. Also publishes the section context that the item and
+ * field primitives read.
+ */
 export function SectionShell({
-  section,
-  config,
+  node,
+  theme,
+  onFill,
   isEmpty,
+  continued,
   children,
 }: SectionShellProps) {
-  const { editable } = useEditing();
+  const { editable, activePath, setActivePath } = useEditing();
+  const selected =
+    activePath === node.id || activePath === `${node.id}.heading`;
   const renameSection = useResumeStore((s) => s.renameSection);
   const addItem = useResumeStore((s) => s.addItem);
 
-  // Every item-backed section's key is its id; "summary" has no items.
   const sectionKey: SectionKey | null =
-    section.id === "summary" ? null : (section.id as SectionKey);
+    node.id === "summary" ? null : (node.id as SectionKey);
   const isItemSection =
     sectionKey !== null &&
-    (isCustomSectionId(section.id) || section.id !== "summary");
+    (isCustomSectionId(node.id) || node.id !== "summary");
+
+  const heading = headingStyle(node.style.heading, theme);
+  // A heading left at its default colour must still be legible on a dark fill.
+  if (onFill && node.style.heading.color === theme.colors.heading) {
+    heading.color = theme.colors.onFill;
+  }
 
   return (
-    <section
-      className={cn(config?.className, editable && "relative group/section")}
-    >
-      {editable && <SectionChrome section={section} />}
-      <h2 className={config?.headerClass} style={config?.headerStyle}>
-        <EditableText
-          value={section.name}
-          onCommit={(name) => {
-            if (name) renameSection(section.id, name);
-          }}
-          placeholder="Section title"
-          path={`${section.id}.heading`}
-        />
-      </h2>
-      {isEmpty ? (
-        editable && isItemSection && sectionKey ? (
-          <button
-            type="button"
-            onClick={() => addItem(sectionKey)}
-            className="w-full border border-dashed rounded-md px-3 py-2 text-xs opacity-50 hover:opacity-90 flex items-center justify-center gap-1"
-            style={{ color: config?.textColor || "#3e3e3e" }}
-          >
-            <Plus className="w-3 h-3" /> Add item
-          </button>
-        ) : (
+    <SectionProvider value={{ node, theme, onFill }}>
+      <section
+        data-section-id={node.id}
+        className={cn(
+          editable && "relative group/section rounded-[3px]",
+          editable &&
+            selected &&
+            "outline outline-1 outline-sky-400/70 outline-offset-4",
+        )}
+        style={boxStyle(node.style.container)}
+        onClick={
+          editable
+            ? (e) => {
+                // A click on the section box itself is empty space, not
+                // content, so it should clear rather than select.
+                if (e.target === e.currentTarget) {
+                  setActivePath(null);
+                  return;
+                }
+                setActivePath(node.id);
+              }
+            : undefined
+        }
+      >
+        {editable && node.flow.breakBefore && (
           <div
-            className="border border-dashed rounded-md px-3 py-2 text-xs opacity-50"
-            style={{ color: config?.textColor || "#3e3e3e" }}
+            data-editor-only
+            className="absolute -top-2 left-0 right-0 flex items-center gap-1.5 pointer-events-none select-none"
+            contentEditable={false}
           >
-            Empty section
+            <span className="text-[8px] uppercase tracking-wide text-sky-600 whitespace-nowrap">
+              Starts on a new page
+            </span>
+            <span className="flex-1 border-t border-dashed border-sky-400" />
           </div>
-        )
-      ) : (
-        children
-      )}
-    </section>
+        )}
+        <h2
+          data-section-heading
+          style={heading}
+          className={
+            node.style.heading.icon ? "flex items-center gap-2" : undefined
+          }
+        >
+          <Icon name={node.style.heading.icon} className="w-4 h-4 shrink-0" />
+          <EditableText
+            value={node.title}
+            onCommit={(name) => {
+              if (name) renameSection(node.id, name);
+            }}
+            placeholder="Section title"
+            rich={false}
+            path={`${node.id}.heading`}
+          />
+          {continued && <span className="opacity-60"> (cont.)</span>}
+        </h2>
+
+        {isEmpty ? (
+          editable && isItemSection && sectionKey ? (
+            <button
+              type="button"
+              onClick={() => addItem(sectionKey)}
+              className="w-full border border-dashed rounded-md px-3 py-2 text-xs opacity-50 hover:opacity-90 flex items-center justify-center gap-1"
+            >
+              <Plus className="w-3 h-3" /> Add item
+            </button>
+          ) : (
+            <div className="border border-dashed rounded-md px-3 py-2 text-xs opacity-50">
+              Empty section
+            </div>
+          )
+        ) : (
+          children
+        )}
+      </section>
+    </SectionProvider>
   );
 }

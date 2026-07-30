@@ -1,10 +1,7 @@
 "use client";
 
 import { useResumeStore } from "@/lib/store/useResumeStore";
-import {
-  applyHtmlOverride,
-  resolvePathOverride,
-} from "@/lib/style-overrides";
+import { applyHtmlOverride, resolvePathOverride } from "@/lib/style-overrides";
 import { MonthYearPicker } from "@/components/ui/month-year-picker";
 import {
   Popover,

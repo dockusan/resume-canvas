@@ -1,43 +1,71 @@
 "use client";
 
-import { useEditing } from "@/components/builder/inline/editing-context";
 import { EditableLink } from "@/components/builder/inline/editable-link";
-import { EditableText } from "@/components/builder/inline/editable-text";
-import { ItemChrome } from "@/components/builder/inline/item-chrome";
+import { useEditing } from "@/components/builder/inline/editing-context";
 import { useResumeStore } from "@/lib/store/useResumeStore";
-import { ExternalLink } from "lucide-react";
+import { Field, Icon, Item, ItemFlow, ItemHeaderRow } from "./primitives";
+import {
+  isFieldVisible,
+  useSection,
+  useSectionColors,
+} from "./section-context";
 import { SectionShell } from "./section-shell";
-import { SectionRenderProps } from "./types";
+import { SectionRenderProps, inRange } from "./types";
 
-export function CertificationsSection({
-  section,
-  config,
-  baseSize,
-}: SectionRenderProps) {
+function Body({ itemRange }: { itemRange?: [number, number] }) {
   const certifications = useResumeStore((s) => s.resumeData.certifications);
   const updateItem = useResumeStore((s) => s.updateItem);
   const { editable } = useEditing();
-  const textColor = config?.textColor || "#3e3e3e";
+  const { node } = useSection();
+  const colors = useSectionColors();
+
+  const showIssuer = isFieldVisible(node, "issuer");
+  const showLink = isFieldVisible(node, "link");
+  const linkIcon = node.fields?.link?.icon ?? "ExternalLink";
+
   return (
-    <SectionShell
-      section={section}
-      config={config}
-      isEmpty={certifications.length === 0}
-    >
-      <div className="space-y-3">
-        {certifications.map((cert, index) => (
-          <ItemChrome
+    <ItemFlow>
+      {inRange(certifications, itemRange).map(([cert, index]) => {
+        const link = showLink && (
+          <EditableLink
+            url={cert.link || ""}
+            onCommit={(v) => updateItem("certifications", cert.id, { link: v })}
+            className="underline hover:opacity-100 opacity-80 inline-block ml-1"
+          >
+            <Icon name={linkIcon} className="w-3 h-3 inline" />
+          </EditableLink>
+        );
+
+        const description = (
+          <Field
+            name="description"
+            as="p"
+            multiline
+            className="mt-1 leading-relaxed opacity-70"
+            style={{ color: colors.text }}
+            value={cert.description || ""}
+            onCommit={(v) =>
+              updateItem("certifications", cert.id, { description: v })
+            }
+            placeholder="Description (optional)"
+            path={`certifications.${cert.id}.description`}
+          />
+        );
+
+        return (
+          <Item
             key={cert.id}
             sectionKey="certifications"
             itemId={cert.id}
             index={index}
             count={certifications.length}
           >
-            <h3
-              className="font-medium mb-0.5"
-              style={{ color: textColor, fontSize: baseSize.base - 2 }}
-            >
-              <EditableText
+            <ItemHeaderRow className="mb-0.5">
+              <Field
+                name="name"
+                as="h3"
+                className="font-medium"
+                style={{ color: colors.text }}
                 value={cert.name}
                 onCommit={(v) =>
                   updateItem("certifications", cert.id, { name: v })
@@ -45,48 +73,66 @@ export function CertificationsSection({
                 placeholder="Certification"
                 path={`certifications.${cert.id}.name`}
               />
-            </h3>
-            <p
-              className="opacity-80"
-              style={{ color: textColor, fontSize: baseSize.base - 2 }}
-            >
-              <EditableText
-                value={cert.issuer}
+              <Field
+                name="date"
+                className="font-medium whitespace-nowrap ml-2 opacity-80"
+                style={{ color: colors.text }}
+                value={cert.date || ""}
                 onCommit={(v) =>
-                  updateItem("certifications", cert.id, { issuer: v })
+                  updateItem("certifications", cert.id, { date: v })
                 }
-                placeholder="Issuer"
-                path={`certifications.${cert.id}.issuer`}
+                placeholder="Date"
+                path={`certifications.${cert.id}.date`}
               />
-              {(cert.link || editable) && (
-                <EditableLink
-                  url={cert.link || ""}
+            </ItemHeaderRow>
+
+            {(showIssuer || showLink) && (
+              <p className="opacity-80" style={{ color: colors.text }}>
+                <Field
+                  name="issuer"
+                  value={cert.issuer}
                   onCommit={(v) =>
-                    updateItem("certifications", cert.id, { link: v })
+                    updateItem("certifications", cert.id, { issuer: v })
                   }
-                  className="underline hover:opacity-100 opacity-80 inline-block ml-1"
-                >
-                  <ExternalLink className="w-3 h-3 inline" />
-                </EditableLink>
-              )}
-            </p>
-            {(cert.description || editable) && (
-              <EditableText
-                value={cert.description || ""}
-                onCommit={(v) =>
-                  updateItem("certifications", cert.id, { description: v })
-                }
-                placeholder="Description (optional)"
-                multiline
-                as="p"
-                className="mt-1 leading-relaxed opacity-70"
-                style={{ color: textColor, fontSize: baseSize.base - 3 }}
-                path={`certifications.${cert.id}.description`}
-              />
+                  placeholder="Issuer"
+                  path={`certifications.${cert.id}.issuer`}
+                />
+                {/* Without a URL the icon is just an affordance to add one. */}
+                {cert.link
+                  ? link
+                  : editable && <span data-editor-only>{link}</span>}
+              </p>
             )}
-          </ItemChrome>
-        ))}
-      </div>
+
+            {cert.description ? (
+              description
+            ) : editable ? (
+              <div data-editor-only>{description}</div>
+            ) : null}
+          </Item>
+        );
+      })}
+    </ItemFlow>
+  );
+}
+
+export function CertificationsSection({
+  node,
+  theme,
+  onFill,
+  itemRange,
+  continued,
+}: SectionRenderProps) {
+  const count = useResumeStore((s) => s.resumeData.certifications.length);
+  return (
+    <SectionShell
+      node={node}
+      theme={theme}
+      onFill={onFill}
+      continued={continued}
+      isEmpty={count === 0}
+    >
+      <Body itemRange={itemRange} />
     </SectionShell>
   );
 }

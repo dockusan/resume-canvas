@@ -46,6 +46,7 @@ export function PersonalField({
       multiline={multiline}
       className={className}
       style={style}
+      rich={name !== "fullName"}
       path={`personalInfo.${name}`}
     />
   );

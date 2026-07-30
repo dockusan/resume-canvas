@@ -60,7 +60,9 @@ export function RenderDescription({
       </p>
     );
   }
-  const items = description.split("\n").filter((item) => item.trim().length > 0);
+  const items = description
+    .split("\n")
+    .filter((item) => item.trim().length > 0);
   return (
     <ul className="space-y-0.5 mt-1">
       {items.map((item, index) => (

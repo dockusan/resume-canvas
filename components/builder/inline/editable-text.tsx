@@ -1,13 +1,12 @@
 "use client";
 
 import { useResumeStore } from "@/lib/store/useResumeStore";
-import {
-  applyHtmlOverride,
-  resolvePathOverride,
-} from "@/lib/style-overrides";
+import { applyHtmlOverride, resolvePathOverride } from "@/lib/style-overrides";
+import { sanitizeInline, toPlainText } from "@/lib/richtext/runs";
 import { cn } from "@/lib/utils";
 import { useRef } from "react";
 import { useEditing } from "./editing-context";
+import { RichText } from "./rich-text";
 
 interface EditableTextProps {
   value: string;
@@ -20,6 +19,11 @@ interface EditableTextProps {
   style?: React.CSSProperties;
   /** Style-override path reported to the style toolbar on focus. */
   path?: string;
+  /**
+   * Allow inline formatting (bold / italic / underline / links) via the
+   * selection toolbar. Off for values that must stay literal, like dates.
+   */
+  rich?: boolean;
 }
 
 /**
@@ -36,6 +40,7 @@ export function EditableText({
   className,
   style,
   path,
+  rich = true,
 }: EditableTextProps) {
   const { editable, setActivePath } = useEditing();
   const overrides = useResumeStore((s) => s.settings.styleOverrides);
@@ -50,7 +55,7 @@ export function EditableText({
   if (!editable) {
     return (
       <Tag className={className} style={mergedStyle}>
-        {value}
+        {rich ? <RichText value={value} /> : toPlainText(value)}
       </Tag>
     );
   }
@@ -58,6 +63,13 @@ export function EditableText({
   const commit = () => {
     const el = ref.current as HTMLElement | null;
     if (!el) return;
+    if (rich) {
+      // Round-tripping through the run parser strips anything the browser
+      // produced that is not on the allowlist.
+      const next = sanitizeInline(el.innerHTML).trim();
+      if (next !== value) onCommit(next);
+      return;
+    }
     const raw = (multiline ? el.innerText : el.textContent) ?? "";
     const text = raw.replace(/ /g, " ").replace(/\n+$/, "").trim();
     if (text !== value) onCommit(text);
@@ -77,8 +89,8 @@ export function EditableText({
         className,
       )}
       style={mergedStyle}
-      onFocus={() => {
-        if (path) setActivePath(path);
+      onFocus={(e: React.FocusEvent<HTMLElement>) => {
+        if (path) setActivePath(path, e.currentTarget);
       }}
       onBlur={commit}
       onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
@@ -90,7 +102,7 @@ export function EditableText({
         } else if (e.key === "Escape") {
           e.preventDefault();
           const el = ref.current as HTMLElement | null;
-          if (el) el.textContent = value;
+          if (el) el.textContent = toPlainText(value);
           (e.currentTarget as HTMLElement).blur();
         }
       }}
@@ -105,7 +117,7 @@ export function EditableText({
         e.stopPropagation();
       }}
     >
-      {value}
+      {rich ? <RichText value={value} /> : value}
     </Tag>
   );
 }

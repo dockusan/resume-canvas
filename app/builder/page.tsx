@@ -27,7 +27,7 @@ export default function BuilderPage() {
   }
 
   return (
-    <main className="h-screen w-full overflow-hidden">
+    <main data-print-passthrough className="h-screen w-full overflow-hidden">
       <ResumePreview />
     </main>
   );

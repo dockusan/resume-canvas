@@ -1,15 +1,14 @@
 "use client";
 
 import { useResumeStore } from "@/lib/store/useResumeStore";
-import {
-  applyHtmlOverride,
-  resolvePathOverride,
-} from "@/lib/style-overrides";
+import { applyHtmlOverride, resolvePathOverride } from "@/lib/style-overrides";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { getBulletIcon } from "../preview/sections/bullets";
+import { sanitizeInline, toPlainText } from "@/lib/richtext/runs";
 import { useEditing } from "./editing-context";
+import { RichText } from "./rich-text";
 import { EditableText } from "./editable-text";
 
 interface BulletLineProps {
@@ -40,8 +39,10 @@ function BulletLine({ value, autoFocus, onDone, style }: BulletLineProps) {
       )}
       style={style}
       onBlur={() => {
-        const text = (ref.current?.textContent ?? "")
-          .replace(/ /g, " ")
+        // A bullet is one line, so inline markup is safe here provided a
+        // newline never enters the line's own value.
+        const text = sanitizeInline(ref.current?.innerHTML ?? "")
+          .replace(/\n+/g, " ")
           .trim();
         const enter = viaEnter.current;
         viaEnter.current = false;
@@ -54,7 +55,7 @@ function BulletLine({ value, autoFocus, onDone, style }: BulletLineProps) {
           (e.currentTarget as HTMLElement).blur();
         } else if (e.key === "Escape") {
           e.preventDefault();
-          if (ref.current) ref.current.textContent = value;
+          if (ref.current) ref.current.textContent = toPlainText(value);
           (e.currentTarget as HTMLElement).blur();
         } else if (
           e.key === "Backspace" &&
@@ -70,7 +71,7 @@ function BulletLine({ value, autoFocus, onDone, style }: BulletLineProps) {
         document.execCommand("insertText", false, text);
       }}
     >
-      {value}
+      <RichText value={value} />
     </span>
   );
 }
@@ -182,7 +183,9 @@ export function EditableBullets({
             onDone={(text, viaEnter) => commitLine(index, text, viaEnter)}
           />
         ) : (
-          <span>{line}</span>
+          <span>
+            <RichText value={line} />
+          </span>
         ),
         `line-${index}`,
       ),

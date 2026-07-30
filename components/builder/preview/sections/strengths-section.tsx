@@ -1,101 +1,121 @@
 "use client";
 
 import { useEditing } from "@/components/builder/inline/editing-context";
-import { EditableText } from "@/components/builder/inline/editable-text";
 import { IconPickerPopover } from "@/components/builder/inline/icon-picker-popover";
-import { ItemChrome } from "@/components/builder/inline/item-chrome";
 import { getIconComponent, strengthIcons } from "@/lib/icons";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import { Sparkles } from "lucide-react";
+import { Field, Item, ItemFlow } from "./primitives";
+import {
+  isFieldVisible,
+  useSection,
+  useSectionColors,
+} from "./section-context";
 import { SectionShell } from "./section-shell";
-import { SectionRenderProps } from "./types";
+import { SectionRenderProps, inRange } from "./types";
 
-export function StrengthsSection({
-  section,
-  config,
-  baseSize,
-}: SectionRenderProps) {
+function Body({ itemRange }: { itemRange?: [number, number] }) {
   const strengths = useResumeStore((s) => s.resumeData.strengths);
   const updateItem = useResumeStore((s) => s.updateItem);
   const { editable } = useEditing();
-  const textColor = config?.textColor || "#3e3e3e";
+  const { node } = useSection();
+  const colors = useSectionColors();
+
+  const showIcon = isFieldVisible(node, "icon");
+  const chip = { color: colors.text, backgroundColor: colors.chip };
+
   return (
-    <SectionShell
-      section={section}
-      config={config}
-      isEmpty={strengths.length === 0}
-    >
-      <div className="space-y-3">
-        {strengths.map((strength, index) => {
-          const Icon = strength.icon ? getIconComponent(strength.icon) : null;
-          const iconEl = Icon ? (
-            <Icon
-              className="size-7 shrink-0 mt-0.5 p-1.5 rounded-md"
-              style={{
-                color: textColor,
-                backgroundColor: config?.iconBg || "rgba(0,0,0,0.05)",
-              }}
-            />
-          ) : editable ? (
-            <Sparkles
-              className="size-7 shrink-0 mt-0.5 p-1.5 rounded-md opacity-30"
-              style={{
-                color: textColor,
-                backgroundColor: config?.iconBg || "rgba(0,0,0,0.05)",
-              }}
-            />
-          ) : null;
-          return (
-            <ItemChrome
-              key={strength.id}
-              sectionKey="strengths"
-              itemId={strength.id}
-              index={index}
-              count={strengths.length}
-              className={`flex gap-2 ${config?.itemClass || ""}`}
-            >
-              {iconEl && (
+    <ItemFlow>
+      {inRange(strengths, itemRange).map(([strength, index]) => {
+        const IconCmp = strength.icon ? getIconComponent(strength.icon) : null;
+        // With no icon chosen yet, the editor still needs something to click.
+        const icon = IconCmp ? (
+          <IconCmp
+            className="size-7 shrink-0 mt-0.5 p-1.5 rounded-md"
+            style={chip}
+          />
+        ) : editable ? (
+          <span
+            data-editor-only
+            className="size-7 shrink-0 mt-0.5 p-1.5 rounded-md opacity-30 inline-flex"
+            style={chip}
+          >
+            <Sparkles className="w-full h-full" />
+          </span>
+        ) : null;
+
+        return (
+          <Item
+            key={strength.id}
+            sectionKey="strengths"
+            itemId={strength.id}
+            index={index}
+            count={strengths.length}
+          >
+            <div className="flex gap-2">
+              {showIcon && icon && (
                 <IconPickerPopover
                   value={strength.icon}
                   icons={strengthIcons}
-                  onCommit={(icon) =>
-                    updateItem("strengths", strength.id, { icon })
+                  onCommit={(v) =>
+                    updateItem("strengths", strength.id, { icon: v })
                   }
                 >
-                  {iconEl}
+                  {icon}
                 </IconPickerPopover>
               )}
-              <div>
-                <h3
+              <div className="min-w-0">
+                <Field
+                  name="title"
+                  as="h3"
                   className="font-medium mb-0.5"
-                  style={{ color: textColor, fontSize: baseSize.base - 1 }}
-                >
-                  <EditableText
-                    value={strength.title}
-                    onCommit={(v) =>
-                      updateItem("strengths", strength.id, { title: v })
-                    }
-                    placeholder="Strength"
-                    path={`strengths.${strength.id}.title`}
-                  />
-                </h3>
-                <EditableText
+                  style={{ color: colors.text }}
+                  value={strength.title}
+                  onCommit={(v) =>
+                    updateItem("strengths", strength.id, { title: v })
+                  }
+                  placeholder="Strength"
+                  path={`strengths.${strength.id}.title`}
+                />
+                <Field
+                  name="description"
+                  as="p"
+                  multiline
+                  className="leading-relaxed opacity-80"
+                  style={{ color: colors.text }}
                   value={strength.description}
                   onCommit={(v) =>
                     updateItem("strengths", strength.id, { description: v })
                   }
                   placeholder="Describe it briefly"
-                  multiline
-                  as="p"
-                  className="leading-relaxed opacity-80"
-                  style={{ color: textColor, fontSize: baseSize.base - 2 }}
                   path={`strengths.${strength.id}.description`}
                 />
               </div>
-            </ItemChrome>
-          );
-        })}
-      </div>
+            </div>
+          </Item>
+        );
+      })}
+    </ItemFlow>
+  );
+}
+
+export function StrengthsSection({
+  node,
+  theme,
+  onFill,
+  itemRange,
+  continued,
+}: SectionRenderProps) {
+  const count = useResumeStore((s) => s.resumeData.strengths.length);
+  return (
+    <SectionShell
+      node={node}
+      theme={theme}
+      onFill={onFill}
+      continued={continued}
+      isEmpty={count === 0}
+    >
+      <Body itemRange={itemRange} />
     </SectionShell>
   );
 }

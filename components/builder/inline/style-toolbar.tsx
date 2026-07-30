@@ -84,9 +84,7 @@ export function StylePopover({ path, label, children }: StylePopoverProps) {
             value={override?.fontWeight ? String(override.fontWeight) : ""}
             onValueChange={(v) =>
               setStyleOverride(path, {
-                fontWeight: v
-                  ? (Number(v) as FontWeightOverride)
-                  : undefined,
+                fontWeight: v ? (Number(v) as FontWeightOverride) : undefined,
               })
             }
           >

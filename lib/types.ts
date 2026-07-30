@@ -119,6 +119,8 @@ export interface SectionConfig {
   id: string;
   name: string;
   visible: boolean;
+  /** Force this section to start at the top of a new PDF page. */
+  pageBreakBefore?: boolean;
 }
 
 export type FontWeightOverride = 400 | 500 | 600 | 700;
@@ -146,4 +148,19 @@ export interface ResumeSettings {
   styleOverrides: Record<string, StyleOverride>;
   showPhoto: boolean;
   photoStyle?: "square" | "rounded" | "circle";
+  /** Contact fields hidden from the header. Missing entry = visible. */
+  personalFieldVisibility?: Partial<Record<PersonalContactField, boolean>>;
+  /** Missing = icons shown. */
+  showContactIcons?: boolean;
 }
+
+/** Header fields the personal controller can show/hide. */
+export type PersonalContactField =
+  | "title"
+  | "email"
+  | "phone"
+  | "location"
+  | "website"
+  | "linkedin"
+  | "github"
+  | "twitter";
