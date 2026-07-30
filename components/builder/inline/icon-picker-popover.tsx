@@ -66,22 +66,22 @@ export function IconPickerPopover({
         />
         <div className="grid grid-cols-7 gap-1 max-h-48 overflow-y-auto">
           {filtered.map((name) => (
-              <button
-                key={name}
-                type="button"
-                title={name}
-                onClick={() => {
-                  onCommit(name);
-                  setOpen(false);
-                }}
-                className={cn(
-                  "h-7 w-7 rounded flex items-center justify-center hover:bg-muted",
-                  value === name && "bg-primary text-primary-foreground",
-                )}
-              >
-                <DocIcon name={name} size={18} />
-              </button>
-            ))}
+            <button
+              key={name}
+              type="button"
+              title={name}
+              onClick={() => {
+                onCommit(name);
+                setOpen(false);
+              }}
+              className={cn(
+                "h-7 w-7 rounded flex items-center justify-center hover:bg-muted",
+                value === name && "bg-primary text-primary-foreground",
+              )}
+            >
+              <DocIcon name={name} size={18} />
+            </button>
+          ))}
         </div>
       </PopoverContent>
     </Popover>

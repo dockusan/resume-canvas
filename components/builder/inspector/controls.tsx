@@ -403,7 +403,6 @@ export function BoxField({
   );
 }
 
-
 /**
  * Icon chooser for schema fields. Deliberately separate from the in-canvas
  * `IconPickerPopover`, which gates itself on the editing context.

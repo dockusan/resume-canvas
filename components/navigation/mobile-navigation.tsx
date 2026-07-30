@@ -23,7 +23,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/", icon: HomeIcon, label: "Home" },
   { href: "/#features", icon: SparklesIcon, label: "Features" },
-  { href: "/#testimonials", icon: ChatBubbleLeftRightIcon, label: "Reviews" },
+  { href: "/templates", icon: ChatBubbleLeftRightIcon, label: "Templates" },
   { href: "/builder", icon: DocumentTextIcon, label: "Builder" },
 ];
 
