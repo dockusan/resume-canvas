@@ -14,6 +14,66 @@ export interface Run {
   italic?: boolean;
   underline?: boolean;
   link?: string;
+  /** Relative size as an em multiplier, so it scales with the theme. */
+  size?: number;
+  color?: string;
+}
+
+/**
+ * `execCommand("fontSize")` only speaks the 1–7 ladder, so map those to em
+ * multipliers. Storing a multiplier keeps text relative to the field's own
+ * size rather than freezing it at a pixel value.
+ */
+export const FONT_SIZE_STEPS = [0.7, 0.8, 0.9, 1, 1.15, 1.35, 1.6];
+
+const KEYWORD_SIZES: Record<string, number> = {
+  "xx-small": 0.7,
+  "x-small": 0.8,
+  small: 0.9,
+  medium: 1,
+  large: 1.15,
+  "x-large": 1.35,
+  "xx-large": 1.6,
+};
+
+/** Nearest ladder index (1–7) for an em multiplier. */
+export function stepForSize(size: number): number {
+  let best = 3;
+  FONT_SIZE_STEPS.forEach((v, i) => {
+    if (Math.abs(v - size) < Math.abs(FONT_SIZE_STEPS[best] - size)) best = i;
+  });
+  return best + 1;
+}
+
+/** Pasted or tampered markup must not be able to blow out the layout. */
+const MIN_SIZE = 0.5;
+const MAX_SIZE = 3;
+
+function clampSize(value: number): number | undefined {
+  if (!Number.isFinite(value)) return undefined;
+  return Math.min(MAX_SIZE, Math.max(MIN_SIZE, value));
+}
+
+function parseSize(style: string): number | undefined {
+  const match = style.match(/font-size:\s*([^;]+)/i);
+  if (!match) return undefined;
+  const raw = match[1].trim().toLowerCase();
+  if (KEYWORD_SIZES[raw]) return KEYWORD_SIZES[raw];
+  const em = raw.match(/^([\d.]+)em$/);
+  if (em) return clampSize(parseFloat(em[1]));
+  const pct = raw.match(/^([\d.]+)%$/);
+  if (pct) return clampSize(parseFloat(pct[1]) / 100);
+  return undefined;
+}
+
+/** Only concrete colours are kept; anything exotic is dropped. */
+function parseColor(style: string): string | undefined {
+  const match = style.match(/(?:^|;)\s*color:\s*([^;]+)/i);
+  if (!match) return undefined;
+  const value = match[1].trim();
+  return /^(#[0-9a-f]{3,8}|rgba?\([\d.,\s%]+\)|[a-z]+)$/i.test(value)
+    ? value
+    : undefined;
 }
 
 const DROPPED_TAGS = new Set([
@@ -70,7 +130,9 @@ function pushRun(runs: Run[], run: Run) {
     !!prev.bold === !!run.bold &&
     !!prev.italic === !!run.italic &&
     !!prev.underline === !!run.underline &&
-    prev.link === run.link
+    prev.link === run.link &&
+    prev.size === run.size &&
+    prev.color === run.color
   ) {
     prev.text += run.text;
     return;
@@ -132,6 +194,8 @@ export function parseRuns(html: string): Run[] {
         el.tagName === "A"
           ? safeHref(el.getAttribute("href") ?? "")
           : marks.link,
+      size: parseSize(style) ?? marks.size,
+      color: parseColor(style) ?? marks.color,
     };
 
     const isBlock = BLOCK_TAGS.has(el.tagName);
@@ -160,6 +224,15 @@ export function serializeRuns(runs: Run[]): string {
       if (run.bold) html = `<b>${html}</b>`;
       if (run.italic) html = `<i>${html}</i>`;
       if (run.underline) html = `<u>${html}</u>`;
+      if (run.size || run.color) {
+        const css = [
+          run.size ? `font-size:${run.size}em` : "",
+          run.color ? `color:${escapeHtml(run.color)}` : "",
+        ]
+          .filter(Boolean)
+          .join(";");
+        html = `<span style="${css}">${html}</span>`;
+      }
       if (run.link) html = `<a href="${escapeHtml(run.link)}">${html}</a>`;
       return html;
     })

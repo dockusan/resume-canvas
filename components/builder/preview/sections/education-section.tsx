@@ -79,7 +79,6 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
             {showSchool && showLocation && locationIcon && <span> </span>}
             <Field
               name="location"
-              withIcon
               value={edu.location}
               onCommit={(v) => updateItem("education", edu.id, { location: v })}
               placeholder="Location"

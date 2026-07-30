@@ -27,6 +27,18 @@ function renderRun(run: Run): React.ReactNode {
   if (run.bold) node = <b>{node}</b>;
   if (run.italic) node = <i>{node}</i>;
   if (run.underline) node = <u>{node}</u>;
+  if (run.size || run.color) {
+    node = (
+      <span
+        style={{
+          fontSize: run.size ? `${run.size}em` : undefined,
+          color: run.color,
+        }}
+      >
+        {node}
+      </span>
+    );
+  }
   if (run.link) {
     node = (
       <a

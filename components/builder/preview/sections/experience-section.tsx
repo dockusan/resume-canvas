@@ -80,7 +80,6 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
             {showCompany && showLocation && locationIcon && <span> </span>}
             <Field
               name="location"
-              withIcon
               value={exp.location}
               onCommit={(v) =>
                 updateItem("experience", exp.id, { location: v })

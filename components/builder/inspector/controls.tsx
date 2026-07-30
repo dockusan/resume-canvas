@@ -11,9 +11,10 @@ import {
 } from "@/components/ui/popover";
 import { BorderSpec, Box, Fill, Sides } from "@/lib/schema/document";
 import { cn } from "@/lib/utils";
-import { getIconComponent, strengthIcons } from "@/lib/icons";
+import { DocIcon } from "@/components/builder/preview/sections/doc-icon";
+import { iconList } from "@/lib/icons";
 import { Ban, Link2, Link2Off, Palette, X } from "lucide-react";
-import { createElement, useState } from "react";
+import { useState } from "react";
 
 /** Label on the left, control on the right — the inspector's only row shape. */
 export function Row({
@@ -402,14 +403,6 @@ export function BoxField({
   );
 }
 
-/**
- * Renders a lucide glyph by name. `createElement` rather than JSX so the
- * linter can see this is a lookup, not a component defined during render.
- */
-function Glyph({ name, className }: { name: string; className?: string }) {
-  const Cmp = getIconComponent(name);
-  return Cmp ? createElement(Cmp, { className }) : null;
-}
 
 /**
  * Icon chooser for schema fields. Deliberately separate from the in-canvas
@@ -418,7 +411,7 @@ function Glyph({ name, className }: { name: string; className?: string }) {
 export function IconField({
   value,
   onChange,
-  icons = strengthIcons,
+  icons = iconList,
 }: {
   value: string | null;
   onChange: (icon: string | null) => void;
@@ -438,7 +431,7 @@ export function IconField({
           className="h-7 min-w-7 px-1.5 rounded border hover:bg-muted flex items-center justify-center gap-1 text-[10px]"
         >
           {value ? (
-            <Glyph name={value} className="w-3.5 h-3.5" />
+            <DocIcon name={value} size={16} />
           ) : (
             <span className="text-muted-foreground">none</span>
           )}
@@ -463,7 +456,7 @@ export function IconField({
                 value === name && "bg-primary text-primary-foreground",
               )}
             >
-              <Glyph name={name} className="w-3.5 h-3.5" />
+              <DocIcon name={name} size={16} />
             </button>
           ))}
         </div>

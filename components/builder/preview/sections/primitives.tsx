@@ -5,7 +5,7 @@ import { ItemChrome } from "@/components/builder/inline/item-chrome";
 import { SectionKey } from "@/lib/store/useResumeStore";
 import { boxStyle, itemLayoutStyle, separatorStyle } from "@/lib/schema/css";
 import { cn } from "@/lib/utils";
-import * as Icons from "lucide-react";
+import { DocIcon } from "./doc-icon";
 import type { CSSProperties } from "react";
 import {
   adaptRailColor,
@@ -16,25 +16,8 @@ import {
   useSectionColors,
 } from "./section-context";
 
-type IconName = keyof typeof Icons;
-
-/** Renders a lucide icon by name; unknown names render nothing. */
-export function Icon({
-  name,
-  className,
-  style,
-}: {
-  name?: string | null;
-  className?: string;
-  style?: CSSProperties;
-}) {
-  if (!name) return null;
-  const Cmp = Icons[name as IconName] as
-    | React.ComponentType<{ className?: string; style?: CSSProperties }>
-    | undefined;
-  if (!Cmp) return null;
-  return <Cmp className={className} style={style} />;
-}
+/** In-document icon; re-exported so section files import one thing. */
+export { DocIcon as Icon } from "./doc-icon";
 
 /** Flex or grid flow for a section's items, straight from `node.items`. */
 export function ItemFlow({
@@ -166,8 +149,6 @@ export interface FieldProps {
   style?: CSSProperties;
   /** Style-override path, so per-field tweaks keep working. */
   path?: string;
-  /** Render the field's icon before the text. */
-  withIcon?: boolean;
   iconClassName?: string;
 }
 
@@ -185,14 +166,14 @@ export function Field({
   className,
   style,
   path,
-  withIcon,
   iconClassName,
 }: FieldProps) {
   const { node } = useSection();
   const resolved = useFieldStyle(name, style);
   if (!isFieldVisible(node, name)) return null;
 
-  const icon = withIcon ? node.fields?.[name]?.icon : null;
+  // Whatever icon the section controller assigned to this field, render it.
+  const icon = node.fields?.[name]?.icon ?? null;
   const text = (
     <EditableText
       value={value}
@@ -211,7 +192,7 @@ export function Field({
   // of pixels off the text beside it, so the glyph is aligned inline instead.
   return (
     <span style={resolved}>
-      <Icon
+      <DocIcon
         name={icon}
         className={cn("inline-block shrink-0", iconClassName)}
         style={{

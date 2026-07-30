@@ -2,7 +2,8 @@
 
 import { useEditing } from "@/components/builder/inline/editing-context";
 import { IconPickerPopover } from "@/components/builder/inline/icon-picker-popover";
-import { getIconComponent, strengthIcons } from "@/lib/icons";
+import { getIconData, strengthIcons } from "@/lib/icons";
+import { DocIcon } from "./doc-icon";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import { Sparkles } from "lucide-react";
 import { Field, Item, ItemFlow } from "./primitives";
@@ -27,13 +28,15 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
   return (
     <ItemFlow>
       {inRange(strengths, itemRange).map(([strength, index]) => {
-        const IconCmp = strength.icon ? getIconComponent(strength.icon) : null;
+        const hasIcon = !!strength.icon && !!getIconData(strength.icon);
         // With no icon chosen yet, the editor still needs something to click.
-        const icon = IconCmp ? (
-          <IconCmp
-            className="size-7 shrink-0 mt-0.5 p-1.5 rounded-md"
+        const icon = hasIcon ? (
+          <span
+            className="size-7 shrink-0 mt-0.5 p-1.5 rounded-md inline-flex"
             style={chip}
-          />
+          >
+            <DocIcon name={strength.icon} className="w-full h-full" />
+          </span>
         ) : editable ? (
           <span
             data-editor-only

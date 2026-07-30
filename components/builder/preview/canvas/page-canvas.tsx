@@ -22,7 +22,6 @@ import {
 } from "@/lib/schema/css";
 import { sectionsIn } from "@/lib/schema/use-document";
 import { SectionDropZone } from "@/components/builder/dnd/section-dnd";
-import * as Icons from "lucide-react";
 import { Fragment } from "react";
 
 /** Bars pinned to a page or column edge (Classic's strip, Executive's rule). */
@@ -187,9 +186,7 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
                 key={field}
                 field={field}
                 icon={
-                  header.contacts.showIcons
-                    ? (CONTACT_ICONS[field] as never)
-                    : undefined
+                  header.contacts.showIcons ? CONTACT_ICONS[field] : undefined
                 }
                 iconAfter={header.contacts.iconPosition === "after"}
                 className="flex items-center gap-1.5 min-w-0"
@@ -208,14 +205,15 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
   );
 }
 
-const CONTACT_ICONS: Record<string, React.ComponentType<unknown>> = {
-  phone: Icons.Phone as never,
-  email: Icons.Mail as never,
-  location: Icons.MapPin as never,
-  website: Icons.Globe as never,
-  linkedin: Icons.Linkedin as never,
-  github: Icons.Github as never,
-  twitter: Icons.Twitter as never,
+/** Registry names, resolved through the shared document icon renderer. */
+const CONTACT_ICONS: Record<string, string> = {
+  phone: "Phone",
+  email: "Mail",
+  location: "MapPin",
+  website: "Globe",
+  linkedin: "Linkedin",
+  github: "Github",
+  twitter: "Twitter",
 };
 
 /** Clears the selection when the click landed on blank page furniture. */

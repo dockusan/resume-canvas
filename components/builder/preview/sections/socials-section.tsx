@@ -3,10 +3,10 @@
 import { EditableLink } from "@/components/builder/inline/editable-link";
 import { useEditing } from "@/components/builder/inline/editing-context";
 import { IconPickerPopover } from "@/components/builder/inline/icon-picker-popover";
-import { getIconComponent, socialIcons } from "@/lib/icons";
+import { getIconData, socialIcons } from "@/lib/icons";
+import { DocIcon } from "./doc-icon";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import { Social } from "@/lib/types";
-import { Globe } from "lucide-react";
 import { Field, Icon, Item, ItemFlow } from "./primitives";
 import {
   isFieldVisible,
@@ -18,8 +18,12 @@ import { SectionRenderProps, inRange } from "./types";
 
 /** The platform's icon, falling back to a generic globe. */
 function renderSocialIcon(social: Social) {
-  const Cmp = getIconComponent(social.icon || social.platform);
-  return Cmp ? <Cmp className="w-4 h-4" /> : <Globe className="w-4 h-4" />;
+  const name = social.icon || social.platform;
+  return getIconData(name) ? (
+    <DocIcon name={name} size={16} />
+  ) : (
+    <DocIcon name="Globe" size={16} />
+  );
 }
 
 function Body({ itemRange }: { itemRange?: [number, number] }) {
