@@ -50,7 +50,7 @@ export function OptionCards({
             )}
           >
             {option.preview && (
-              <div className="h-7 flex items-center justify-center overflow-hidden mb-1">
+              <div className="mb-1 flex min-h-7 items-center justify-center overflow-hidden">
                 {option.preview}
               </div>
             )}

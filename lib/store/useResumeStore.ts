@@ -19,7 +19,11 @@ import {
   SectionNode,
   Theme,
 } from "../schema/document";
-import { applyPreset, documentFromSettings } from "../schema/migrate";
+import {
+  applyPreset,
+  documentFromSettings,
+  reconcileSections,
+} from "../schema/migrate";
 
 export type BuiltinSectionKey =
   | "experience"
@@ -785,7 +789,11 @@ export const useResumeStore = create<ResumeState>()(
           })),
         moveSectionTo: (sectionId, target) =>
           set((state) => {
-            const doc = state.document;
+            // Reconcile first: a section added or restored in the same tick
+            // exists in `settings` but not yet in `document.sections`, and
+            // moving a node that isn't there yet would silently do nothing —
+            // which is why "add here" in the right column landed on the left.
+            const doc = reconcileSections(state.document, state.settings);
             const moving = doc.sections.find((s) => s.id === sectionId);
             if (!moving) return {};
 

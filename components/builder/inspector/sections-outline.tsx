@@ -7,7 +7,8 @@ import {
   useResumeStore,
 } from "@/lib/store/useResumeStore";
 import { cn } from "@/lib/utils";
-import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, RotateCcw } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, RotateCcw } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { Group } from "./controls";
 
 /**
@@ -81,18 +82,14 @@ export function SectionsOutline() {
                   <ArrowDown className="w-3 h-3" />
                 </button>
               </span>
-              <button
-                type="button"
-                title={node.visible ? "Hide section" : "Show section"}
-                onClick={() => toggleVisibility(node.id)}
-                className="h-5 w-5 rounded hover:bg-background flex items-center justify-center shrink-0"
-              >
-                {node.visible ? (
-                  <Eye className="w-3.5 h-3.5 text-sky-600" />
-                ) : (
-                  <EyeOff className="w-3.5 h-3.5 text-muted-foreground" />
-                )}
-              </button>
+              <Switch
+                checked={node.visible}
+                onCheckedChange={() => toggleVisibility(node.id)}
+                aria-label={
+                  node.visible ? `Hide ${node.title}` : `Show ${node.title}`
+                }
+                className="shrink-0"
+              />
             </div>
           ))}
         </div>

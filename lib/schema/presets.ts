@@ -23,6 +23,8 @@ import {
 } from "./document";
 import {
   DEFAULT_THEME,
+  ON_FILL_LINE,
+  ON_FILL_TEXT,
   border,
   box,
   emptyBox,
@@ -62,6 +64,7 @@ const defaultHeader = (): HeaderSpec => ({
   },
   photoPosition: "end" as const,
   contacts: {
+    placement: "below" as const,
     direction: "row" as const,
     align: "start" as const,
     gap: 12,
@@ -156,8 +159,8 @@ function classic(accent: string): DocumentPreset {
       right: sectionStyle("classic", {
         heading: heading({
           step: 1,
-          color: "rgba(255,255,255,0.9)",
-          border: border("rgba(255,255,255,0.2)"),
+          color: ON_FILL_TEXT,
+          border: border(ON_FILL_LINE),
           padding: box(0, 0, 4, 0),
         }),
       }),
@@ -313,6 +316,7 @@ function modern2col(accent: string): DocumentPreset {
         photoPosition: "start",
         contacts: {
           ...defaultHeader().contacts,
+          placement: "beside",
           direction: "column",
           align: "end",
           gap: 6,

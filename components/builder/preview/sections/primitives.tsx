@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import * as Icons from "lucide-react";
 import type { CSSProperties } from "react";
 import {
+  adaptRailColor,
+  adaptSeparatorToFill,
   isFieldVisible,
   useFieldStyle,
   useSection,
@@ -114,17 +116,25 @@ export function Item({
   style,
   children,
 }: ItemProps) {
-  const { node } = useSection();
+  const { node, theme, onFill } = useSection();
   const { marker, itemBox, separator } = node.style;
   const rail = marker.rail;
 
   const merged: CSSProperties = {
     ...boxStyle(itemBox),
     ...(rail?.enabled
-      ? { borderLeft: `${rail.width}px solid ${rail.color}` }
+      ? {
+          borderLeft: `${rail.width}px solid ${adaptRailColor(
+            rail.color,
+            theme,
+            onFill,
+          )}`,
+        }
       : {}),
     // Separators sit between items, so the first one never gets a rule.
-    ...(index > 0 ? separatorStyle(separator) : {}),
+    ...(index > 0
+      ? separatorStyle(adaptSeparatorToFill(separator, theme, onFill))
+      : {}),
     ...style,
   };
 

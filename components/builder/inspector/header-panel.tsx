@@ -3,8 +3,8 @@
 import { PERSONAL_CONTACT_FIELDS } from "@/lib/personal-fields";
 import { useDocument } from "@/lib/schema/use-document";
 import { useResumeStore } from "@/lib/store/useResumeStore";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { Eye, EyeOff } from "lucide-react";
 import {
   BorderField,
   BoxField,
@@ -216,28 +216,28 @@ export function HeaderPanel() {
         {PERSONAL_CONTACT_FIELDS.map(({ field, label }) => {
           const visible = settings.personalFieldVisibility?.[field] !== false;
           return (
-            <button
+            <div
               key={field}
-              type="button"
-              onClick={() =>
-                updateSettings({
-                  personalFieldVisibility: {
-                    ...settings.personalFieldVisibility,
-                    [field]: !visible,
-                  },
-                })
-              }
-              className="w-full flex items-center justify-between rounded px-1 py-0.5 hover:bg-muted"
+              className="flex w-full items-center justify-between gap-2 px-1 py-0.5"
             >
-              <span className={cn("text-xs", !visible && "opacity-50")}>
+              <span
+                className={cn("text-xs", !visible && "text-muted-foreground")}
+              >
                 {label}
               </span>
-              {visible ? (
-                <Eye className="w-3.5 h-3.5 text-sky-600" />
-              ) : (
-                <EyeOff className="w-3.5 h-3.5 text-muted-foreground" />
-              )}
-            </button>
+              <Switch
+                checked={visible}
+                onCheckedChange={(next) =>
+                  updateSettings({
+                    personalFieldVisibility: {
+                      ...settings.personalFieldVisibility,
+                      [field]: next,
+                    },
+                  })
+                }
+                aria-label={`Show ${label}`}
+              />
+            </div>
           );
         })}
       </Group>

@@ -71,6 +71,14 @@ export function luminance(color: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+/** WCAG contrast ratio between two colours, 1 (identical) to 21. */
+export function contrastRatio(a: string, b: string): number {
+  const la = luminance(a);
+  const lb = luminance(b);
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
 /**
  * Whether a surface needs light text. Presence of a fill is not enough —
  * Creative's sidebar is near-white, so "filled therefore dark" would render

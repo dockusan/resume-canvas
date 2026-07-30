@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ResumeDocument, SectionNode } from "@/lib/schema/document";
 import { contentHeight, isDarkFill, pageDimensions } from "@/lib/schema/css";
 import { effectiveColumn, useDocument } from "@/lib/schema/use-document";
@@ -49,6 +49,8 @@ export interface PaginatedResumeProps {
     freeSpace: number,
     sectionCount: number,
   ) => React.ReactNode;
+  /** Notified whenever the page count changes. */
+  onPageCount?: (count: number) => void;
   /** Wraps each page box (the editor adds a shadow and a page label). */
   pageWrapper?: (
     page: React.ReactNode,
@@ -69,6 +71,7 @@ export function PaginatedResume({
   doc: docProp,
   columnFooter,
   pageWrapper,
+  onPageCount,
 }: PaginatedResumeProps) {
   const live = useDocument();
   const doc = docProp ?? live;
@@ -116,6 +119,11 @@ export function PaginatedResume({
   const pages: PageModel[] = ready
     ? trimEmptyPages(distribute(measured, { contentHeight: usable, heightFor }))
     : [];
+
+  const total = pages.length || 1;
+  useEffect(() => {
+    onPageCount?.(total);
+  }, [total, onPageCount]);
 
   const nodeById = new Map(doc.sections.map((s) => [s.id, s]));
 
@@ -192,7 +200,6 @@ export function PaginatedResume({
             />
           </div>
         );
-        const total = pages.length || 1;
         return (
           <div
             key={index}

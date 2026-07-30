@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { Icon } from "./primitives";
-import { SectionProvider } from "./section-context";
+import { SectionProvider, adaptHeadingToFill } from "./section-context";
 
 interface SectionShellProps {
   node: SectionNode;
@@ -51,11 +51,12 @@ export function SectionShell({
     sectionKey !== null &&
     (isCustomSectionId(node.id) || node.id !== "summary");
 
-  const heading = headingStyle(node.style.heading, theme);
-  // A heading left at its default colour must still be legible on a dark fill.
-  if (onFill && node.style.heading.color === theme.colors.heading) {
-    heading.color = theme.colors.onFill;
-  }
+  // A heading that kept the theme defaults must still read correctly on a
+  // dark fill — its rule as much as its text.
+  const heading = headingStyle(
+    adaptHeadingToFill(node.style.heading, theme, onFill),
+    theme,
+  );
 
   return (
     <SectionProvider value={{ node, theme, onFill }}>

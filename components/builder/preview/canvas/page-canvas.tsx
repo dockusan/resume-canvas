@@ -100,6 +100,10 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
   const photo =
     header.photo.slot === "header" ? <HeaderPhoto doc={doc} /> : null;
 
+  // "beside" gives the contacts their own column opposite the name, instead
+  // of stacking them underneath and leaving the header's other half blank.
+  const beside = header.contacts.placement === "beside";
+
   return (
     <PersonalShell
       data-resume-header
@@ -127,30 +131,40 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
     >
       {photo}
       <div
-        className="flex-1 min-w-0 flex flex-col"
-        style={{ alignItems, textAlign: header.align }}
+        className="flex min-w-0 flex-1 gap-4"
+        style={{
+          flexDirection: beside ? "row" : "column",
+          alignItems: beside ? "flex-start" : alignItems,
+          justifyContent: beside ? "space-between" : undefined,
+        }}
       >
-        <h1
-          style={{
-            ...fontStyle(theme.fonts.heading),
-            fontSize: fontSizeAt(theme, 5),
-            color: onFill ? theme.colors.onFill : theme.colors.heading,
-            lineHeight: 1.1,
-          }}
+        <div
+          className="flex min-w-0 flex-col"
+          style={{ alignItems, textAlign: header.align }}
         >
-          <PersonalField name="fullName" />
-        </h1>
-        <ContactItem
-          field="title"
-          as="p"
-          style={{
-            fontSize: fontSizeAt(theme, 1),
-            color: onFill ? theme.colors.onFill : theme.colors.accent,
-            fontWeight: 500,
-            marginTop: 2,
-            marginBottom: 6,
-          }}
-        />
+          <h1
+            style={{
+              ...fontStyle(theme.fonts.heading),
+              fontSize: fontSizeAt(theme, 5),
+              color: onFill ? theme.colors.onFill : theme.colors.heading,
+              lineHeight: 1.1,
+            }}
+          >
+            <PersonalField name="fullName" />
+          </h1>
+          <ContactItem
+            field="title"
+            as="p"
+            style={{
+              fontSize: fontSizeAt(theme, 1),
+              color: onFill ? theme.colors.onFill : theme.colors.accent,
+              fontWeight: 500,
+              marginTop: 2,
+              marginBottom: beside ? 0 : 6,
+            }}
+          />
+        </div>
+
         <div
           className="flex min-w-0"
           style={{

@@ -1,7 +1,7 @@
 "use client";
 
 import { PageSize } from "@/lib/schema/document";
-import { PRESET_META } from "@/lib/schema/presets";
+import { PRESET_META, buildPreset } from "@/lib/schema/presets";
 import {
   FONT_PAIRS,
   MARGIN_PRESETS,
@@ -17,7 +17,7 @@ import { useState } from "react";
 import { Group } from "./controls";
 import { DocumentAdvanced } from "./document-advanced";
 import { ChoiceRow, OptionCards, SwatchCards } from "./option-cards";
-import { ColumnsPreview } from "./previews";
+import { ColumnsPreview, TemplatePreview } from "./previews";
 
 const COLUMN_CHOICES = [
   { id: "one", name: "One column", ratio: null as number | null },
@@ -72,7 +72,17 @@ export function DocumentPanel() {
           columns={3}
           value={doc.preset}
           onChange={setPreset}
-          options={PRESET_META.map((p) => ({ id: p.id, name: p.name }))}
+          options={PRESET_META.map((p) => ({
+            id: p.id,
+            name: p.name,
+            // Previews are built from each preset's own data, so they show the
+            // real column split, fills and heading style.
+            preview: (
+              <TemplatePreview
+                preset={buildPreset(p.id, theme.colors.accent)}
+              />
+            ),
+          }))}
         />
         <p className="text-[10px] text-muted-foreground">
           A template is a starting point — everything below stays editable.

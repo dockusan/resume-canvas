@@ -65,6 +65,10 @@ export const font = (patch: Partial<FontSpec> = {}): FontSpec => ({
   ...patch,
 });
 
+/** Hairline and text colours for content sitting on a dark filled column. */
+export const ON_FILL_LINE = "rgba(255,255,255,0.2)";
+export const ON_FILL_TEXT = "rgba(255,255,255,0.9)";
+
 export const DEFAULT_THEME: Theme = {
   colors: {
     accent: "#23405c",

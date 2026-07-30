@@ -15,9 +15,10 @@ import {
 import { useDocument } from "@/lib/schema/use-document";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Eye, EyeOff } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Group, IconField, NumberField, Row, Segmented } from "./controls";
+import { Switch } from "@/components/ui/switch";
 import { ChoiceRow, OptionCards } from "./option-cards";
 import {
   DensityPreview,
@@ -226,28 +227,14 @@ export function SectionPanel({ node }: { node: SectionNode }) {
                 key={def.key}
                 className="flex items-center justify-between gap-2"
               >
-                <button
-                  type="button"
-                  disabled={def.required}
-                  onClick={() =>
-                    patch({ fields: { [def.key]: { visible: !visible } } })
-                  }
+                <span
                   className={cn(
-                    "flex items-center gap-1.5 text-xs rounded px-1 py-0.5 -ml-1 flex-1 text-left",
-                    def.required
-                      ? "opacity-60 cursor-default"
-                      : "hover:bg-muted",
+                    "flex-1 text-xs",
+                    !visible && "text-muted-foreground",
                   )}
                 >
-                  {visible ? (
-                    <Eye className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-                  ) : (
-                    <EyeOff className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                  )}
-                  <span className={cn(!visible && "opacity-50")}>
-                    {def.label}
-                  </span>
-                </button>
+                  {def.label}
+                </span>
                 {visible && (
                   <IconField
                     value={spec?.icon ?? null}
@@ -256,6 +243,15 @@ export function SectionPanel({ node }: { node: SectionNode }) {
                     }
                   />
                 )}
+                <Switch
+                  checked={visible}
+                  disabled={def.required}
+                  onCheckedChange={(next) =>
+                    patch({ fields: { [def.key]: { visible: next } } })
+                  }
+                  aria-label={`Show ${def.label}`}
+                  className="shrink-0"
+                />
               </div>
             );
           })}

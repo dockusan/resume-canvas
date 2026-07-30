@@ -14,16 +14,9 @@ import {
   useResumeStore,
 } from "@/lib/store/useResumeStore";
 import { cn } from "@/lib/utils";
-import {
-  ChevronDown,
-  Copy,
-  Eye,
-  EyeOff,
-  GripVertical,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { ChevronDown, Copy, GripVertical, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { Switch } from "@/components/ui/switch";
 import { FieldInput } from "./field-input";
 
 type Item = { id: string } & Record<string, unknown>;
@@ -197,18 +190,16 @@ function SectionCard({
       onToggle={onToggle}
       dimmed={!node.visible}
       actions={
-        <button
-          type="button"
-          title={node.visible ? "Hide from the resume" : "Show on the resume"}
-          onClick={() => toggleVisibility(node.id)}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-muted"
-        >
-          {node.visible ? (
-            <Eye className="h-4 w-4 text-sky-600" />
-          ) : (
-            <EyeOff className="h-4 w-4 text-muted-foreground" />
-          )}
-        </button>
+        <Switch
+          checked={node.visible}
+          onCheckedChange={() => toggleVisibility(node.id)}
+          aria-label={
+            node.visible
+              ? `Hide ${node.title} from the resume`
+              : `Show ${node.title} on the resume`
+          }
+          className="shrink-0"
+        />
       }
     >
       <div className="space-y-3">

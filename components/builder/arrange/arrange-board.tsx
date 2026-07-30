@@ -11,14 +11,13 @@ import {
   DEFAULT_SECTION_NAMES,
   useResumeStore,
 } from "@/lib/store/useResumeStore";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
-  Eye,
-  EyeOff,
   GripVertical,
   Plus,
   RotateCcw,
@@ -156,18 +155,14 @@ function SectionCard({
         <span className="min-w-0 flex-1 truncate text-sm font-medium">
           {node.title}
         </span>
-        <button
-          type="button"
-          title={node.visible ? "Hide" : "Show"}
-          onClick={() => toggleVisibility(node.id)}
-          className="flex h-8 w-8 items-center justify-center rounded hover:bg-muted"
-        >
-          {node.visible ? (
-            <Eye className="h-4 w-4 text-sky-600" />
-          ) : (
-            <EyeOff className="h-4 w-4 text-muted-foreground" />
-          )}
-        </button>
+        <Switch
+          checked={node.visible}
+          onCheckedChange={() => toggleVisibility(node.id)}
+          aria-label={
+            node.visible ? `Hide ${node.title}` : `Show ${node.title}`
+          }
+          className="shrink-0"
+        />
       </div>
       <div className="mt-1 flex items-center gap-0.5 pl-6">
         <IconBtn

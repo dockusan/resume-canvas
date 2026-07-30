@@ -173,6 +173,12 @@ export interface HeaderSpec {
   /** Photo before or after the name block. */
   photoPosition: "start" | "end";
   contacts: {
+    /**
+     * `below` stacks contacts under the name; `beside` puts them in their own
+     * column on the opposite side of the header, which is what fills the empty
+     * half of a wide header band.
+     */
+    placement: "below" | "beside";
     direction: "row" | "column";
     align: "start" | "center" | "end";
     gap: number;

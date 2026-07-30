@@ -103,6 +103,7 @@ export function ResumePreview() {
   /** Drawer state below lg; the panel is always docked above it. */
   const [panelOpen, setPanelOpen] = useState(false);
   const [mode, setMode] = useState<BuilderMode>("design");
+  const [pageCount, setPageCount] = useState(1);
   const [paperHeight, setPaperHeight] = useState(0);
   /** Fit-to-width unless the user has picked a fixed zoom. */
   const scale = zoom === "fit" ? fitScale : zoom;
@@ -192,6 +193,7 @@ export function ResumePreview() {
         onOpenPanel={() => setPanelOpen(true)}
         mode={mode}
         onMode={setMode}
+        pageCount={pageCount}
         isDownloading={isDownloading}
       />
 
@@ -223,6 +225,7 @@ export function ResumePreview() {
                   }}
                 >
                   <PaginatedResume
+                    onPageCount={setPageCount}
                     columnFooter={(column, pageIndex, freeSpace, count) => (
                       <ColumnFooter
                         column={column}
