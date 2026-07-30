@@ -78,6 +78,22 @@ export interface Social {
   icon?: string;
 }
 
+export interface CustomSectionItem {
+  id: string;
+  title?: string;
+  subtitle?: string;
+  date?: string;
+  link?: string;
+  description?: string; // plain text, newline-separated bullets
+  bulletStyle?: string;
+  icon?: string; // lucide icon name
+}
+
+export interface CustomSection {
+  id: string; // referenced from column config as `custom:${id}`
+  items: CustomSectionItem[];
+}
+
 export interface ResumeData {
   personalInfo: PersonalInfo;
   experience: Experience[];
@@ -88,6 +104,7 @@ export interface ResumeData {
   certifications: Certification[];
   strengths: Strength[];
   socials: Social[];
+  customSections: CustomSection[];
 }
 
 export type TemplateType =
@@ -102,11 +119,22 @@ export interface SectionConfig {
   id: string;
   name: string;
   visible: boolean;
+  /** Force this section to start at the top of a new PDF page. */
+  pageBreakBefore?: boolean;
 }
 
-export interface SectionTypography {
-  fontSize?: "sm" | "md" | "lg" | "xl";
-  headingSize?: "sm" | "md" | "lg" | "xl";
+export type FontWeightOverride = 400 | 500 | 600 | 700;
+
+/**
+ * Style override applied at section, item, or field level.
+ * Keyed in ResumeSettings.styleOverrides by path, cascading section → item → field:
+ *   "experience" | "experience.heading" | "experience.<itemId>" |
+ *   "experience.<itemId>.title" | "personalInfo.fullName" | "custom:<uuid>" | "header"
+ */
+export interface StyleOverride {
+  fontSizeDelta?: number; // in PDF points; HTML multiplies by 1.333
+  color?: string;
+  fontWeight?: FontWeightOverride;
 }
 
 export interface ResumeSettings {
@@ -117,6 +145,22 @@ export interface ResumeSettings {
   template: TemplateType;
   leftColumn: SectionConfig[];
   rightColumn: SectionConfig[];
-  sectionTypography: Record<string, SectionTypography>;
+  styleOverrides: Record<string, StyleOverride>;
+  showPhoto: boolean;
   photoStyle?: "square" | "rounded" | "circle";
+  /** Contact fields hidden from the header. Missing entry = visible. */
+  personalFieldVisibility?: Partial<Record<PersonalContactField, boolean>>;
+  /** Missing = icons shown. */
+  showContactIcons?: boolean;
 }
+
+/** Header fields the personal controller can show/hide. */
+export type PersonalContactField =
+  | "title"
+  | "email"
+  | "phone"
+  | "location"
+  | "website"
+  | "linkedin"
+  | "github"
+  | "twitter";

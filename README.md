@@ -29,7 +29,8 @@ Unlike other resume builders, **Resume Canvas** runs entirely in your browser. Y
 ## ✨ Features
 
 - **👀 Real-time Preview:** See your changes instantly as you type.
-- **🔒 Privacy First:** All data is stored locally in your browser (Local Storage).
+- **🔒 Privacy First:** Your resume is stored locally in your browser (Local Storage) and is never uploaded as you write.
+- **🔗 Share Links:** Send someone a read-only link. The resume is encrypted in the browser and the decryption key travels in the URL fragment, so the server stores a blob it cannot read. Links expire on a schedule you choose.
 - **📄 PDF Export:** High-quality, selectable, and ATS-friendly PDF generation using `@react-pdf/renderer`.
 - **🎨 Customization:**
   - Multiple fonts (Google Fonts integration).
@@ -81,7 +82,18 @@ Follow these steps to set up the project locally on your machine.
     npm install
     ```
 
-3.  **Run the development server:**
+3.  **Configure share links (optional locally, required in production):**
+
+    ```bash
+    cp .env.example .env.local
+    ```
+
+    Point it at any Upstash-compatible Redis REST endpoint. Left blank, the
+    app falls back to an in-process store so sharing still works while you
+    develop; a production build refuses to create links without it rather
+    than handing out ones that would silently break.
+
+4.  **Run the development server:**
 
     ```bash
     pnpm dev

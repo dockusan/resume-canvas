@@ -1,31 +1,43 @@
 import Link from "next/link";
-import { Github, Twitter, Linkedin, Mail } from "lucide-react";
+import { Github, Twitter, Linkedin } from "lucide-react";
+import { SITE } from "@/lib/seo";
 
+const REPO = SITE.repo;
+
+/**
+ * Only pages that exist. The previous list linked to Examples, Blog, Docs,
+ * Community and Help — none of which were ever built, so every page on the
+ * site shipped five links straight to a 404.
+ */
 const footerLinks = [
   {
     title: "Product",
     links: [
       { label: "Builder", href: "/builder" },
       { label: "Templates", href: "/templates" },
-      { label: "Examples", href: "/examples" },
       { label: "Features", href: "/#features" },
+      { label: "Questions", href: "/#faq" },
     ],
   },
   {
-    title: "Resources",
+    title: "Open source",
     links: [
-      { label: "Blog", href: "/blog" },
-      { label: "Documentation", href: "/docs" },
-      { label: "Community", href: "/community" },
-      { label: "Help Center", href: "/help" },
+      { label: "Source code", href: REPO, external: true },
+      { label: "Report an issue", href: `${REPO}/issues`, external: true },
+      { label: "Releases", href: `${REPO}/releases`, external: true },
+      {
+        label: "MIT licence",
+        href: `${REPO}/blob/main/LICENSE`,
+        external: true,
+      },
     ],
   },
   {
     title: "Legal",
     links: [
-      { label: "Privacy Policy", href: "/privacy" },
-      { label: "Terms of Service", href: "/terms" },
-      { label: "Cookie Policy", href: "/cookies" },
+      { label: "Privacy policy", href: "/privacy" },
+      { label: "Terms of service", href: "/terms" },
+      { label: "Cookie policy", href: "/cookies" },
     ],
   },
 ];
@@ -33,7 +45,7 @@ const footerLinks = [
 const socialLinks = [
   {
     icon: Github,
-    href: "https://github.com/kstmostofa/resume-canvas",
+    href: REPO,
     label: "GitHub",
   },
   { icon: Twitter, href: "https://x.com/Mostofa_Me", label: "Twitter" },
@@ -42,7 +54,6 @@ const socialLinks = [
     href: "https://www.linkedin.com/in/mostofa-me",
     label: "LinkedIn",
   },
-  { icon: Mail, href: "mailto:hello@example.com", label: "Email" },
 ];
 
 export function Footer() {
@@ -85,6 +96,9 @@ export function Footer() {
                   <li key={linkIndex}>
                     <Link
                       href={link.href}
+                      {...("external" in link && link.external
+                        ? { target: "_blank", rel: "noreferrer" }
+                        : {})}
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
                       {link.label}

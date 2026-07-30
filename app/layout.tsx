@@ -1,4 +1,5 @@
 import ThemeProvider from "@/providers/theme-provider";
+import { SITE } from "@/lib/seo";
 import type { Metadata } from "next";
 import { Khand } from "next/font/google";
 import "./globals.css";
@@ -10,54 +11,31 @@ const khand = Khand({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://resumecanvas.site"),
-  title:
-    "Resume Canvas | Open Source Resume Builder | Free Open Source Resume Builder",
-  description:
-    "Resume Canvas is a modern, open-source resume builder designed to be simple, fast, and privacy-focused. Build your professional resume in minutes with a real-time preview and export it as a high-quality PDF. Unlike other resume builders, Resume Canvas runs entirely in your browser. Your data never leaves your device unless you choose to share it. No sign-ups, no paywalls, no tracking.",
-  keywords: [
-    "resume builder",
-    "cv maker",
-    "open source resume",
-    "free resume template",
-    "professional resume",
-    "customizable resume",
-    "resume editor",
-    "career tools",
-    "job application",
-    "resume canvas",
-    "pdf resume",
-    "nextjs resume builder",
-    "react resume builder",
-    "tailwindcss resume",
-    "developer resume",
-    "designer resume",
-    "modern resume",
-    "easy resume builder",
-    "online resume creator",
-    "resume templates",
-    "resume formatting",
-    "resume writing",
-    "resume tips",
-    "modern resume design",
-    "resume generator",
-    "resume export",
-    "modern resume builder",
-  ],
-  authors: [{ name: "Resume Canvas", url: "https://resumecanvas.site" }],
+  metadataBase: new URL(SITE.url),
+  // A template keeps the site name out of every page title, so titles stay
+  // short and distinct instead of repeating themselves.
+  title: {
+    default: `${SITE.name} — ${SITE.tagline}`,
+    template: `%s | ${SITE.name}`,
+  },
+  description: SITE.description,
+  applicationName: SITE.name,
+  authors: [{ name: SITE.author, url: SITE.repo }],
+  creator: SITE.author,
+  publisher: SITE.name,
+  category: "productivity",
+  alternates: { canonical: SITE.url },
   openGraph: {
-    title:
-      "Resume Canvas | Open Source Resume Builder | Free Open Source Resume Builder",
-    description:
-      "Resume Canvas is a modern, open-source resume builder designed to be simple, fast, and privacy-focused. Build your professional resume in minutes with a real-time preview and export it as a high-quality PDF. Unlike other resume builders, Resume Canvas runs entirely in your browser. Your data never leaves your device unless you choose to share it. No sign-ups, no paywalls, no tracking.",
-    url: "https://resumecanvas.site",
-    siteName: "Resume Canvas",
+    title: `${SITE.name} — ${SITE.tagline}`,
+    description: SITE.description,
+    url: SITE.url,
+    siteName: SITE.name,
     images: [
       {
-        url: "https://resumecanvas.site/og-image.png",
+        url: SITE.ogImage,
         width: 1200,
         height: 630,
-        alt: "Resume Canvas Open Source Resume Builder",
+        alt: `${SITE.name} — ${SITE.tagline}`,
       },
     ],
     locale: "en_US",
@@ -65,16 +43,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title:
-      "Resume Canvas | Open Source Resume Builder | Free Open Source Resume Builder",
-    description:
-      "Create and customize your resume with ease using Resume Canvas, the open-source resume builder.",
-    images: ["https://resumecanvas.site/og-image.png"],
+    title: `${SITE.name} — ${SITE.tagline}`,
+    description: SITE.description,
+    images: [SITE.ogImage],
   },
-  creator: "Md Mostafijur Rahman",
-  publisher: "Resume Canvas",
-  alternates: {
-    canonical: "https://resumecanvas.site",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
 };
 

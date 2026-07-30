@@ -122,24 +122,101 @@
   }
 }
 
+/* Print = export.
+   The paginated preview already renders real page boxes, so printing is a
+   matter of hiding the editor and letting each [data-page] become one sheet.
+   The page boxes must stay in normal flow for CSS fragmentation to work, so
+   rather than absolutely positioning a print root we neutralise the ancestors
+   on the path to it (scroll containers, the fit-to-width transform, the app
+   shell) and hide everything marked editor-only. */
 @media print {
-  @page {
-    margin: 0;
-    size: auto;
-  }
-
+  html,
   body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    height: auto !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  .print-content {
+  /* Ancestors of the pages: strip layout so nothing clips, scales or
+     establishes a containing block that would suppress page breaks. */
+  [data-print-passthrough] {
+    display: block !important;
+    position: static !important;
+    overflow: visible !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    max-height: none !important;
     transform: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+  }
+
+  [data-page] {
     box-shadow: none !important;
     margin: 0 !important;
-    width: 100% !important;
-    height: auto !important;
-    padding: 0 !important;
-    page-break-inside: avoid !important;
+    break-after: page;
+    break-inside: avoid;
+  }
+
+  [data-page]:last-of-type {
+    break-after: auto;
+  }
+
+  /* Editor furniture never prints. */
+  [data-toolbar],
+  [data-editor-only],
+  .no-print {
+    display: none !important;
+  }
+
+  /* The measure layer stays laid out — hiding it would zero every height and
+     repaginate the document to one page while printing. It is already
+     zero-height and transparent. */
+  [data-measure-layer] {
+    display: block !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+  }
+
+  /* The editor's focus ring is a box-shadow; neither it nor an outline is
+     ever part of the document. A background can be either, so it is handled
+     below rather than blanket-cleared — `background: none` here also erased
+     backgrounds the document itself sets, which is what flattened the skills
+     pills to bare text in every export. */
+  .editable-field {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Only the hover / selection tint. Unlayered, so it beats the Tailwind
+     utility, and unprefixed by !important, so an inline background set by a
+     section (the skills pill, a heading fill) still wins. */
+  .editable-field:hover,
+  .editable-field:focus {
+    background-color: transparent;
   }
 }
+
+/* Inline editing (resume preview) */
+.editable-field[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  opacity: 0.4;
+  pointer-events: none;
+}
+.editable-field[contenteditable]:empty {
+  min-width: 2ch;
+  display: inline-block;
+}
+
+/* Section and item controls now live in the gutter rail beside the page, so
+   nothing floats over the content and there is no innermost-wins hover rule
+   to maintain. Selection is shown with an outline instead. */
