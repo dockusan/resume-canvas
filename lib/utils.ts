@@ -32,3 +32,15 @@ export function darkenColor(hexColor: string, factor: number = 0.7): string {
     .toString(16)
     .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }
+
+/**
+ * A URL as it should read on paper: no scheme, no "www.", no trailing slash.
+ * "https://www.linkedin.com/in/jane/" → "linkedin.com/in/jane".
+ */
+export function shortUrl(value: string): string {
+  return value
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/^www\./i, "")
+    .replace(/\/+$/, "");
+}

@@ -3,6 +3,7 @@
 import { EditableText } from "@/components/builder/inline/editable-text";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import { PersonalInfo } from "@/lib/types";
+import { shortUrl } from "@/lib/utils";
 
 type PersonalTextField = Exclude<keyof PersonalInfo, "photoUrl">;
 
@@ -18,6 +19,14 @@ const PLACEHOLDERS: Partial<Record<PersonalTextField, string>> = {
   twitter: "Twitter",
   summary: "Write a short professional summary…",
 };
+
+/** Printed without "https://" and "www." — shorter, and what people type. */
+const LINK_FIELDS = new Set<PersonalTextField>([
+  "website",
+  "linkedin",
+  "github",
+  "twitter",
+]);
 
 interface PersonalFieldProps {
   name: PersonalTextField;
@@ -46,7 +55,8 @@ export function PersonalField({
       multiline={multiline}
       className={className}
       style={style}
-      rich={name !== "fullName"}
+      rich={name !== "fullName" && !LINK_FIELDS.has(name)}
+      display={LINK_FIELDS.has(name) ? shortUrl : undefined}
       path={`personalInfo.${name}`}
     />
   );

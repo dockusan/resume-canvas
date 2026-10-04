@@ -6,7 +6,6 @@ import {
   ChevronRight,
   Circle,
   Diamond,
-  Dot,
   Minus,
   Square,
   Star,
@@ -50,7 +49,14 @@ export function getBulletIcon(style: string) {
       return <Minus className="w-3 h-3" />;
     case "default":
     default:
-      return <Dot className="w-1.5 h-1.5 fill-current" />;
+      // A filled disc sized in em, so it scales with the text. lucide's Dot
+      // draws a tiny circle in a large box and read as a speck on paper.
+      return (
+        <span
+          className="block rounded-full bg-current"
+          style={{ width: "0.3em", height: "0.3em" }}
+        />
+      );
   }
 }
 

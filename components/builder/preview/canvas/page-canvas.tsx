@@ -189,11 +189,23 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
             flexWrap: header.contacts.direction === "row" ? "wrap" : "nowrap",
             gap: header.contacts.gap,
             alignItems:
-              header.contacts.align === "start"
-                ? "flex-start"
-                : header.contacts.align === "end"
-                  ? "flex-end"
-                  : "center",
+              header.contacts.direction === "row"
+                ? "center"
+                : header.contacts.align === "start"
+                  ? "flex-start"
+                  : header.contacts.align === "end"
+                    ? "flex-end"
+                    : "center",
+            // In a row, alignment is along the line, so a centred header
+            // centres its contacts too.
+            justifyContent:
+              header.contacts.direction === "row"
+                ? header.contacts.align === "center"
+                  ? "center"
+                  : header.contacts.align === "end"
+                    ? "flex-end"
+                    : "flex-start"
+                : undefined,
             fontSize: fontSizeAt(theme, header.type?.contact ?? -1),
             opacity: 0.9,
           }}

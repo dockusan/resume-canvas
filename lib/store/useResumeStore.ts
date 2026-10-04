@@ -350,7 +350,9 @@ const initialSettings: ResumeSettings = {
     { id: "certifications", name: "Certification", visible: true },
   ],
   styleOverrides: {},
-  showPhoto: true,
+  // Photos are expected in some markets and a liability in others (and to
+  // most ATS parsers); start without one and let people opt in.
+  showPhoto: false,
   photoStyle: "circle",
   personalFieldVisibility: {},
   showContactIcons: true,
@@ -863,7 +865,14 @@ const createResumeState: StateCreator<ResumeState, [], []> = (set, get) => ({
     }),
   setPreset: (presetId) =>
     set((state) => ({
-      document: applyPreset(state.document, presetId),
+      // Seed from the user's chosen colour, not the current theme's accent:
+      // Minimal deliberately greys its accent, which would otherwise leak
+      // into every template picked after it.
+      document: applyPreset(
+        state.document,
+        presetId,
+        state.settings.themeColor || state.document.theme.colors.accent,
+      ),
       settings: { ...state.settings, template: presetId as never },
     })),
 

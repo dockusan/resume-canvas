@@ -240,21 +240,22 @@ export function applyPreset(
     };
   });
 
+  // Photo and contact-icon *defaults* belong to the template (Clean has
+  // neither); the user's own show/hide toggles live in settings and still
+  // apply on top.
   const header = structuredClone(preset.layout.header);
-  header.photo.visible = doc.layout.header.photo.visible;
-  header.photo.shape = doc.layout.header.photo.shape;
-  header.contacts.showIcons = doc.layout.header.contacts.showIcons;
 
   return {
     ...doc,
     preset: presetId,
     page: { ...preset.page, size: doc.page.size },
-    // A template restyles layout and colour; the user's type choices (font
-    // pair, text size, line spacing) are theirs and survive the switch.
+    // A template restyles layout and colour; the user's type and spacing
+    // choices (font pair, text size, line spacing, density) survive it.
     theme: {
       ...preset.theme,
       fonts: structuredClone(doc.theme.fonts),
       scale: { ...doc.theme.scale },
+      spacing: { ...doc.theme.spacing },
     },
     layout: { ...preset.layout, header },
     sections,

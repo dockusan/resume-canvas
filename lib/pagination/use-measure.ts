@@ -216,14 +216,24 @@ export function useMeasuredSections(
 }
 
 /**
- * Resolve once webfonts have loaded and the debounced re-pagination they
- * trigger has painted. Printing straight after `fonts.ready` could capture the
- * page split computed against fallback metrics.
+ * Prepare the document for printing and resolve once it has re-paginated.
+ *
+ * On screen the measure layer includes editor-only furniture ("Add point"
+ * rows, empty-field placeholders, "add item" buttons), so page breaks leave
+ * room for things the PDF never shows. The `rc-printing` class hides that
+ * furniture inside the measure layer; the resize it causes re-runs the
+ * paginator, and we wait for that (and for webfonts) before the dialog opens.
+ * Call `endPrintLayout()` once printing is done.
  */
 export async function settleLayout(): Promise<void> {
+  document.documentElement.classList.add("rc-printing");
   await document.fonts?.ready;
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  await new Promise((resolve) => setTimeout(resolve, 450));
   await new Promise((resolve) =>
     requestAnimationFrame(() => requestAnimationFrame(resolve)),
   );
+}
+
+export function endPrintLayout(): void {
+  document.documentElement.classList.remove("rc-printing");
 }

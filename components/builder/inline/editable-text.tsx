@@ -24,6 +24,11 @@ interface EditableTextProps {
    * selection toolbar. Off for values that must stay literal, like dates.
    */
   rich?: boolean;
+  /**
+   * Shown in place of the raw value whenever the field isn't being edited
+   * (e.g. a URL without its scheme). Plain-text fields only.
+   */
+  display?: (value: string) => string;
 }
 
 /**
@@ -41,6 +46,7 @@ export function EditableText({
   style,
   path,
   rich = true,
+  display,
 }: EditableTextProps) {
   const { editable, setActivePath } = useEditing();
   const overrides = useResumeStore((s) => s.settings.styleOverrides);
@@ -55,7 +61,13 @@ export function EditableText({
   if (!editable) {
     return (
       <Tag className={className} style={mergedStyle}>
-        {rich ? <RichText value={value} /> : toPlainText(value)}
+        {rich ? (
+          <RichText value={value} />
+        ) : display ? (
+          display(toPlainText(value))
+        ) : (
+          toPlainText(value)
+        )}
       </Tag>
     );
   }
@@ -90,9 +102,16 @@ export function EditableText({
       )}
       style={mergedStyle}
       onFocus={(e: React.FocusEvent<HTMLElement>) => {
+        // Edit the real value, not its display form.
+        if (display && !rich) e.currentTarget.textContent = value;
         if (path) setActivePath(path, e.currentTarget);
       }}
-      onBlur={commit}
+      onBlur={(e: React.FocusEvent<HTMLElement>) => {
+        commit();
+        // An unchanged value doesn't remount, so restore the display form.
+        if (display && !rich && e.currentTarget.textContent === value)
+          e.currentTarget.textContent = display(value);
+      }}
       onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
         if (e.key === "Enter") {
           if (!multiline || e.metaKey || e.ctrlKey) {
@@ -117,7 +136,7 @@ export function EditableText({
         e.stopPropagation();
       }}
     >
-      {rich ? <RichText value={value} /> : value}
+      {rich ? <RichText value={value} /> : display ? display(value) : value}
     </Tag>
   );
 }

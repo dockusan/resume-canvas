@@ -4,6 +4,7 @@ import { EditableLink } from "@/components/builder/inline/editable-link";
 import { useEditing } from "@/components/builder/inline/editing-context";
 import { fontSizeAt } from "@/lib/schema/document";
 import { useResumeStore } from "@/lib/store/useResumeStore";
+import { shortUrl } from "@/lib/utils";
 import { Field, Icon, Item, ItemFlow, ItemHeaderRow } from "./primitives";
 import {
   isFieldVisible,
@@ -86,7 +87,11 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
                   fontSize: fontSizeAt(theme, node.fields?.link?.step ?? 0),
                 }}
               >
-                {project.link || (editable ? "+ Add link" : "")}
+                {project.link
+                  ? shortUrl(project.link)
+                  : editable
+                    ? "+ Add link"
+                    : ""}
               </EditableLink>
             </div>
           )}

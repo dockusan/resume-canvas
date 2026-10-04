@@ -210,7 +210,7 @@ export function EditableBullets({
     >
       {rows}
       {editable && pendingIndex === null && (
-        <li>
+        <li data-editor-only>
           <button
             type="button"
             className="flex items-center gap-1 opacity-0 hover:opacity-70 focus:opacity-70 transition-opacity text-[10px] mt-0.5"

@@ -78,6 +78,18 @@ export const HEADING_LOOKS: Look<Partial<HeadingStyle>>[] = [
     matches: (h) => !!h.border?.sides.left && !h.border?.sides.bottom,
   },
   {
+    id: "bar",
+    name: "Accent bar",
+    build: () => ({
+      variant: "bar",
+      border: null,
+      background: noFill,
+      padding: box(0),
+      radius: 0,
+    }),
+    matches: (h) => h.variant === "bar",
+  },
+  {
     id: "pill",
     name: "Pill",
     build: (theme) => ({

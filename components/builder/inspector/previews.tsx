@@ -53,6 +53,16 @@ export function HeadingPreview({ look }: { look: string }) {
           {LINES(2)}
         </div>
       );
+    case "bar":
+      return (
+        <div className={frame}>
+          <div className="flex items-center gap-1">
+            <div className="h-[3px] w-2 rounded-full bg-primary" />
+            {label}
+          </div>
+          {LINES(2)}
+        </div>
+      );
     case "pill":
       return (
         <div className={frame}>

@@ -61,7 +61,13 @@ export function ContactItem({
     ) : null;
 
   return (
-    <Tag className={className} style={style}>
+    // An empty contact is only on the page so it can be filled in; its icon
+    // and ghost label must not reach the PDF.
+    <Tag
+      className={className}
+      style={style}
+      data-editor-only={value ? undefined : true}
+    >
       {!iconAfter && glyph}
       <PersonalField name={field} />
       {iconAfter && glyph}

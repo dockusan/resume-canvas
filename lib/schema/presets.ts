@@ -23,13 +23,11 @@ import {
 } from "./document";
 import {
   DEFAULT_THEME,
-  ON_FILL_LINE,
   ON_FILL_TEXT,
   border,
   box,
   emptyBox,
   font,
-  gradient,
   heading,
   noFill,
   noSeparator,
@@ -103,11 +101,16 @@ const SPLIT: Partial<Record<SectionType, Placement>> = {
 
 // --------------------------------------------------------------------------
 
+/** Uppercase, tracked heading face shared by most templates. */
+const capsHeading = (weight = 600, tracking = 1.2) =>
+  font({ weight, letterSpacing: tracking, transform: "uppercase" });
+
 function classic(accent: string): DocumentPreset {
   return {
     id: "classic",
     name: "Classic",
-    description: "Two columns with a filled sidebar on the right.",
+    description:
+      "Main column beside a filled sidebar, with icons and skill tags.",
     page: { margin: box(0), background: solid("#ffffff") },
     theme: withAccent(accent),
     layout: {
@@ -115,55 +118,54 @@ function classic(accent: string): DocumentPreset {
       ratio: 0.65,
       gap: 0,
       fills: { left: noFill, right: solid(accent) },
-      padding: { left: box(24, 20, 24, 24), right: box(24) },
+      padding: { left: box(40, 30, 28, 38), right: box(46, 30, 28, 28) },
       header: {
         ...defaultHeader(),
         placement: "left",
-        padding: box(0, 0, 12, 0),
+        padding: box(0, 0, 6, 0),
+        type: { name: 5.5, title: 2, contact: -0.5 },
         photo: {
           visible: true,
           size: 96,
           shape: "circle",
           border: border("#ffffff", 3, sides(true, true, true, true)),
-          shadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+          shadow: null,
           rotate: 0,
           slot: "right",
           align: "center",
         },
-        contacts: {
-          ...defaultHeader().contacts,
-          gap: 12,
-          separator: noSeparator,
-        },
+        contacts: { ...defaultHeader().contacts, gap: 14 },
       },
       decorations: [
         {
           target: "right",
           edge: "top",
-          size: 16,
-          fill: solid(darkenColor(accent, 0.7)),
+          size: 6,
+          fill: solid(darkenColor(accent, 0.6)),
         },
       ],
     },
     sectionStyle: {
       left: sectionStyle("classic", {
-        heading: heading({ step: 2, font: DEFAULT_THEME.fonts.heading }),
-        marker: {
-          kind: "dot",
-          color: "#d1d5db",
-          size: 8,
-          offset: -5,
-          rail: { enabled: true, color: "#e5e7eb", width: 2 },
-        },
-        itemBox: emptyBox({ padding: box(0, 0, 0, 12) }),
+        heading: heading({
+          step: 2,
+          font: capsHeading(500, 1.6),
+          border: border("#dfe3e8", 2),
+          padding: box(0, 0, 3, 0),
+          marginBottom: 8,
+        }),
+        container: emptyBox({ padding: box(0, 0, 14, 0) }),
       }),
       right: sectionStyle("classic", {
         heading: heading({
           step: 2,
+          font: capsHeading(500, 1.6),
           color: ON_FILL_TEXT,
-          border: border(ON_FILL_LINE),
-          padding: box(0, 0, 4, 0),
+          border: border("rgba(255,255,255,0.55)", 1.5),
+          padding: box(0, 0, 3, 0),
+          marginBottom: 9,
         }),
+        container: emptyBox({ padding: box(0, 0, 16, 0) }),
       }),
       full: sectionStyle("classic"),
     },
@@ -171,26 +173,86 @@ function classic(accent: string): DocumentPreset {
   };
 }
 
-function minimal(accent: string): DocumentPreset {
+function sidebar(accent: string): DocumentPreset {
   return {
-    id: "minimal",
-    name: "Minimal",
-    description: "Single column, generous whitespace, no colour.",
-    page: { margin: box(40), background: solid("#ffffff") },
+    id: "sidebar",
+    name: "Modern Sidebar",
+    description: "Dark header band over a main column and a light sidebar.",
+    page: { margin: box(0), background: solid("#ffffff") },
     theme: withAccent(accent, {
       colors: {
         ...DEFAULT_THEME.colors,
-        accent: "#333333",
-        text: "#000000",
-        heading: "#3e3e3e",
+        accent,
+        text: "#334155",
+        heading: "#0f172a",
+        muted: "#64748b",
+        border: "#e2e8f0",
       },
-      fonts: {
-        heading: font({
-          weight: 700,
-          letterSpacing: 1.2,
-          transform: "uppercase",
+    }),
+    layout: {
+      columns: 2,
+      ratio: 0.66,
+      gap: 0,
+      fills: { left: noFill, right: solid("#f8fafc") },
+      padding: { left: box(26, 26, 24, 44), right: box(26, 34, 24, 24) },
+      header: {
+        ...defaultHeader(),
+        placement: "band",
+        background: solid("#0f172a"),
+        padding: box(34, 44, 26, 44),
+        type: { name: 5, title: 1.75, contact: -1 },
+        photo: { ...defaultHeader().photo, visible: false },
+        contacts: { ...defaultHeader().contacts, gap: 16 },
+      },
+      decorations: [
+        { target: "right", edge: "left", size: 1, fill: solid("#e2e8f0") },
+      ],
+    },
+    sectionStyle: {
+      left: sectionStyle("sidebar", {
+        heading: heading({
+          variant: "bar",
+          step: 1.5,
+          font: capsHeading(700, 1.5),
+          color: "#0f172a",
+          border: null,
+          padding: box(0),
+          marginBottom: 8,
         }),
-        body: font(),
+        container: emptyBox({ padding: box(0, 0, 14, 0) }),
+      }),
+      right: sectionStyle("sidebar", {
+        heading: heading({
+          variant: "bar",
+          step: 1.5,
+          font: capsHeading(700, 1.5),
+          color: "#0f172a",
+          border: null,
+          padding: box(0),
+          marginBottom: 8,
+        }),
+        container: emptyBox({ padding: box(0, 0, 14, 0) }),
+      }),
+      full: sectionStyle("sidebar"),
+    },
+    defaultPlacement: SPLIT,
+  };
+}
+
+function clean(accent: string): DocumentPreset {
+  return {
+    id: "clean",
+    name: "Clean",
+    description:
+      "One column, no icons or photo: the safest choice for ATS portals.",
+    page: { margin: box(44, 50), background: solid("#ffffff") },
+    theme: withAccent(accent, {
+      colors: {
+        ...DEFAULT_THEME.colors,
+        accent,
+        text: "#1f2937",
+        heading: "#111827",
+        muted: "#6b7280",
       },
     }),
     layout: {
@@ -201,167 +263,103 @@ function minimal(accent: string): DocumentPreset {
       padding: { left: box(0), right: box(0) },
       header: {
         ...defaultHeader(),
-        align: "left",
-        padding: box(0, 0, 24, 0),
-        border: border("#e5e7eb"),
-        photo: {
-          visible: true,
-          size: 80,
-          shape: "circle",
-          border: null,
-          shadow: null,
-          rotate: 0,
-          slot: "header",
-          align: "center",
+        placement: "band",
+        padding: box(0, 0, 14, 0),
+        border: border(accent, 2),
+        type: { name: 4.5, title: 1.75, contact: -1 },
+        photo: { ...defaultHeader().photo, visible: false },
+        contacts: {
+          ...defaultHeader().contacts,
+          gap: 10,
+          showIcons: false,
+          separator: {
+            kind: "line",
+            color: "#cbd5e1",
+            thickness: 1,
+            spacing: 10,
+          },
         },
-        contacts: { ...defaultHeader().contacts, gap: 16, showIcons: false },
       },
       decorations: [],
     },
     sectionStyle: {
-      left: sectionStyle("minimal", {
-        heading: heading({ step: 2, padding: box(0, 0, 4, 0) }),
-      }),
-      right: sectionStyle("minimal"),
-      full: sectionStyle("minimal", {
-        heading: heading({ step: 2, padding: box(0, 0, 4, 0) }),
+      left: sectionStyle("clean"),
+      right: sectionStyle("clean"),
+      full: sectionStyle("clean", {
+        heading: heading({
+          step: 1.5,
+          font: capsHeading(700, 1.4),
+          color: accent,
+          border: border("#e5e7eb", 1),
+          padding: box(0, 0, 3, 0),
+          marginBottom: 8,
+        }),
+        container: emptyBox({ padding: box(14, 0, 4, 0) }),
       }),
     },
     defaultPlacement: ALL_LEFT,
   };
 }
 
-function modern1col(accent: string): DocumentPreset {
+function minimal(accent: string): DocumentPreset {
   return {
-    id: "modern",
-    name: "Modern",
-    description: "Single column under a full-width coloured banner.",
-    page: { margin: box(0), background: solid("#ffffff") },
-    theme: withAccent(accent),
+    id: "minimal",
+    name: "Minimal",
+    description: "Centred header, quiet rules and plenty of whitespace.",
+    page: { margin: box(52, 56), background: solid("#ffffff") },
+    theme: withAccent(accent, {
+      colors: {
+        ...DEFAULT_THEME.colors,
+        accent: "#111827",
+        text: "#262626",
+        heading: "#111827",
+        muted: "#737373",
+      },
+    }),
     layout: {
       columns: 1,
       ratio: 1,
       gap: 0,
       fills: { left: noFill, right: noFill },
-      padding: { left: box(32), right: box(32) },
+      padding: { left: box(0), right: box(0) },
       header: {
         ...defaultHeader(),
-        placement: "band",
-        background: solid(accent),
-        padding: box(24, 32),
-        photoPosition: "start",
-        photo: {
-          visible: true,
-          size: 80,
-          shape: "circle",
-          border: border(
-            "rgba(255,255,255,0.5)",
-            2,
-            sides(true, true, true, true),
-          ),
-          shadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-          rotate: 0,
-          slot: "header",
+        direction: "column",
+        align: "center",
+        padding: box(0, 0, 22, 0),
+        type: { name: 4.5, title: 1.25, contact: -1 },
+        photo: { ...defaultHeader().photo, visible: false },
+        contacts: {
+          ...defaultHeader().contacts,
           align: "center",
+          gap: 10,
+          showIcons: false,
+          separator: {
+            kind: "line",
+            color: "#d4d4d4",
+            thickness: 1,
+            spacing: 10,
+          },
         },
-        contacts: { ...defaultHeader().contacts, gap: 16 },
       },
       decorations: [],
     },
     sectionStyle: {
-      left: sectionStyle("modern", {
+      left: sectionStyle("minimal"),
+      right: sectionStyle("minimal"),
+      full: sectionStyle("minimal", {
         heading: heading({
-          variant: "underline",
-          step: 2,
-          color: accent,
-          border: border(accent, 2),
-          marginBottom: 16,
+          step: 1.25,
+          font: capsHeading(600, 2.4),
+          color: "#111827",
+          border: border("#e5e5e5", 1),
+          padding: box(0, 0, 4, 0),
+          marginBottom: 10,
         }),
-      }),
-      right: sectionStyle("modern"),
-      full: sectionStyle("modern", {
-        heading: heading({
-          variant: "underline",
-          step: 2,
-          color: accent,
-          border: border(accent, 2),
-          marginBottom: 16,
-        }),
+        container: emptyBox({ padding: box(0, 0, 18, 0) }),
       }),
     },
     defaultPlacement: ALL_LEFT,
-  };
-}
-
-function modern2col(accent: string): DocumentPreset {
-  return {
-    id: "modern-2col",
-    name: "Modern Two Column",
-    description: "Full-width header band above two columns.",
-    page: { margin: box(0), background: solid("#ffffff") },
-    theme: withAccent(accent, {
-      colors: { ...DEFAULT_THEME.colors, accent, text: "#4b5563" },
-    }),
-    layout: {
-      columns: 2,
-      ratio: 0.65,
-      gap: 0,
-      fills: { left: noFill, right: solid("rgba(249,250,251,0.5)") },
-      padding: { left: box(32, 24, 32, 32), right: box(32, 32, 32, 24) },
-      header: {
-        ...defaultHeader(),
-        placement: "band",
-        background: solid("#f9fafb"),
-        padding: box(32, 32, 24, 32),
-        border: border("#e5e7eb", 2),
-        photoPosition: "start",
-        contacts: {
-          ...defaultHeader().contacts,
-          placement: "beside",
-          direction: "column",
-          align: "end",
-          gap: 6,
-          iconPosition: "after",
-        },
-      },
-      decorations: [],
-    },
-    sectionStyle: {
-      left: sectionStyle("modern-2col", {
-        heading: heading({
-          step: 2,
-          font: font({
-            weight: 700,
-            letterSpacing: 0.6,
-            transform: "uppercase",
-          }),
-          border: border("#e5e7eb", 2),
-          marginBottom: 16,
-        }),
-        itemBox: emptyBox({ padding: box(0, 0, 0, 16) }),
-        marker: {
-          kind: "none",
-          color: `${accent}40`,
-          size: 0,
-          offset: 0,
-          rail: { enabled: true, color: `${accent}40`, width: 2 },
-        },
-      }),
-      right: sectionStyle("modern-2col", {
-        heading: heading({
-          step: 2,
-          font: font({
-            weight: 700,
-            letterSpacing: 0.6,
-            transform: "uppercase",
-          }),
-          border: border("#e5e7eb", 2),
-          marginBottom: 16,
-        }),
-      }),
-      full: sectionStyle("modern-2col"),
-    },
-    defaultPlacement: SPLIT,
   };
 }
 
@@ -369,14 +367,14 @@ function executive(accent: string): DocumentPreset {
   return {
     id: "executive",
     name: "Executive",
-    description: "Single column with an accent rule across the top.",
-    page: { margin: box(32), background: solid("#ffffff") },
+    description: "One column under an accent rule, with an optional photo.",
+    page: { margin: box(40, 44), background: solid("#ffffff") },
     theme: withAccent(accent, {
       colors: {
         ...DEFAULT_THEME.colors,
         accent,
         text: "#374151",
-        heading: "#374151",
+        heading: "#111827",
       },
     }),
     layout: {
@@ -388,14 +386,15 @@ function executive(accent: string): DocumentPreset {
       header: {
         ...defaultHeader(),
         placement: "band",
-        padding: box(0, 0, 24, 0),
+        padding: box(0, 0, 18, 0),
         photoPosition: "start",
+        type: { name: 5, title: 2, contact: -1 },
         photo: {
           visible: true,
-          size: 96,
+          size: 88,
           shape: "circle",
           border: border("#e5e7eb", 1, sides(true, true, true, true)),
-          shadow: "0 1px 2px rgba(0,0,0,0.05)",
+          shadow: null,
           rotate: 0,
           slot: "header",
           align: "center",
@@ -403,12 +402,12 @@ function executive(accent: string): DocumentPreset {
         contacts: {
           ...defaultHeader().contacts,
           showIcons: false,
-          gap: 12,
+          gap: 10,
           separator: {
             kind: "line",
             color: "#d1d5db",
             thickness: 1,
-            spacing: 12,
+            spacing: 10,
           },
         },
       },
@@ -417,135 +416,79 @@ function executive(accent: string): DocumentPreset {
       ],
     },
     sectionStyle: {
-      left: sectionStyle("executive", {
-        heading: heading({
-          step: 2,
-          font: font({
-            weight: 700,
-            letterSpacing: 0.6,
-            transform: "uppercase",
-          }),
-          color: "#374151",
-          padding: box(0, 0, 4, 0),
-        }),
-        itemBox: emptyBox({ padding: box(0, 0, 8, 0) }),
-      }),
+      left: sectionStyle("executive"),
       right: sectionStyle("executive"),
       full: sectionStyle("executive", {
         heading: heading({
           step: 2,
-          font: font({
-            weight: 700,
-            letterSpacing: 0.6,
-            transform: "uppercase",
-          }),
-          color: "#374151",
-          padding: box(0, 0, 4, 0),
+          font: capsHeading(700, 0.8),
+          color: accent,
+          border: border(accent, 2),
+          padding: box(0, 0, 3, 0),
+          marginBottom: 10,
         }),
-        itemBox: emptyBox({ padding: box(0, 0, 8, 0) }),
+        container: emptyBox({ padding: box(0, 0, 16, 0) }),
       }),
     },
     defaultPlacement: ALL_LEFT,
   };
 }
 
-function creative(accent: string): DocumentPreset {
+function compact(accent: string): DocumentPreset {
   return {
-    id: "creative",
-    name: "Creative",
-    description: "Tinted sidebar on the left with pill headings.",
-    page: { margin: box(0), background: solid("#ffffff") },
+    id: "compact",
+    name: "Compact",
+    description: "Tight margins and spacing to fit more on one page.",
+    page: { margin: box(28, 34), background: solid("#ffffff") },
     theme: withAccent(accent, {
-      colors: { ...DEFAULT_THEME.colors, accent, text: "#4b5563" },
+      colors: {
+        ...DEFAULT_THEME.colors,
+        accent,
+        text: "#1f2937",
+        heading: "#111827",
+      },
     }),
     layout: {
-      columns: 2,
-      // Sidebar is the LEFT column here — the old template achieved this by
-      // rendering `rightColumn` first, which the migration now normalises.
-      ratio: 0.35,
+      columns: 1,
+      ratio: 1,
       gap: 0,
-      fills: { left: solid("#f3f4f6"), right: noFill },
-      padding: { left: box(24), right: box(24, 24, 24, 32) },
+      fills: { left: noFill, right: noFill },
+      padding: { left: box(0), right: box(0) },
       header: {
         ...defaultHeader(),
-        placement: "left",
-        direction: "column",
-        align: "center",
-        padding: box(0, 0, 16, 0),
-        photoPosition: "start",
-        photo: {
-          visible: true,
-          size: 96,
-          shape: "circle",
-          border: border("#ffffff", 4, sides(true, true, true, true)),
-          shadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
-          rotate: -2,
-          slot: "header",
-          align: "center",
-        },
-        contacts: {
-          ...defaultHeader().contacts,
-          direction: "column",
-          align: "start",
-          gap: 8,
-        },
+        placement: "band",
+        padding: box(0, 0, 10, 0),
+        border: border("#e5e7eb", 1),
+        type: { name: 4, title: 1.5, contact: -1 },
+        photo: { ...defaultHeader().photo, visible: false },
+        contacts: { ...defaultHeader().contacts, gap: 12 },
       },
-      decorations: [
-        {
-          target: "left",
-          edge: "top",
-          size: 8,
-          fill: gradient("rgba(0,0,0,0)", "rgba(0,0,0,0.1)", 90),
-        },
-      ],
+      decorations: [],
     },
     sectionStyle: {
-      left: sectionStyle("creative", {
+      left: sectionStyle("compact"),
+      right: sectionStyle("compact"),
+      full: sectionStyle("compact", {
         heading: heading({
-          variant: "pill",
-          step: 2,
-          color: "#3e3e3e",
-          background: solid("#ffffff"),
-          border: null,
-          padding: box(4, 12),
-          radius: 4,
-          marginBottom: 12,
-        }),
-      }),
-      right: sectionStyle("creative", {
-        heading: heading({
-          variant: "pill",
-          step: 2,
-          color: "#ffffff",
-          background: solid(accent),
-          border: null,
-          padding: box(4, 12),
-          radius: 4,
-          marginBottom: 12,
-        }),
-        itemBox: emptyBox({ padding: box(0, 0, 0, 20) }),
-        marker: {
-          kind: "dot",
+          variant: "plain",
+          step: 1.25,
+          font: capsHeading(700, 1.2),
           color: accent,
-          size: 10,
-          offset: -6,
-          rail: { enabled: true, color: `${accent}30`, width: 2 },
-        },
+          border: border(accent, 3, { left: true }),
+          padding: box(0, 0, 0, 7),
+          marginBottom: 6,
+        }),
+        container: emptyBox({ padding: box(10, 0, 0, 0) }),
       }),
-      full: sectionStyle("creative"),
     },
-    // Sidebar (left) carries the compact sections; main column the narrative.
-    defaultPlacement: {
-      summary: "right",
-      experience: "right",
-      education: "right",
-      projects: "right",
-      custom: "right",
-      strengths: "left",
-      skills: "left",
-      socials: "left",
-      languages: "left",
-      certifications: "left",
+    defaultPlacement: ALL_LEFT,
+    itemLayout: {
+      experience: { gap: 8 },
+      education: { gap: 6 },
+      projects: { gap: 8 },
+      certifications: { gap: 6 },
+      strengths: { gap: 6 },
+      languages: { direction: "row", wrap: true, gap: 16 },
     },
   };
 }
@@ -557,18 +500,31 @@ export const PRESET_BUILDERS: Record<
   (accent: string) => DocumentPreset
 > = {
   classic,
+  sidebar,
+  clean,
   minimal,
-  modern: modern1col,
-  "modern-2col": modern2col,
   executive,
-  creative,
+  compact,
 };
+
+/**
+ * Retired template ids. Documents keep their own layout data, so these only
+ * decide which card is highlighted and what "re-apply template" rebuilds.
+ */
+export const PRESET_ALIASES: Record<string, string> = {
+  modern: "clean",
+  "modern-2col": "sidebar",
+  creative: "sidebar",
+};
+
+export function resolvePresetId(id: string): string {
+  return PRESET_BUILDERS[id] ? id : (PRESET_ALIASES[id] ?? "classic");
+}
 
 export const PRESET_IDS = Object.keys(PRESET_BUILDERS);
 
 export function buildPreset(id: string, accent: string): DocumentPreset {
-  const make = PRESET_BUILDERS[id] ?? PRESET_BUILDERS.classic;
-  return make(accent);
+  return PRESET_BUILDERS[resolvePresetId(id)](accent);
 }
 
 export const PRESET_META = PRESET_IDS.map((id) => {

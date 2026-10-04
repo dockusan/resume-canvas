@@ -1,6 +1,6 @@
 "use client";
 
-import { settleLayout } from "@/lib/pagination/use-measure";
+import { endPrintLayout, settleLayout } from "@/lib/pagination/use-measure";
 import { normalizeFontFamily } from "@/lib/schema/style-presets";
 import { PAGE_DIMENSIONS } from "@/lib/schema/document";
 import {
@@ -148,6 +148,7 @@ export function ResumePreview() {
   const handlePrint = async () => {
     await settleLayout();
     window.print();
+    endPrintLayout();
   };
 
   /**
@@ -178,6 +179,7 @@ export function ResumePreview() {
     document.title = `${resumeData.personalInfo.fullName.replace(/\s+/g, "_")}_Resume`;
     await settleLayout();
     window.print();
+    endPrintLayout();
     document.title = previous;
   };
 

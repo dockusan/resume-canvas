@@ -109,10 +109,14 @@ export interface ResumeData {
 
 export type TemplateType =
   | "classic"
-  | "modern"
-  | "modern-2col"
+  | "sidebar"
+  | "clean"
   | "minimal"
   | "executive"
+  | "compact"
+  // Retired; still accepted from older saves (see PRESET_ALIASES).
+  | "modern"
+  | "modern-2col"
   | "creative";
 
 export interface SectionConfig {
@@ -152,6 +156,8 @@ export interface ResumeSettings {
   personalFieldVisibility?: Partial<Record<PersonalContactField, boolean>>;
   /** Missing = icons shown. */
   showContactIcons?: boolean;
+  /** How month-year dates print. Missing = "MMM YYYY". */
+  dateFormat?: import("./dates").DateFormat;
 }
 
 /** Header fields the personal controller can show/hide. */

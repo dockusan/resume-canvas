@@ -1,7 +1,12 @@
 "use client";
 
+import { DATE_FORMATS, DEFAULT_DATE_FORMAT, DateFormat } from "@/lib/dates";
 import { PageSize, spacingOf } from "@/lib/schema/document";
-import { PRESET_META, buildPreset } from "@/lib/schema/presets";
+import {
+  PRESET_META,
+  buildPreset,
+  resolvePresetId,
+} from "@/lib/schema/presets";
 import {
   CONTRAST_PRESETS,
   DENSITY_PRESETS,
@@ -39,6 +44,7 @@ export function DocumentPanel() {
   const updatePage = useResumeStore((s) => s.updatePage);
   const updateSettings = useResumeStore((s) => s.updateSettings);
   const settingsFontFamily = useResumeStore((s) => s.settings.fontFamily);
+  const dateFormat = useResumeStore((s) => s.settings.dateFormat);
   const [advanced, setAdvanced] = useState(false);
 
   const { theme, layout, page } = doc;
@@ -90,7 +96,7 @@ export function DocumentPanel() {
       <Group title="Template">
         <OptionCards
           columns={3}
-          value={doc.preset}
+          value={resolvePresetId(doc.preset)}
           onChange={setPreset}
           options={PRESET_META.map((p) => ({
             id: p.id,
@@ -248,6 +254,12 @@ export function DocumentPanel() {
       </Group>
 
       <Group title="Page">
+        <ChoiceRow
+          label="Dates"
+          value={dateFormat ?? DEFAULT_DATE_FORMAT}
+          onChange={(id) => updateSettings({ dateFormat: id as DateFormat })}
+          options={DATE_FORMATS}
+        />
         <ChoiceRow
           label="Paper"
           value={page.size}

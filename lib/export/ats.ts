@@ -7,6 +7,7 @@
  * content so the machine-read version says what the designed one says.
  */
 
+import { DEFAULT_DATE_FORMAT, DateFormat, formatRange } from "@/lib/dates";
 import { toPlainText } from "@/lib/richtext/runs";
 import { ResumeDocument, SectionNode } from "@/lib/schema/document";
 import { isFieldVisible } from "@/lib/schema/field-visibility";
@@ -22,15 +23,14 @@ const clean = (value: unknown): string =>
 const join = (parts: (string | undefined | false)[], sep = " | ") =>
   parts.filter((p): p is string => !!p && p.length > 0).join(sep);
 
+let activeDateFormat: DateFormat = DEFAULT_DATE_FORMAT;
+
 function dateRange(item: {
   startDate?: string;
   endDate?: string;
   current?: boolean;
 }): string {
-  const start = clean(item.startDate);
-  const end = item.current ? "Present" : clean(item.endDate);
-  if (!start && !end) return "";
-  return `${start || "?"} – ${end || "?"}`;
+  return formatRange(item, activeDateFormat);
 }
 
 /**
@@ -196,8 +196,10 @@ export function toAtsText(
   data: ResumeData,
   settings: {
     personalFieldVisibility?: Partial<Record<PersonalContactField, boolean>>;
+    dateFormat?: DateFormat;
   },
 ): string {
+  activeDateFormat = settings.dateFormat ?? DEFAULT_DATE_FORMAT;
   const lines: string[] = [];
   const info = data.personalInfo;
 

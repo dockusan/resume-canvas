@@ -3,6 +3,7 @@
 import { EditableBullets } from "@/components/builder/inline/editable-bullets";
 import { EditableDateRange } from "@/components/builder/inline/editable-date";
 import { fontSizeAt } from "@/lib/schema/document";
+import { formatRange } from "@/lib/dates";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import { Field, Item, ItemFlow, ItemHeaderRow, Muted } from "./primitives";
 import {
@@ -16,6 +17,7 @@ import { SectionRenderProps, inRange } from "./types";
 function Body({ itemRange }: { itemRange?: [number, number] }) {
   const experience = useResumeStore((s) => s.resumeData.experience);
   const updateItem = useResumeStore((s) => s.updateItem);
+  const dateFormat = useResumeStore((s) => s.settings.dateFormat);
   const { node, theme } = useSection();
   const colors = useSectionColors();
 
@@ -58,8 +60,7 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
                 }}
                 path={`experience.${exp.id}.date`}
               >
-                {exp.startDate || "Start"} /{" "}
-                {exp.current ? "Present" : exp.endDate || "End"}
+                {formatRange(exp, dateFormat, { start: "Start", end: "End" })}
               </EditableDateRange>
             )}
           </ItemHeaderRow>

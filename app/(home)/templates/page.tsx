@@ -11,7 +11,7 @@ import Link from "next/link";
 export const metadata = pageMetadata({
   title: "Resume templates",
   description:
-    "Six free resume templates: classic two-column, minimal, modern, executive and creative. Restyle any of them completely, then export to PDF.",
+    "Six free resume templates: classic sidebar, modern sidebar, ATS-friendly clean, minimal, executive and compact. Restyle any of them completely, then export to PDF.",
   path: "/templates",
 });
 
@@ -20,32 +20,32 @@ const NOTES: Record<string, { best: string; detail: string }> = {
   classic: {
     best: "Experienced professionals",
     detail:
-      "A filled sidebar holds skills and contact details while the main column carries your history. The strongest choice when you have more experience than fits comfortably in one column.",
+      "A filled sidebar carries skills, links and languages while the main column holds your history. Icons and skill tags give it character without crowding the page.",
+  },
+  sidebar: {
+    best: "Engineers and product roles",
+    detail:
+      "A dark header band over a main column and a light sidebar. Modern and confident, and the sidebar keeps long skill lists from pushing your experience onto page two.",
+  },
+  clean: {
+    best: "Online application portals",
+    detail:
+      "One column, standard headings, no icons and no photo. The version to upload when an applicant tracking system will read it before a person does.",
   },
   minimal: {
     best: "Academic and traditional fields",
     detail:
-      "One column, generous whitespace, no colour. Nothing competes with the writing, and it survives conservative screening processes without comment.",
-  },
-  modern: {
-    best: "Most applications",
-    detail:
-      "A coloured header band over a single column. Enough personality to look considered, plain enough underneath to stay readable in bulk.",
-  },
-  "modern-2col": {
-    best: "Dense technical resumes",
-    detail:
-      "A full-width header above two columns, so long skill lists sit beside your history rather than pushing it onto a second page.",
+      "A centred header, quiet rules and generous whitespace. Nothing competes with the writing, and it survives conservative screening without comment.",
   },
   executive: {
     best: "Senior and leadership roles",
     detail:
-      "A single wide column under a thin accent rule. Restrained, and it gives long role descriptions the width they need.",
+      "A single wide column under an accent rule. Restrained, with room for long role descriptions and an optional portrait.",
   },
-  creative: {
-    best: "Design and marketing",
+  compact: {
+    best: "Fitting everything on one page",
     detail:
-      "A tinted sidebar with pill headings and a timeline down the main column. The most visually distinct of the six.",
+      "Tight margins, side-rule headings and contacts beside your name. The densest layout here, for long histories that must stay on a single page.",
   },
 };
 

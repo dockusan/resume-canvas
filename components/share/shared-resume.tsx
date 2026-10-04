@@ -1,6 +1,6 @@
 "use client";
 
-import { settleLayout } from "@/lib/pagination/use-measure";
+import { endPrintLayout, settleLayout } from "@/lib/pagination/use-measure";
 import { normalizeFontFamily } from "@/lib/schema/style-presets";
 import { PAGE_DIMENSIONS } from "@/lib/schema/document";
 import { EditingProvider } from "@/components/builder/inline/editing-context";
@@ -199,6 +199,7 @@ function SharedResumeSheet({ state }: { state: Loaded["state"] }) {
     window.document.title = `${filename}_Resume`;
     await settleLayout();
     window.print();
+    endPrintLayout();
     window.document.title = previous;
   };
 

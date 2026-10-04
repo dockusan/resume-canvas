@@ -2,6 +2,7 @@
 
 import { EditableDateRange } from "@/components/builder/inline/editable-date";
 import { fontSizeAt } from "@/lib/schema/document";
+import { formatRange } from "@/lib/dates";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import { Field, Item, ItemFlow, ItemHeaderRow, Muted } from "./primitives";
 import {
@@ -15,6 +16,7 @@ import { SectionRenderProps, inRange } from "./types";
 function Body({ itemRange }: { itemRange?: [number, number] }) {
   const education = useResumeStore((s) => s.resumeData.education);
   const updateItem = useResumeStore((s) => s.updateItem);
+  const dateFormat = useResumeStore((s) => s.settings.dateFormat);
   const { node, theme } = useSection();
   const colors = useSectionColors();
 
@@ -57,8 +59,7 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
                 }}
                 path={`education.${edu.id}.date`}
               >
-                {edu.startDate || "Start"} /{" "}
-                {edu.current ? "Present" : edu.endDate || "End"}
+                {formatRange(edu, dateFormat, { start: "Start", end: "End" })}
               </EditableDateRange>
             )}
           </ItemHeaderRow>

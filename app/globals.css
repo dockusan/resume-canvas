@@ -122,6 +122,15 @@
   }
 }
 
+/* While a print is being prepared, measure the document as it will print:
+   without editor furniture. See settleLayout(). */
+html.rc-printing [data-measure-layer] [data-editor-only],
+html.rc-printing [data-measure-layer] [data-toolbar],
+html.rc-printing [data-measure-layer] .no-print,
+html.rc-printing [data-measure-layer] .editable-field[data-placeholder]:empty {
+  display: none !important;
+}
+
 /* Print = export.
    The paginated preview already renders real page boxes, so printing is a
    matter of hiding the editor and letting each [data-page] become one sheet.

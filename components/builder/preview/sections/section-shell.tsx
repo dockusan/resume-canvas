@@ -62,6 +62,8 @@ export function SectionShell({
     <SectionProvider value={{ node, theme, onFill }}>
       <section
         data-section-id={node.id}
+        // An empty section exists only as an "add item" target in the editor.
+        data-editor-only={isEmpty ? true : undefined}
         className={cn(
           editable && "relative group/section rounded-[3px]",
           editable &&
@@ -105,9 +107,23 @@ export function SectionShell({
           data-section-heading
           style={heading}
           className={
-            node.style.heading.icon ? "flex items-center gap-2" : undefined
+            node.style.heading.icon || node.style.heading.variant === "bar"
+              ? "flex items-center gap-2"
+              : undefined
           }
         >
+          {node.style.heading.variant === "bar" && (
+            <span
+              aria-hidden
+              className="shrink-0"
+              style={{
+                width: "0.9em",
+                height: 3,
+                borderRadius: 2,
+                background: onFill ? theme.colors.onFill : theme.colors.accent,
+              }}
+            />
+          )}
           <Icon name={node.style.heading.icon} className="w-4 h-4 shrink-0" />
           <EditableText
             value={node.title}
