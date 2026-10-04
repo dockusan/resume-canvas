@@ -96,10 +96,10 @@ export function SectionPanel({ node }: { node: SectionNode }) {
           value={String(node.style.heading.step)}
           onChange={(v) => patch({ style: { heading: { step: Number(v) } } })}
           options={[
-            { id: "0", name: "S" },
-            { id: "1", name: "M" },
-            { id: "2", name: "L" },
-            { id: "3", name: "XL" },
+            { id: "1", name: "S" },
+            { id: "2", name: "M" },
+            { id: "3", name: "L" },
+            { id: "4", name: "XL" },
           ]}
         />
         <ChoiceRow

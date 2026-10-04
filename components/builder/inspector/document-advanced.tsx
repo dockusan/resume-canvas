@@ -1,6 +1,11 @@
 "use client";
 
-import { PAGE_DIMENSIONS, PageSize } from "@/lib/schema/document";
+import {
+  PAGE_DIMENSIONS,
+  PageSize,
+  fontSizeAt,
+  spacingOf,
+} from "@/lib/schema/document";
 import { useDocument } from "@/lib/schema/use-document";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import {
@@ -156,51 +161,52 @@ export function DocumentAdvanced() {
       </Group>
 
       <Group title="Type scale">
-        <Row label="Base size" stacked>
+        <Row label="Body size" stacked>
           <SliderField
             value={theme.scale.base}
             onChange={(base) => updateTheme({ scale: { base } })}
             min={8}
             max={22}
-            step={0.5}
+            step={0.25}
             format={(v) => `${v}px`}
           />
         </Row>
-        <Row label="Scale ratio" hint="How much larger each step is" stacked>
+        <Row
+          label="Hierarchy"
+          hint="How much larger headings and the name are than body text"
+          stacked
+        >
           <SliderField
-            value={theme.scale.ratio}
-            onChange={(ratio) => updateTheme({ scale: { ratio } })}
-            min={1}
-            max={1.4}
-            step={0.01}
-            format={(v) => v.toFixed(2)}
+            value={theme.scale.contrast ?? 1}
+            onChange={(contrast) => updateTheme({ scale: { contrast } })}
+            min={0.5}
+            max={1.6}
+            step={0.05}
+            format={(v) => `${Math.round(v * 100)}%`}
           />
         </Row>
-        <Row label="Heading weight">
-          <Segmented
-            value={String(theme.fonts.heading.weight)}
-            onChange={(w) =>
-              updateTheme({ fonts: { heading: { weight: Number(w) } } })
-            }
-            options={[400, 500, 600, 700].map((w) => ({
-              value: String(w),
-              label: String(w),
-            }))}
-          />
-        </Row>
-        <Row label="Heading case">
-          <Segmented
-            value={theme.fonts.heading.transform}
-            onChange={(t) =>
-              updateTheme({ fonts: { heading: { transform: t } } })
-            }
-            options={[
-              { value: "none", label: "Aa" },
-              { value: "uppercase", label: "AA" },
-              { value: "capitalize", label: "Ab" },
-            ]}
-          />
-        </Row>
+        {(
+          [
+            ["name", "Name size", 3, 6.5],
+            ["title", "Job title size", 0, 4],
+            ["contact", "Contact size", -2, 1],
+          ] as const
+        ).map(([key, label, min, max]) => (
+          <Row key={key} label={label} stacked>
+            <SliderField
+              value={layout.header.type[key]}
+              onChange={(v) =>
+                updateLayout({
+                  header: { type: { ...layout.header.type, [key]: v } },
+                })
+              }
+              min={min}
+              max={max}
+              step={0.25}
+              format={(v) => `${fontSizeAt(theme, v).toFixed(1)}px`}
+            />
+          </Row>
+        ))}
         <Row label="Line height" stacked>
           <SliderField
             value={theme.fonts.body.lineHeight}
@@ -213,6 +219,29 @@ export function DocumentAdvanced() {
             format={(v) => v.toFixed(2)}
           />
         </Row>
+      </Group>
+
+      <Group title="Spacing">
+        {(
+          [
+            ["section", "Between sections"],
+            ["item", "Between entries"],
+            ["bullet", "Between bullets"],
+          ] as const
+        ).map(([key, label]) => (
+          <Row key={key} label={label} stacked>
+            <SliderField
+              value={spacingOf(theme)[key]}
+              onChange={(v) =>
+                updateTheme({ spacing: { ...spacingOf(theme), [key]: v } })
+              }
+              min={0.4}
+              max={2}
+              step={0.05}
+              format={(v) => `${Math.round(v * 100)}%`}
+            />
+          </Row>
+        ))}
       </Group>
     </div>
   );

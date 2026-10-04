@@ -3,7 +3,7 @@
 import { EditableText } from "@/components/builder/inline/editable-text";
 import { useEditing } from "@/components/builder/inline/editing-context";
 import { boxStyle, headingStyle } from "@/lib/schema/css";
-import { SectionNode, Theme } from "@/lib/schema/document";
+import { SectionNode, Theme, spacingOf } from "@/lib/schema/document";
 import {
   SectionKey,
   isCustomSectionId,
@@ -68,7 +68,13 @@ export function SectionShell({
             selected &&
             "outline outline-1 outline-sky-400/70 outline-offset-4",
         )}
-        style={boxStyle(node.style.container)}
+        style={{
+          ...boxStyle(node.style.container),
+          // The space below a section is the gap to the next one; scale it
+          // with the document's section spacing.
+          paddingBottom:
+            node.style.container.padding.bottom * spacingOf(theme).section,
+        }}
         onClick={
           editable
             ? (e) => {

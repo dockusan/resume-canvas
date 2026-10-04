@@ -1,9 +1,12 @@
 "use client";
 
-import { PageSize } from "@/lib/schema/document";
+import { PageSize, spacingOf } from "@/lib/schema/document";
 import { PRESET_META, buildPreset } from "@/lib/schema/presets";
 import {
+  CONTRAST_PRESETS,
+  DENSITY_PRESETS,
   FONT_PAIRS,
+  HEADING_WEIGHTS,
   MARGIN_PRESETS,
   PALETTES,
   SPACING_PRESETS,
@@ -65,6 +68,18 @@ export function DocumentPanel() {
     null;
   const activeMargin =
     MARGIN_PRESETS.find((m) => m.value === page.margin.top)?.id ?? null;
+  const contrast = theme.scale.contrast ?? 1;
+  const activeContrast =
+    CONTRAST_PRESETS.find((c) => Math.abs(c.value - contrast) < 0.05)?.id ??
+    null;
+  const spacing = spacingOf(theme);
+  const activeDensity =
+    DENSITY_PRESETS.find(
+      (d) =>
+        Math.abs(d.value - spacing.section) < 0.05 &&
+        Math.abs(d.value - spacing.item) < 0.05 &&
+        Math.abs(d.value - spacing.bullet) < 0.05,
+    )?.id ?? null;
   const activeSpacing =
     SPACING_PRESETS.find(
       (s) => Math.abs(s.lineHeight - theme.fonts.body.lineHeight) < 0.06,
@@ -111,7 +126,7 @@ export function DocumentPanel() {
         />
       </Group>
 
-      <Group title="Font family">
+      <Group title="Typography">
         <OptionCards
           columns={2}
           value={activeFont}
@@ -158,6 +173,60 @@ export function DocumentPanel() {
           }}
           options={SPACING_PRESETS.map((s) => ({ id: s.id, name: s.name }))}
         />
+        <ChoiceRow
+          label="Hierarchy"
+          value={activeContrast}
+          onChange={(id) => {
+            const c = CONTRAST_PRESETS.find((x) => x.id === id);
+            if (c) updateTheme({ scale: { contrast: c.value } });
+          }}
+          options={CONTRAST_PRESETS.map((c) => ({ id: c.id, name: c.name }))}
+        />
+        <ChoiceRow
+          label="Heading weight"
+          value={String(theme.fonts.heading.weight)}
+          onChange={(w) =>
+            updateTheme({ fonts: { heading: { weight: Number(w) } } })
+          }
+          options={HEADING_WEIGHTS}
+        />
+        <ChoiceRow
+          label="Heading case"
+          value={theme.fonts.heading.transform}
+          onChange={(t) =>
+            updateTheme({
+              fonts: {
+                heading: {
+                  transform: t as "none" | "uppercase" | "capitalize",
+                },
+              },
+            })
+          }
+          options={[
+            { id: "uppercase", name: "UPPER" },
+            { id: "capitalize", name: "Title" },
+            { id: "none", name: "As typed" },
+          ]}
+        />
+      </Group>
+
+      <Group title="Spacing">
+        <ChoiceRow
+          label="Density"
+          value={activeDensity}
+          onChange={(id) => {
+            const d = DENSITY_PRESETS.find((x) => x.id === id);
+            if (d)
+              updateTheme({
+                spacing: { section: d.value, item: d.value, bullet: d.value },
+              });
+          }}
+          options={DENSITY_PRESETS.map((d) => ({ id: d.id, name: d.name }))}
+        />
+        <p className="text-[11px] text-muted-foreground">
+          Space between sections, entries and bullet points. Fine-tune each
+          under Advanced.
+        </p>
       </Group>
 
       <Group title="Layout">

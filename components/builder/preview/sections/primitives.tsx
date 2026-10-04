@@ -4,6 +4,7 @@ import { EditableText } from "@/components/builder/inline/editable-text";
 import { ItemChrome } from "@/components/builder/inline/item-chrome";
 import { SectionKey } from "@/lib/store/useResumeStore";
 import { boxStyle, itemLayoutStyle, separatorStyle } from "@/lib/schema/css";
+import { spacingOf } from "@/lib/schema/document";
 import { cn } from "@/lib/utils";
 import { DocIcon } from "./doc-icon";
 import type { CSSProperties } from "react";
@@ -27,9 +28,15 @@ export function ItemFlow({
   className?: string;
   children: React.ReactNode;
 }) {
-  const { node } = useSection();
+  const { node, theme } = useSection();
+  // Only a vertical stack gets the item-spacing multiplier; chips and grids
+  // keep their designed gutters.
+  const stacked = !node.items.columns && node.items.direction === "column";
+  const items = stacked
+    ? { ...node.items, gap: node.items.gap * spacingOf(theme).item }
+    : node.items;
   return (
-    <div className={className} style={itemLayoutStyle(node.items)}>
+    <div className={className} style={itemLayoutStyle(items)}>
       {children}
     </div>
   );
@@ -116,7 +123,16 @@ export function Item({
       : {}),
     // Separators sit between items, so the first one never gets a rule.
     ...(index > 0
-      ? separatorStyle(adaptSeparatorToFill(separator, theme, onFill))
+      ? separatorStyle(
+          adaptSeparatorToFill(
+            {
+              ...separator,
+              spacing: separator.spacing * spacingOf(theme).item,
+            },
+            theme,
+            onFill,
+          ),
+        )
       : {}),
     ...style,
   };

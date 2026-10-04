@@ -63,6 +63,7 @@ const defaultHeader = (): HeaderSpec => ({
     align: "center",
   },
   photoPosition: "end" as const,
+  type: { name: 5, title: 2, contact: -1 },
   contacts: {
     placement: "below" as const,
     direction: "row" as const,
@@ -146,7 +147,7 @@ function classic(accent: string): DocumentPreset {
     },
     sectionStyle: {
       left: sectionStyle("classic", {
-        heading: heading({ step: 1, font: DEFAULT_THEME.fonts.heading }),
+        heading: heading({ step: 2, font: DEFAULT_THEME.fonts.heading }),
         marker: {
           kind: "dot",
           color: "#d1d5db",
@@ -158,7 +159,7 @@ function classic(accent: string): DocumentPreset {
       }),
       right: sectionStyle("classic", {
         heading: heading({
-          step: 1,
+          step: 2,
           color: ON_FILL_TEXT,
           border: border(ON_FILL_LINE),
           padding: box(0, 0, 4, 0),
@@ -219,11 +220,11 @@ function minimal(accent: string): DocumentPreset {
     },
     sectionStyle: {
       left: sectionStyle("minimal", {
-        heading: heading({ step: 0, padding: box(0, 0, 4, 0) }),
+        heading: heading({ step: 2, padding: box(0, 0, 4, 0) }),
       }),
       right: sectionStyle("minimal"),
       full: sectionStyle("minimal", {
-        heading: heading({ step: 0, padding: box(0, 0, 4, 0) }),
+        heading: heading({ step: 2, padding: box(0, 0, 4, 0) }),
       }),
     },
     defaultPlacement: ALL_LEFT,
@@ -271,7 +272,7 @@ function modern1col(accent: string): DocumentPreset {
       left: sectionStyle("modern", {
         heading: heading({
           variant: "underline",
-          step: 1,
+          step: 2,
           color: accent,
           border: border(accent, 2),
           marginBottom: 16,
@@ -281,7 +282,7 @@ function modern1col(accent: string): DocumentPreset {
       full: sectionStyle("modern", {
         heading: heading({
           variant: "underline",
-          step: 1,
+          step: 2,
           color: accent,
           border: border(accent, 2),
           marginBottom: 16,
@@ -328,7 +329,7 @@ function modern2col(accent: string): DocumentPreset {
     sectionStyle: {
       left: sectionStyle("modern-2col", {
         heading: heading({
-          step: 1,
+          step: 2,
           font: font({
             weight: 700,
             letterSpacing: 0.6,
@@ -348,7 +349,7 @@ function modern2col(accent: string): DocumentPreset {
       }),
       right: sectionStyle("modern-2col", {
         heading: heading({
-          step: 1,
+          step: 2,
           font: font({
             weight: 700,
             letterSpacing: 0.6,
@@ -418,7 +419,7 @@ function executive(accent: string): DocumentPreset {
     sectionStyle: {
       left: sectionStyle("executive", {
         heading: heading({
-          step: 0,
+          step: 2,
           font: font({
             weight: 700,
             letterSpacing: 0.6,
@@ -432,7 +433,7 @@ function executive(accent: string): DocumentPreset {
       right: sectionStyle("executive"),
       full: sectionStyle("executive", {
         heading: heading({
-          step: 0,
+          step: 2,
           font: font({
             weight: 700,
             letterSpacing: 0.6,
@@ -502,7 +503,7 @@ function creative(accent: string): DocumentPreset {
       left: sectionStyle("creative", {
         heading: heading({
           variant: "pill",
-          step: 0,
+          step: 2,
           color: "#3e3e3e",
           background: solid("#ffffff"),
           border: null,
@@ -514,7 +515,7 @@ function creative(accent: string): DocumentPreset {
       right: sectionStyle("creative", {
         heading: heading({
           variant: "pill",
-          step: 0,
+          step: 2,
           color: "#ffffff",
           background: solid(accent),
           border: null,

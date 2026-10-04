@@ -5,7 +5,10 @@ import { applyHtmlOverride, resolvePathOverride } from "@/lib/style-overrides";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { getBulletIcon } from "../preview/sections/bullets";
+import {
+  effectiveBulletStyle,
+  getBulletIcon,
+} from "../preview/sections/bullets";
 import { sanitizeInline, toPlainText } from "@/lib/richtext/runs";
 import { useEditing } from "./editing-context";
 import { RichText } from "./rich-text";
@@ -114,7 +117,8 @@ export function EditableBullets({
     .filter((l) => l.trim().length > 0)
     .map((l) => l.replace(/^[•\-\*•◦▪]\s*/, ""));
 
-  if (!bulletStyle || bulletStyle === "none") {
+  bulletStyle = effectiveBulletStyle(description, bulletStyle);
+  if (bulletStyle === "none") {
     return (
       <EditableText
         value={description}
@@ -197,7 +201,13 @@ export function EditableBullets({
   }
 
   return (
-    <ul className="space-y-0.5 mt-1">
+    <ul
+      className="flex flex-col"
+      style={{
+        gap: "var(--rc-bullet-gap, 2px)",
+        marginTop: "calc(var(--rc-bullet-gap, 2px) * 2)",
+      }}
+    >
       {rows}
       {editable && pendingIndex === null && (
         <li>

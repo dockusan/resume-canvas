@@ -12,6 +12,24 @@ import {
   Star,
 } from "lucide-react";
 
+const TYPED_BULLET = /^\s*[•\-*◦▪]\s+/;
+
+/**
+ * The bullet style to render with. Descriptions whose lines were typed with
+ * their own "•" / "-" markers (and older saves with no style at all) become
+ * a real list instead of a paragraph of hand-typed glyphs.
+ */
+export function effectiveBulletStyle(
+  description: string,
+  bulletStyle?: string,
+): string {
+  if (bulletStyle) return bulletStyle;
+  const lines = description.split("\n").filter((l) => l.trim());
+  return lines.length > 0 && lines.every((l) => TYPED_BULLET.test(l))
+    ? "default"
+    : "none";
+}
+
 export function getBulletIcon(style: string) {
   switch (style) {
     case "Circle":
@@ -50,7 +68,8 @@ export function RenderDescription({
   fontSize,
 }: RenderDescriptionProps) {
   if (!description) return null;
-  if (!bulletStyle || bulletStyle === "none") {
+  bulletStyle = effectiveBulletStyle(description, bulletStyle);
+  if (bulletStyle === "none") {
     return (
       <p className="whitespace-pre-line" style={{ color: textColor, fontSize }}>
         {description}
@@ -61,7 +80,13 @@ export function RenderDescription({
     .split("\n")
     .filter((item) => item.trim().length > 0);
   return (
-    <ul className="space-y-0.5 mt-1">
+    <ul
+      className="flex flex-col"
+      style={{
+        gap: "var(--rc-bullet-gap, 2px)",
+        marginTop: "calc(var(--rc-bullet-gap, 2px) * 2)",
+      }}
+    >
       {items.map((item, index) => (
         <li
           key={index}

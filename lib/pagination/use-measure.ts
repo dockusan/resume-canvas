@@ -141,8 +141,12 @@ export function useMeasuredSections(
     layer.querySelectorAll<HTMLElement>("[data-column]").forEach((el) => {
       const id = el.dataset.column as "left" | "right";
       const cs = getComputedStyle(el);
+      // Bleed padding is cancelled by an equal negative margin (see
+      // PageCanvas), so it takes no room from the content.
       columnPadding[id] =
-        (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+        (parseFloat(cs.paddingTop) || 0) +
+        (parseFloat(cs.paddingBottom) || 0) -
+        (parseFloat(el.dataset.bleedY ?? "") || 0);
     });
 
     const nextChrome: PageChrome = {

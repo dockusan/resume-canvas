@@ -83,9 +83,9 @@ export const DEFAULT_THEME: Theme = {
     heading: font({ weight: 600, letterSpacing: 0.6, transform: "uppercase" }),
     body: font(),
   },
-  scale: { base: 13.3, ratio: 1.12 },
+  scale: { base: 13.3, ratio: 1.12, contrast: 1 },
   radius: { sm: 4, md: 8, lg: 12 },
-  spacing: { xs: 2, sm: 4, md: 8, lg: 12, xl: 20 },
+  spacing: { section: 1, item: 1, bullet: 1 },
 };
 
 export const emptyBox = (patch: Partial<BoxStyle> = {}): BoxStyle => ({
@@ -125,7 +125,7 @@ export const defaultItemLayout: ItemLayout = {
 export const heading = (patch: Partial<HeadingStyle> = {}): HeadingStyle => ({
   variant: "underline",
   font: DEFAULT_THEME.fonts.heading,
-  step: 1,
+  step: 2,
   color: DEFAULT_THEME.colors.heading,
   background: noFill,
   border: border(DEFAULT_THEME.colors.border),

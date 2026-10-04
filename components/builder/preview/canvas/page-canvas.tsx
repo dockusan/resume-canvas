@@ -162,7 +162,7 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
           <h1
             style={{
               ...fontStyle(theme.fonts.heading),
-              fontSize: fontSizeAt(theme, 5),
+              fontSize: fontSizeAt(theme, header.type?.name ?? 5),
               color: onFill ? theme.colors.onFill : theme.colors.heading,
               lineHeight: 1.1,
             }}
@@ -173,7 +173,7 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
             field="title"
             as="p"
             style={{
-              fontSize: fontSizeAt(theme, 1),
+              fontSize: fontSizeAt(theme, header.type?.title ?? 2),
               color: onFill ? theme.colors.onFill : theme.colors.accent,
               fontWeight: 500,
               marginTop: 2,
@@ -194,7 +194,7 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
                 : header.contacts.align === "end"
                   ? "flex-end"
                   : "center",
-            fontSize: fontSizeAt(theme, -1),
+            fontSize: fontSizeAt(theme, header.type?.contact ?? -1),
             opacity: 0.9,
           }}
         >
@@ -277,16 +277,37 @@ export function PageCanvas({
   const column = (id: ColumnId) => {
     const nodes = sectionsIn(doc, twoCol ? id : "full");
     const showHeader = headerInColumn && layout.header.placement === id;
+    // A filled column runs to the paper edge whatever the page margin: it
+    // bleeds into the margin on its outer sides and pads its content back by
+    // the same amount, so text stays where the margin puts it. Below a header
+    // band on page one there is nothing to bleed into at the top.
+    const filled = twoCol && layout.fills[id].type !== "none";
+    const bleed = {
+      top: filled && !(firstPage && !headerInColumn) ? page.margin.top : 0,
+      bottom: filled ? page.margin.bottom : 0,
+      left: filled && id === "left" ? page.margin.left : 0,
+      right: filled && id === "right" ? page.margin.right : 0,
+    };
     return (
       <div
         data-column={id}
         onClick={(e) =>
           onBackgroundClick && clearIfBackground(e, onBackgroundClick)
         }
+        data-bleed-y={bleed.top + bleed.bottom || undefined}
         className="relative flex flex-col min-w-0"
         style={{
           ...fillStyle(layout.fills[id]),
-          ...padding(layout.padding[id]),
+          ...padding({
+            top: layout.padding[id].top + bleed.top,
+            right: layout.padding[id].right + bleed.right,
+            bottom: layout.padding[id].bottom + bleed.bottom,
+            left: layout.padding[id].left + bleed.left,
+          }),
+          marginTop: -bleed.top || undefined,
+          marginRight: -bleed.right || undefined,
+          marginBottom: -bleed.bottom || undefined,
+          marginLeft: -bleed.left || undefined,
           color: isDarkFill(layout.fills[id])
             ? theme.colors.onFill
             : theme.colors.text,

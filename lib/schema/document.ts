@@ -119,23 +119,72 @@ export interface Theme {
     body: FontSpec;
   };
   /**
-   * Replaces both the old `baseSize` triple and the `base - 1 / -2 / -3`
-   * arithmetic that was hardcoded inside all ten section components.
-   * A step of n scales by `ratio ** n`.
+   * `base` is the body size in px. Every other size is a named step on a
+   * fixed ladder (see TYPE_LADDER), so text size S/M/L/XL moves the whole
+   * hierarchy together. `contrast` stretches or flattens the ladder: 1 is
+   * the designed hierarchy, below 1 brings headings closer to body text.
+   * `ratio` is the retired geometric ratio, kept only so old saves parse.
    */
   scale: {
     base: number;
     ratio: number;
+    contrast?: number;
   };
   radius: { sm: number; md: number; lg: number };
-  spacing: { xs: number; sm: number; md: number; lg: number; xl: number };
+  /**
+   * Vertical rhythm multipliers applied at render time on top of each
+   * section's own values: 1 is as designed, <1 tighter, >1 airier.
+   */
+  spacing: { section: number; item: number; bullet: number };
 }
 
-/** Resolve a type-scale step to a px size. step 0 = body, +2 ≈ heading. */
+/**
+ * Size multipliers for each step of the type scale, relative to body text.
+ *
+ *  -2 fine print · -1 meta (dates, places, contacts) · 0 body
+ *   1 item title · 2 section heading / job title line · 3 large heading
+ *   5 name · 6 display name
+ *
+ * A fixed ladder rather than `ratio ** step`: a geometric ratio made the name
+ * (step 5) barely larger than headings at low ratios and enormous at high
+ * ones, and gave section headings and item titles the same size.
+ */
+export const TYPE_LADDER: Record<number, number> = {
+  [-2]: 0.8,
+  [-1]: 0.88,
+  0: 1,
+  1: 1.1,
+  2: 1.25,
+  3: 1.42,
+  4: 1.75,
+  5: 2.3,
+  6: 2.75,
+};
+
+function ladderAt(step: number): number {
+  const clamped = Math.max(-2, Math.min(6, step));
+  const lo = Math.floor(clamped);
+  const hi = Math.ceil(clamped);
+  if (lo === hi) return TYPE_LADDER[lo];
+  const t = clamped - lo;
+  return TYPE_LADDER[lo] * (1 - t) + TYPE_LADDER[hi] * t;
+}
+
+/** Resolve a type-scale step to a px size. step 0 = body, 2 = heading. */
 export function fontSizeAt(theme: Theme, step: number): number {
-  return (
-    Math.round(theme.scale.base * Math.pow(theme.scale.ratio, step) * 100) / 100
-  );
+  const contrast = theme.scale.contrast ?? 1;
+  const factor = 1 + (ladderAt(step) - 1) * contrast;
+  return Math.round(theme.scale.base * factor * 100) / 100;
+}
+
+/** Spacing multipliers, tolerant of documents saved before they existed. */
+export function spacingOf(theme: Theme): Theme["spacing"] {
+  const s = theme.spacing as Partial<Theme["spacing"]> | undefined;
+  return {
+    section: s?.section ?? 1,
+    item: s?.item ?? 1,
+    bullet: s?.bullet ?? 1,
+  };
 }
 
 // ------------------------------------------------------------------- layout
@@ -172,6 +221,8 @@ export interface HeaderSpec {
   photo: PhotoSpec;
   /** Photo before or after the name block. */
   photoPosition: "start" | "end";
+  /** Type-scale steps for the name, the job title and the contact line. */
+  type: { name: number; title: number; contact: number };
   contacts: {
     /**
      * `below` stacks contacts under the name; `beside` puts them in their own

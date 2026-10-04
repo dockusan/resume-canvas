@@ -6,7 +6,7 @@ import { contentHeight, isDarkFill, pageDimensions } from "@/lib/schema/css";
 import { effectiveColumn, useDocument } from "@/lib/schema/use-document";
 import { useEditing } from "@/components/builder/inline/editing-context";
 import { fontStyle } from "@/lib/schema/css";
-import { fontSizeAt } from "@/lib/schema/document";
+import { fontSizeAt, spacingOf } from "@/lib/schema/document";
 import {
   ColumnKey,
   PageModel,
@@ -131,7 +131,9 @@ export function PaginatedResume({
     ...fontStyle(doc.theme.fonts.body),
     fontSize: fontSizeAt(doc.theme, 0),
     color: doc.theme.colors.text,
-  };
+    // Read by bullet lists, which sit too deep to receive the theme.
+    "--rc-bullet-gap": `${2 * spacingOf(doc.theme).bullet}px`,
+  } as React.CSSProperties;
 
   const body = (
     <>

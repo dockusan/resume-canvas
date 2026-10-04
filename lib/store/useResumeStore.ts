@@ -166,6 +166,7 @@ const DEFAULT_ITEMS: Record<BuiltinSectionKey, Record<string, unknown>> = {
     endDate: "",
     current: false,
     description: "",
+    bulletStyle: "default",
   },
   education: {
     degree: "Degree",
@@ -905,7 +906,7 @@ function createPersistedStore() {
       }),
       {
         name: "resume-storage",
-        version: 3,
+        version: 4,
         migrate: (persisted: unknown, version: number) => {
           const state = persisted as {
             resumeData?: Partial<ResumeData> & {
@@ -939,6 +940,16 @@ function createPersistedStore() {
               }));
             state.settings.leftColumn = fillNames(state.settings.leftColumn);
             state.settings.rightColumn = fillNames(state.settings.rightColumn);
+          }
+          // v3 → v4: the type scale became a fixed ladder on which section
+          // headings live at step 2. Headings saved at 0 or 1 rendered no
+          // larger than (or smaller than) the item titles beneath them.
+          const v3doc = (state as { document?: ResumeDocument }).document;
+          if (version < 4 && v3doc?.sections) {
+            for (const section of v3doc.sections) {
+              const h = section.style?.heading;
+              if (h && h.step <= 1) h.step = 2;
+            }
           }
           // v1 → v2: derive the presentation schema from the old template +
           // column settings. Existing accent colour, page size, photo and

@@ -1,6 +1,6 @@
 "use client";
 
-import { SectionNode } from "@/lib/schema/document";
+import { SectionNode, fontSizeAt } from "@/lib/schema/document";
 import { useDocument } from "@/lib/schema/use-document";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 
@@ -47,14 +47,14 @@ export function SectionAdvanced({ node }: { node: SectionNode }) {
             ]}
           />
         </Row>
-        <Row label="Size" hint="Steps above body text" stacked>
+        <Row label="Size" stacked>
           <SliderField
             value={heading.step}
             onChange={(step) => patch({ style: { heading: { step } } })}
-            min={-2}
-            max={6}
-            step={1}
-            format={(v) => (v > 0 ? `+${v}` : String(v))}
+            min={0}
+            max={5}
+            step={0.25}
+            format={(v) => `${fontSizeAt(doc.theme, v).toFixed(1)}px`}
           />
         </Row>
         <Row label="Weight">

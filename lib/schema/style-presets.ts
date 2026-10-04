@@ -571,6 +571,27 @@ export const TEXT_SIZES = [
   { id: "xl", name: "XL", base: 16.6 },
 ];
 
+/** Overall vertical rhythm: one knob for section, item and bullet spacing. */
+export const DENSITY_PRESETS = [
+  { id: "compact", name: "Compact", value: 0.7 },
+  { id: "normal", name: "Normal", value: 1 },
+  { id: "spacious", name: "Spacious", value: 1.35 },
+];
+
+/** How far headings and the name stand out from body text. */
+export const CONTRAST_PRESETS = [
+  { id: "subtle", name: "Subtle", value: 0.75 },
+  { id: "balanced", name: "Balanced", value: 1 },
+  { id: "strong", name: "Strong", value: 1.25 },
+];
+
+export const HEADING_WEIGHTS = [
+  { id: "400", name: "Regular" },
+  { id: "500", name: "Medium" },
+  { id: "600", name: "Semibold" },
+  { id: "700", name: "Bold" },
+];
+
 export const MARGIN_PRESETS = [
   { id: "none", name: "None", value: 0 },
   { id: "narrow", name: "Narrow", value: 24 },
