@@ -41,7 +41,7 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
             name="description"
             as="p"
             multiline
-            className="mt-1 leading-relaxed opacity-70"
+            className="mt-1 opacity-70"
             style={{ color: colors.text }}
             value={cert.description || ""}
             onCommit={(v) =>

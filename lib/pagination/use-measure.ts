@@ -52,6 +52,24 @@ export function useMeasuredSections(
     const nodeById = new Map(doc.sections.map((s) => [s.id, s]));
     const next: MeasuredSection[] = [];
 
+    // The layer lives inside the zoomed sheet, so getBoundingClientRect()
+    // reports *scaled* pixels while page heights, paddings and margins are in
+    // unscaled document pixels. Dividing by the live zoom keeps every number
+    // in one unit; without it, zooming out over-filled each page and the PDF
+    // inherited whatever split happened to be on screen.
+    const zoom =
+      layer.offsetWidth > 0
+        ? layer.getBoundingClientRect().width / layer.offsetWidth
+        : 1;
+    const height = (target: Element) =>
+      target.getBoundingClientRect().height / (zoom || 1);
+    const margins = (target: Element) => {
+      const cs = getComputedStyle(target);
+      return (
+        (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0)
+      );
+    };
+
     layer.querySelectorAll<HTMLElement>("[data-section-id]").forEach((el) => {
       const id = el.dataset.sectionId!;
       const node = nodeById.get(id);
@@ -65,8 +83,7 @@ export function useMeasuredSections(
       // than really does, which shows up as a clipped last line.
       const headingEl = el.querySelector<HTMLElement>("[data-section-heading]");
       const headingHeight = headingEl
-        ? headingEl.getBoundingClientRect().height +
-          (parseFloat(getComputedStyle(headingEl).marginBottom) || 0)
+        ? height(headingEl) + margins(headingEl)
         : 0;
 
       const itemEls = Array.from(
@@ -90,17 +107,14 @@ export function useMeasuredSections(
         !flowStyle ||
         (flowStyle.display !== "grid" && flowStyle.flexDirection === "column");
 
-      const blockHeight = Math.max(
-        0,
-        el.getBoundingClientRect().height - headingHeight - trailing,
-      );
+      const blockHeight = Math.max(0, height(el) - headingHeight - trailing);
 
       const items =
         itemEls.length && stacked
           ? itemEls.map((item, i) => ({
-              height:
-                item.getBoundingClientRect().height +
-                (parseFloat(getComputedStyle(item).marginBottom) || 0),
+              // Line separators put their spacing in marginTop, so both
+              // margins count or each divided item is under-measured.
+              height: height(item) + margins(item),
               gap: i < itemEls.length - 1 ? gap : 0,
             }))
           : // Summary (no item chrome) and any side-by-side flow.
@@ -132,15 +146,9 @@ export function useMeasuredSections(
     });
 
     const nextChrome: PageChrome = {
-      headerHeight: headerEl
-        ? headerEl.getBoundingClientRect().height +
-          (parseFloat(getComputedStyle(headerEl).marginBottom) || 0)
-        : 0,
+      headerHeight: headerEl ? height(headerEl) + margins(headerEl) : 0,
       headerColumn: doc.layout.header.placement,
-      photoHeight: photoEl
-        ? photoEl.getBoundingClientRect().height +
-          (parseFloat(getComputedStyle(photoEl).marginBottom) || 0)
-        : 0,
+      photoHeight: photoEl ? height(photoEl) + margins(photoEl) : 0,
       photoColumn: doc.layout.header.photo.slot,
       columnPadding,
     };
@@ -201,4 +209,17 @@ export function useMeasuredSections(
   }, [schedule]);
 
   return { measured, chrome, ready };
+}
+
+/**
+ * Resolve once webfonts have loaded and the debounced re-pagination they
+ * trigger has painted. Printing straight after `fonts.ready` could capture the
+ * page split computed against fallback metrics.
+ */
+export async function settleLayout(): Promise<void> {
+  await document.fonts?.ready;
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  await new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve)),
+  );
 }

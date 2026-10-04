@@ -84,7 +84,7 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
                   name="description"
                   as="p"
                   multiline
-                  className="leading-relaxed opacity-80"
+                  className="opacity-80"
                   style={{ color: colors.text }}
                   value={strength.description}
                   onCommit={(v) =>

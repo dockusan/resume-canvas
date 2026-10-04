@@ -174,6 +174,22 @@ export function separatorStyle(s: SeparatorStyle): CSSProperties {
   };
 }
 
+/**
+ * A separator between entries laid out in a *row* (header contacts): the rule
+ * runs down the leading edge instead of across the top, so contacts stay on
+ * one line rather than each dropping below a horizontal rule.
+ */
+export function inlineSeparatorStyle(s: SeparatorStyle): CSSProperties {
+  if (s.kind === "none") return {};
+  if (s.kind === "space") return { paddingLeft: s.spacing };
+  return {
+    borderLeft: `${s.thickness}px ${s.kind === "line" ? "solid" : s.kind} ${
+      s.color
+    }`,
+    paddingLeft: s.spacing,
+  };
+}
+
 export function itemLayoutStyle(l: ItemLayout): CSSProperties {
   if (l.columns && l.columns > 1) {
     return {

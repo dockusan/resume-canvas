@@ -52,10 +52,7 @@ export function RenderDescription({
   if (!description) return null;
   if (!bulletStyle || bulletStyle === "none") {
     return (
-      <p
-        className="whitespace-pre-line leading-relaxed"
-        style={{ color: textColor, fontSize }}
-      >
+      <p className="whitespace-pre-line" style={{ color: textColor, fontSize }}>
         {description}
       </p>
     );
@@ -68,11 +65,11 @@ export function RenderDescription({
       {items.map((item, index) => (
         <li
           key={index}
-          className="leading-relaxed flex items-start gap-1"
+          className="flex items-start gap-1"
           style={{ color: textColor, fontSize }}
         >
           <span
-            className="shrink-0 w-3 h-[1.625em] flex items-center justify-center opacity-80"
+            className="shrink-0 w-3 h-[1lh] flex items-center justify-center opacity-80"
             style={{ color: textColor }}
           >
             {getBulletIcon(bulletStyle)}

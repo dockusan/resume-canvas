@@ -1,7 +1,6 @@
 "use client";
 
 import { useResumeStore } from "@/lib/store/useResumeStore";
-import { cn } from "@/lib/utils";
 import { Field } from "./primitives";
 import { useSectionColors } from "./section-context";
 import { SectionShell } from "./section-shell";
@@ -17,7 +16,6 @@ function Body() {
       name="text"
       as="p"
       multiline
-      className={cn("leading-relaxed", summary && "text-justify")}
       style={{ color: colors.text }}
       value={summary}
       onCommit={(v) => setPersonalInfo({ summary: v })}

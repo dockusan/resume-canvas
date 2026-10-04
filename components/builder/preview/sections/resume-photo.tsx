@@ -45,6 +45,7 @@ export function ResumePhoto({
         type="button"
         title="Show photo"
         onClick={() => updateSettings({ showPhoto: true })}
+        data-editor-only
         className={cn(
           "flex flex-col items-center justify-center gap-0.5 border border-dashed border-current opacity-30 hover:opacity-80 transition-opacity",
           className,
@@ -63,6 +64,8 @@ export function ResumePhoto({
   return (
     <PhotoPopover>
       <div
+        // Without a picture this is only the editor's "add a photo" target.
+        data-editor-only={photoUrl ? undefined : true}
         className={cn("overflow-hidden", className)}
         style={{ ...style, borderRadius: photoBorderRadius }}
       >

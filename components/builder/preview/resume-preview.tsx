@@ -1,5 +1,8 @@
 "use client";
 
+import { settleLayout } from "@/lib/pagination/use-measure";
+import { normalizeFontFamily } from "@/lib/schema/style-presets";
+import { PAGE_DIMENSIONS } from "@/lib/schema/document";
 import {
   EditingProvider,
   useEditing,
@@ -109,7 +112,7 @@ export function ResumePreview() {
   const scale = zoom === "fit" ? fitScale : zoom;
 
   // Fit-to-width: scale the paper down when the viewport is narrower than it.
-  const paperPxWidth = settings.documentSize === "Letter" ? 816 : 794;
+  const paperPxWidth = PAGE_DIMENSIONS[doc.page.size].width;
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -143,7 +146,7 @@ export function ResumePreview() {
    * Fonts must be resolved first or the sheet prints in a fallback face.
    */
   const handlePrint = async () => {
-    await document.fonts?.ready;
+    await settleLayout();
     window.print();
   };
 
@@ -173,7 +176,7 @@ export function ResumePreview() {
   const handleDownloadPdf = async () => {
     const previous = document.title;
     document.title = `${resumeData.personalInfo.fullName.replace(/\s+/g, "_")}_Resume`;
-    await document.fonts?.ready;
+    await settleLayout();
     window.print();
     document.title = previous;
   };
@@ -219,7 +222,7 @@ export function ResumePreview() {
                   paperHeight={paperHeight}
                   outerWidth={paperPxWidth * scale}
                   sheetStyle={{
-                    fontFamily: settings.fontFamily,
+                    fontFamily: normalizeFontFamily(settings.fontFamily),
                     width: paperPxWidth,
                     transform: `scale(${scale})`,
                   }}

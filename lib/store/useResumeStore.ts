@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { temporal } from "zundo";
 import { StateCreator, StoreApi, create, useStore } from "zustand";
 import { persist } from "zustand/middleware";
+import { normalizeFontFamily } from "@/lib/schema/style-presets";
 import {
   CustomSection,
   CustomSectionItem,
@@ -15,6 +16,7 @@ import {
   StyleOverride,
 } from "../types";
 import {
+  FontSpec,
   LayoutSpec,
   PageSpec,
   Placement,
@@ -329,7 +331,7 @@ const initialResumeData: ResumeData = {
 
 const initialSettings: ResumeSettings = {
   themeColor: "#23405c", // Deep Blue
-  fontFamily: "'Khand', sans-serif",
+  fontFamily: "var(--font-khand), sans-serif",
   fontSize: "md",
   documentSize: "A4",
   template: "classic",
@@ -757,12 +759,36 @@ const createResumeState: StateCreator<ResumeState, [], []> = (set, get) => ({
       },
     })),
   updateTheme: (patch) =>
-    set((state) => ({
-      document: {
-        ...state.document,
-        theme: deepMerge(state.document.theme, patch),
-      },
-    })),
+    set((state) => {
+      // Document-level heading weight, case and tracking are a global
+      // decision: push them into every section heading too, or the control
+      // only ever restyled the name.
+      const h = patch.fonts?.heading;
+      const headingFont: Partial<FontSpec> = {};
+      if (h?.weight !== undefined) headingFont.weight = h.weight;
+      if (h?.transform !== undefined) headingFont.transform = h.transform;
+      if (h?.letterSpacing !== undefined)
+        headingFont.letterSpacing = h.letterSpacing;
+      const sections = Object.keys(headingFont).length
+        ? state.document.sections.map((s) => ({
+            ...s,
+            style: {
+              ...s.style,
+              heading: {
+                ...s.style.heading,
+                font: { ...s.style.heading.font, ...headingFont },
+              },
+            },
+          }))
+        : state.document.sections;
+      return {
+        document: {
+          ...state.document,
+          theme: deepMerge(state.document.theme, patch),
+          sections,
+        },
+      };
+    }),
   updatePage: (patch) =>
     set((state) => ({
       document: {
@@ -879,8 +905,8 @@ function createPersistedStore() {
       }),
       {
         name: "resume-storage",
-        version: 2,
-        migrate: (persisted: unknown) => {
+        version: 3,
+        migrate: (persisted: unknown, version: number) => {
           const state = persisted as {
             resumeData?: Partial<ResumeData> & {
               customSections?: CustomSection[];
@@ -894,6 +920,14 @@ function createPersistedStore() {
           }
           if (state?.settings) {
             delete state.settings.sectionTypography;
+            // v2 → v3: size nudges were stored in PDF points and scaled by
+            // 1.333 at render; they are now plain px.
+            if (version < 3 && state.settings.styleOverrides) {
+              for (const o of Object.values(state.settings.styleOverrides)) {
+                if (o?.fontSizeDelta)
+                  o.fontSizeDelta = Math.round(o.fontSizeDelta * 1.333);
+              }
+            }
             if (!state.settings.styleOverrides)
               state.settings.styleOverrides = {};
             if (state.settings.showPhoto === undefined)
@@ -931,9 +965,14 @@ function createPersistedStore() {
           const settings = { ...current.settings, ...state?.settings };
           // A document persisted before a schema field was added is filled in
           // from the preset it was seeded from, so new keys are never undefined.
+          settings.fontFamily = normalizeFontFamily(settings.fontFamily);
           const document = state?.document
             ? deepMerge(documentFromSettings(settings), state.document)
             : documentFromSettings(settings);
+          for (const role of ["heading", "body"] as const) {
+            const f = document.theme.fonts[role];
+            f.family = normalizeFontFamily(f.family);
+          }
           return {
             ...current,
             ...(state ?? {}),

@@ -1,7 +1,7 @@
 import { StyleOverride } from "./types";
 
-/** HTML px per PDF point (matches getBaseStyles scaling). */
-export const HTML_SCALE = 1.333;
+/** Smallest size a nudge may take text down to, in px. */
+const MIN_FONT_PX = 7;
 
 /**
  * Merge overrides along a path cascade, least → most specific:
@@ -28,8 +28,8 @@ export function resolvePathOverride(
 
 /**
  * Apply an override on top of an existing inline style. fontSizeDelta is in
- * PDF points; when the base has no numeric fontSize the delta is applied
- * relative to the inherited size via calc(1em + Npx).
+ * px, like every other size in the document; when the base has no numeric
+ * fontSize the delta is applied relative to the inherited size.
  */
 export function applyHtmlOverride(
   style: React.CSSProperties | undefined,
@@ -37,25 +37,11 @@ export function applyHtmlOverride(
 ): React.CSSProperties {
   const out: React.CSSProperties = { ...style };
   if (override.fontSizeDelta) {
-    const deltaPx = override.fontSizeDelta * HTML_SCALE;
+    const deltaPx = override.fontSizeDelta;
     out.fontSize =
       typeof out.fontSize === "number"
-        ? out.fontSize + deltaPx
-        : `calc(1em + ${deltaPx}px)`;
-  }
-  if (override.color) out.color = override.color;
-  if (override.fontWeight) out.fontWeight = override.fontWeight;
-  return out;
-}
-
-/** react-pdf variant: deltas applied in points on numeric fontSize. */
-export function applyPdfOverride(
-  style: Record<string, unknown>,
-  override: StyleOverride,
-): Record<string, unknown> {
-  const out = { ...style };
-  if (override.fontSizeDelta && typeof out.fontSize === "number") {
-    out.fontSize = (out.fontSize as number) + override.fontSizeDelta;
+        ? Math.max(MIN_FONT_PX, out.fontSize + deltaPx)
+        : `max(${MIN_FONT_PX}px, calc(1em + ${deltaPx}px))`;
   }
   if (override.color) out.color = override.color;
   if (override.fontWeight) out.fontWeight = override.fontWeight;

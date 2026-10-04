@@ -67,11 +67,13 @@ export function useFieldStyle(
 ): CSSProperties {
   const { node, theme } = useSection();
   const spec = fieldSpec(node, key);
+  // The caller's style is the default; an explicit per-field choice in the
+  // spec must win over it, or field colour and weight could never apply.
   return {
     fontSize: fontSizeAt(theme, spec?.step ?? 0),
+    ...fallback,
     ...(spec?.color ? { color: spec.color } : {}),
     ...(spec?.weight ? { fontWeight: spec.weight } : {}),
-    ...fallback,
   };
 }
 

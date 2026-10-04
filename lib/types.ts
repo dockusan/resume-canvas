@@ -132,7 +132,7 @@ export type FontWeightOverride = 400 | 500 | 600 | 700;
  *   "experience.<itemId>.title" | "personalInfo.fullName" | "custom:<uuid>" | "header"
  */
 export interface StyleOverride {
-  fontSizeDelta?: number; // in PDF points; HTML multiplies by 1.333
+  fontSizeDelta?: number; // in px, added to the computed size
   color?: string;
   fontWeight?: FontWeightOverride;
 }

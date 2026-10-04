@@ -34,7 +34,7 @@ export function StylePopover({ path, label, children }: StylePopoverProps) {
   const delta = override?.fontSizeDelta ?? 0;
 
   const setDelta = (next: number) => {
-    const clamped = Math.max(-4, Math.min(8, next));
+    const clamped = Math.max(-4, Math.min(10, next));
     setStyleOverride(path, {
       fontSizeDelta: clamped === 0 ? undefined : clamped,
     });
@@ -64,14 +64,14 @@ export function StylePopover({ path, label, children }: StylePopoverProps) {
             >
               <Minus className="w-3 h-3" />
             </Button>
-            <span className="text-xs w-8 text-center tabular-nums">
-              {delta > 0 ? `+${delta}` : delta}
+            <span className="text-xs w-10 text-center tabular-nums">
+              {delta > 0 ? `+${delta}px` : `${delta}px`}
             </span>
             <Button
               variant="outline"
               size="icon-sm"
               onClick={() => setDelta(delta + 1)}
-              disabled={delta >= 8}
+              disabled={delta >= 10}
             >
               <Plus className="w-3 h-3" />
             </Button>

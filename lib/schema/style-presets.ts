@@ -500,6 +500,70 @@ export const FONT_PAIRS: FontPair[] = [
   },
 ];
 
+/**
+ * Map any persisted font value onto a stack that something actually loads.
+ *
+ * Older saves hold plain names ("'Khand', sans-serif", "Inter, sans-serif")
+ * or families from the retired 27-font list that were never registered
+ * (Rubik, Ubuntu, Fira Sans…), which silently printed in the browser's
+ * default sans. Known names resolve to their CSS-variable stack; retired
+ * ones to the closest loaded face. System stacks and "inherit" pass through.
+ */
+const FONT_ALIASES: Record<string, string> = {
+  khand: SANS.khand,
+  inter: SANS.inter,
+  roboto: SANS.roboto,
+  "open sans": SANS.openSans,
+  lato: SANS.lato,
+  "source sans": SANS.sourceSans,
+  "source sans 3": SANS.sourceSans,
+  "source sans pro": SANS.sourceSans,
+  "work sans": SANS.workSans,
+  "nunito sans": SANS.nunitoSans,
+  nunito: SANS.nunitoSans,
+  "ibm plex sans": SANS.ibmPlex,
+  "roboto condensed": SANS.robotoCondensed,
+  montserrat: SANS.montserrat,
+  poppins: SANS.poppins,
+  raleway: SANS.raleway,
+  merriweather: SERIF.merriweather,
+  lora: SERIF.lora,
+  "playfair display": SERIF.playfair,
+  "eb garamond": SERIF.ebGaramond,
+  garamond: SERIF.ebGaramond,
+  "libre baskerville": SERIF.libreBaskerville,
+  rubik: SANS.inter,
+  ubuntu: SANS.openSans,
+  "fira sans": SANS.ibmPlex,
+  "noto sans devanagari": SANS.khand,
+};
+
+export function normalizeFontFamily(value: string | undefined): string {
+  if (!value || value === "inherit" || value.startsWith("var(--font-"))
+    return value ?? "inherit";
+  const first = value
+    .split(",")[0]
+    .trim()
+    .replace(/^['"]|['"]$/g, "");
+  return FONT_ALIASES[first.toLowerCase()] ?? value;
+}
+
+/** The pair a document is set in, matching heading *and* body faces. */
+export function activeFontPair(
+  heading: string,
+  body: string,
+): FontPair | undefined {
+  const h = normalizeFontFamily(heading);
+  const b = normalizeFontFamily(body);
+  return (
+    FONT_PAIRS.find((f) => f.heading === h && f.body === b) ??
+    // Single-face themes leave the heading as "inherit".
+    (h === "inherit"
+      ? FONT_PAIRS.find((f) => f.body === b && f.heading === b)
+      : undefined)
+  );
+}
+
 export const TEXT_SIZES = [
   { id: "s", name: "S", base: 11.7 },
   { id: "m", name: "M", base: 13.3 },

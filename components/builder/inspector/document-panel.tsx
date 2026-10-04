@@ -8,6 +8,7 @@ import {
   PALETTES,
   SPACING_PRESETS,
   TEXT_SIZES,
+  activeFontPair,
 } from "@/lib/schema/style-presets";
 import { useDocument } from "@/lib/schema/use-document";
 import { useResumeStore } from "@/lib/store/useResumeStore";
@@ -54,7 +55,11 @@ export function DocumentPanel() {
     theme.fonts.body.family === "inherit"
       ? settingsFontFamily
       : theme.fonts.body.family;
-  const activeFont = FONT_PAIRS.find((f) => f.body === bodyFamily)?.id ?? null;
+  const headingFamily =
+    theme.fonts.heading.family === "inherit"
+      ? bodyFamily
+      : theme.fonts.heading.family;
+  const activeFont = activeFontPair(headingFamily, bodyFamily)?.id ?? null;
   const activeSize =
     TEXT_SIZES.find((s) => Math.abs(s.base - theme.scale.base) < 0.6)?.id ??
     null;

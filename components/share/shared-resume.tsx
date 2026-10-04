@@ -1,5 +1,8 @@
 "use client";
 
+import { settleLayout } from "@/lib/pagination/use-measure";
+import { normalizeFontFamily } from "@/lib/schema/style-presets";
+import { PAGE_DIMENSIONS } from "@/lib/schema/document";
 import { EditingProvider } from "@/components/builder/inline/editing-context";
 import { PaginatedResume } from "@/components/builder/preview/canvas/paginated-resume";
 import { Button } from "@/components/ui/button";
@@ -161,7 +164,7 @@ function SharedResumeSheet({ state }: { state: Loaded["state"] }) {
   const [height, setHeight] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
 
-  const paperWidth = settings.documentSize === "Letter" ? 816 : 794;
+  const paperWidth = PAGE_DIMENSIONS[doc.page.size].width;
 
   useEffect(() => {
     const el = containerRef.current;
@@ -194,7 +197,7 @@ function SharedResumeSheet({ state }: { state: Loaded["state"] }) {
   const handlePdf = async () => {
     const previous = window.document.title;
     window.document.title = `${filename}_Resume`;
-    await window.document.fonts?.ready;
+    await settleLayout();
     window.print();
     window.document.title = previous;
   };
@@ -260,7 +263,7 @@ function SharedResumeSheet({ state }: { state: Loaded["state"] }) {
               data-print-passthrough
               className="relative origin-top-left"
               style={{
-                fontFamily: settings.fontFamily,
+                fontFamily: normalizeFontFamily(settings.fontFamily),
                 width: paperWidth,
                 transform: `scale(${scale})`,
               }}

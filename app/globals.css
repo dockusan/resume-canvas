@@ -170,6 +170,12 @@
     break-after: auto;
   }
 
+  /* Empty fields exist in the editor only so they can be clicked into; their
+     ghost hint ("Description (optional)") must never reach the PDF. */
+  .editable-field[data-placeholder]:empty {
+    display: none !important;
+  }
+
   /* Editor furniture never prints. */
   [data-toolbar],
   [data-editor-only],

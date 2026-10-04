@@ -95,7 +95,7 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
             name="description"
             as="p"
             multiline
-            className="whitespace-pre-line leading-relaxed"
+            className="whitespace-pre-line"
             style={{ color: colors.text }}
             value={project.description}
             onCommit={(v) =>

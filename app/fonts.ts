@@ -42,7 +42,7 @@ export const khand = Khand({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-khand",
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 // --- Sans (variable weight axes) ---

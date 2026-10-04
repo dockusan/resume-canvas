@@ -249,7 +249,13 @@ export function applyPreset(
     ...doc,
     preset: presetId,
     page: { ...preset.page, size: doc.page.size },
-    theme: preset.theme,
+    // A template restyles layout and colour; the user's type choices (font
+    // pair, text size, line spacing) are theirs and survive the switch.
+    theme: {
+      ...preset.theme,
+      fonts: structuredClone(doc.theme.fonts),
+      scale: { ...doc.theme.scale },
+    },
     layout: { ...preset.layout, header },
     sections,
   };

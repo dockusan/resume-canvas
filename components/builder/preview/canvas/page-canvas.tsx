@@ -4,7 +4,11 @@ import { PersonalShell } from "@/components/builder/preview/sections/personal-sh
 import { PersonalField } from "@/components/builder/preview/sections/personal-field";
 import { ContactItem } from "@/components/builder/preview/sections/contact-item";
 import { ResumePhoto } from "@/components/builder/preview/sections/resume-photo";
-import { PERSONAL_CONTACT_FIELDS } from "@/lib/personal-fields";
+import { useEditing } from "@/components/builder/inline/editing-context";
+import {
+  PERSONAL_CONTACT_FIELDS,
+  isPersonalFieldVisible,
+} from "@/lib/personal-fields";
 import {
   Decoration,
   ColumnId,
@@ -19,9 +23,11 @@ import {
   fontStyle,
   isDarkFill,
   padding,
+  inlineSeparatorStyle,
   separatorStyle,
 } from "@/lib/schema/css";
 import { sectionsIn } from "@/lib/schema/use-document";
+import { useResumeStore } from "@/lib/store/useResumeStore";
 import { SectionDropZone } from "@/components/builder/dnd/section-dnd";
 import { Fragment } from "react";
 
@@ -89,6 +95,17 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
   const { theme } = doc;
   const onFill = isDarkFill(header.background);
   const color = onFill ? theme.colors.onFill : theme.colors.text;
+  const { editable } = useEditing();
+  const settings = useResumeStore((s) => s.settings);
+  const info = useResumeStore((s) => s.resumeData.personalInfo);
+  // Index separators over the contacts that actually render, or a hidden
+  // first field leaves a stray rule in front of the first visible one.
+  const shownContacts = PERSONAL_CONTACT_FIELDS.filter(
+    ({ field }) =>
+      field !== "title" &&
+      isPersonalFieldVisible(settings, field) &&
+      (editable || !!info[field]),
+  );
 
   const alignItems =
     header.align === "center"
@@ -181,25 +198,25 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
             opacity: 0.9,
           }}
         >
-          {PERSONAL_CONTACT_FIELDS.filter((f) => f.field !== "title").map(
-            ({ field }, i) => (
-              <ContactItem
-                key={field}
-                field={field}
-                icon={
-                  header.contacts.showIcons ? CONTACT_ICONS[field] : undefined
-                }
-                iconAfter={header.contacts.iconPosition === "after"}
-                className="flex items-center gap-1.5 min-w-0"
-                iconClassName="w-3 h-3 shrink-0"
-                style={
-                  i > 0 && header.contacts.separator.kind !== "none"
-                    ? separatorStyle(header.contacts.separator)
-                    : undefined
-                }
-              />
-            ),
-          )}
+          {shownContacts.map(({ field }, i) => (
+            <ContactItem
+              key={field}
+              field={field}
+              icon={
+                header.contacts.showIcons ? CONTACT_ICONS[field] : undefined
+              }
+              iconAfter={header.contacts.iconPosition === "after"}
+              className="flex items-center gap-1.5 min-w-0"
+              iconClassName="w-3 h-3 shrink-0"
+              style={
+                i > 0 && header.contacts.separator.kind !== "none"
+                  ? header.contacts.direction === "row"
+                    ? inlineSeparatorStyle(header.contacts.separator)
+                    : separatorStyle(header.contacts.separator)
+                  : undefined
+              }
+            />
+          ))}
         </div>
       </div>
     </PersonalShell>
@@ -248,6 +265,10 @@ export function PageCanvas({
   onBackgroundClick,
 }: PageCanvasProps) {
   const { layout, page, theme } = doc;
+  const hasPhoto = useResumeStore(
+    (s) =>
+      s.settings.showPhoto !== false && !!s.resumeData.personalInfo.photoUrl,
+  );
   const twoCol = layout.columns === 2;
   const headerInColumn = layout.header.placement !== "band";
   // The header and portrait belong to the first page only.
@@ -281,6 +302,7 @@ export function PageCanvas({
           {firstPage && layout.header.photo.slot === id && (
             <div
               data-photo-slot
+              data-editor-only={hasPhoto ? undefined : true}
               className="flex mb-4"
               style={{
                 justifyContent:

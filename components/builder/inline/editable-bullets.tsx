@@ -122,7 +122,7 @@ export function EditableBullets({
         multiline
         as="p"
         placeholder="Description"
-        className="whitespace-pre-line leading-relaxed"
+        className="whitespace-pre-line"
         style={{ color: textColor, fontSize }}
         path={path}
       />
@@ -150,13 +150,9 @@ export function EditableBullets({
 
   const rows: React.ReactNode[] = [];
   const renderBullet = (children: React.ReactNode, key: string) => (
-    <li
-      key={key}
-      className="leading-relaxed flex items-start gap-1"
-      style={lineStyle}
-    >
+    <li key={key} className="flex items-start gap-1" style={lineStyle}>
       <span
-        className="shrink-0 w-3 h-[1.625em] flex items-center justify-center opacity-80"
+        className="shrink-0 w-3 h-[1lh] flex items-center justify-center opacity-80"
         style={{ color: lineStyle.color }}
       >
         {getBulletIcon(bulletStyle)}
