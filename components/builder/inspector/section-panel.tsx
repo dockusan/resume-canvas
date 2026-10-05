@@ -1,6 +1,7 @@
 "use client";
 
 import { SECTION_FIELDS } from "@/lib/schema/defaults";
+import { isFieldVisible } from "@/lib/schema/field-visibility";
 import { SectionNode } from "@/lib/schema/document";
 import {
   DENSITY_LOOKS,
@@ -217,11 +218,33 @@ export function SectionPanel({ node }: { node: SectionNode }) {
         ) : null}
       </Group>
 
+      {["education", "experience", "certifications"].includes(node.type) && (
+        <Group title="Dates">
+          <ChoiceRow
+            label="Position"
+            value={node.items.datePosition ?? "auto"}
+            onChange={(v) =>
+              patch({
+                items: { datePosition: v as "auto" | "beside" | "below" },
+              })
+            }
+            options={[
+              { id: "auto", name: "Auto" },
+              { id: "beside", name: "Beside" },
+              { id: "below", name: "Below" },
+            ]}
+          />
+          <p className="text-[11px] text-muted-foreground">
+            Auto puts dates on their own line when the section is in a sidebar.
+          </p>
+        </Group>
+      )}
+
       {fieldDefs.length > 0 && (
         <Group title="Show / hide">
           {fieldDefs.map((def) => {
             const spec = node.fields?.[def.key];
-            const visible = spec?.visible !== false;
+            const visible = isFieldVisible(node, def.key);
             return (
               <div
                 key={def.key}

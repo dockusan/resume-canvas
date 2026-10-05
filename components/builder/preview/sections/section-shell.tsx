@@ -9,6 +9,7 @@ import {
   isCustomSectionId,
   useResumeStore,
 } from "@/lib/store/useResumeStore";
+import { effectiveColumn, useDocument } from "@/lib/schema/use-document";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { Icon } from "./primitives";
@@ -43,6 +44,17 @@ export function SectionShell({
   const selected =
     activePath === node.id || activePath === `${node.id}.heading`;
   const renameSection = useResumeStore((s) => s.renameSection);
+  const doc = useDocument();
+  const column = effectiveColumn(doc, node);
+  // The share of the content width this section's column gets: under ~45%
+  // it is a sidebar, where entries stack rather than spread across a line.
+  const share =
+    column === "left"
+      ? doc.layout.ratio
+      : column === "right"
+        ? 1 - doc.layout.ratio
+        : 1;
+  const narrow = doc.layout.columns === 2 && share < 0.45;
   const addItem = useResumeStore((s) => s.addItem);
 
   const sectionKey: SectionKey | null =
@@ -59,7 +71,7 @@ export function SectionShell({
   );
 
   return (
-    <SectionProvider value={{ node, theme, onFill }}>
+    <SectionProvider value={{ node, theme, onFill, narrow }}>
       <section
         data-section-id={node.id}
         // An empty section exists only as an "add item" target in the editor.

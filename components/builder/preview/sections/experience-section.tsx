@@ -9,6 +9,7 @@ import { useResumeStore } from "@/lib/store/useResumeStore";
 import { Field, Item, ItemFlow, ItemHeaderRow, Muted } from "./primitives";
 import {
   isFieldVisible,
+  useDateBelow,
   useSection,
   useSectionColors,
 } from "./section-context";
@@ -26,6 +27,29 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
   const showCompany = isFieldVisible(node, "company");
   const showLocation = isFieldVisible(node, "location");
   const locationIcon = node.fields?.location?.icon;
+  const dateBelow = useDateBelow();
+
+  const dateEl = (exp: (typeof experience)[number], below: boolean) =>
+    showDate && (
+      <EditableDateRange
+        startDate={exp.startDate}
+        endDate={exp.endDate}
+        current={exp.current}
+        onCommit={(patch) => updateItem("experience", exp.id, patch)}
+        className={
+          below
+            ? "block font-medium mb-0.5"
+            : "font-medium whitespace-nowrap ml-2"
+        }
+        style={{
+          color: dim(colors.text, 80),
+          fontSize: fontSizeAt(theme, node.fields?.date?.step ?? -1),
+        }}
+        path={`experience.${exp.id}.date`}
+      >
+        {formatRange(exp, dateFormat, { start: "Start", end: "End" })}
+      </EditableDateRange>
+    );
 
   return (
     <ItemFlow>
@@ -48,22 +72,7 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
               placeholder="Job Title"
               path={`experience.${exp.id}.title`}
             />
-            {showDate && (
-              <EditableDateRange
-                startDate={exp.startDate}
-                endDate={exp.endDate}
-                current={exp.current}
-                onCommit={(patch) => updateItem("experience", exp.id, patch)}
-                className="font-medium whitespace-nowrap ml-2"
-                style={{
-                  color: dim(colors.text, 80),
-                  fontSize: fontSizeAt(theme, node.fields?.date?.step ?? -1),
-                }}
-                path={`experience.${exp.id}.date`}
-              >
-                {formatRange(exp, dateFormat, { start: "Start", end: "End" })}
-              </EditableDateRange>
-            )}
+            {!dateBelow && dateEl(exp, false)}
           </ItemHeaderRow>
 
           <div className="font-medium mb-0.5" style={{ color: colors.accent }}>
@@ -90,6 +99,7 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
               path={`experience.${exp.id}.location`}
             />
           </div>
+          {dateBelow && dateEl(exp, true)}
 
           {isFieldVisible(node, "description") && (
             <EditableBullets

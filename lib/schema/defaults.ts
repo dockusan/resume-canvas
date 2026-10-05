@@ -179,6 +179,8 @@ export interface FieldDef {
   step?: number;
   /** Not hideable (removing it would leave the item unidentifiable). */
   required?: boolean;
+  /** Off until the user turns it on (decorative extras such as icons). */
+  hidden?: boolean;
 }
 
 export const SECTION_FIELDS: Record<string, FieldDef[]> = {
@@ -191,6 +193,7 @@ export const SECTION_FIELDS: Record<string, FieldDef[]> = {
     { key: "description", label: "Description" },
   ],
   education: [
+    { key: "icon", label: "Icon", icon: "GraduationCap", hidden: true },
     { key: "degree", label: "Degree", step: 1, required: true },
     { key: "school", label: "School" },
     { key: "location", label: "Location" },
@@ -242,7 +245,7 @@ export function defaultFields(type: string) {
     defs.map((f, i) => [
       f.key,
       {
-        visible: true,
+        visible: !f.hidden,
         icon: f.icon ?? null,
         order: i,
         step: f.step ?? 0,

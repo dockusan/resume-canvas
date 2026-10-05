@@ -7,6 +7,7 @@ import { useResumeStore } from "@/lib/store/useResumeStore";
 import { Field, Icon, Item, ItemFlow, ItemHeaderRow } from "./primitives";
 import {
   isFieldVisible,
+  useDateBelow,
   useSection,
   useSectionColors,
 } from "./section-context";
@@ -21,6 +22,7 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
   const colors = useSectionColors();
 
   const showIssuer = isFieldVisible(node, "issuer");
+  const dateBelow = useDateBelow();
   const showLink = isFieldVisible(node, "link");
   const linkIcon = node.fields?.link?.icon ?? "ExternalLink";
 
@@ -74,17 +76,24 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
                 placeholder="Certification"
                 path={`certifications.${cert.id}.name`}
               />
-              <Field
-                name="date"
-                className="font-medium whitespace-nowrap ml-2"
-                style={{ color: dim(colors.text, 80) }}
-                value={cert.date || ""}
-                onCommit={(v) =>
-                  updateItem("certifications", cert.id, { date: v })
-                }
-                placeholder="Date"
-                path={`certifications.${cert.id}.date`}
-              />
+              {!dateBelow && (
+                <Field
+                  name="date"
+                  as={dateBelow ? "div" : "span"}
+                  className={
+                    dateBelow
+                      ? "font-medium"
+                      : "font-medium whitespace-nowrap ml-2"
+                  }
+                  style={{ color: dim(colors.text, 80) }}
+                  value={cert.date || ""}
+                  onCommit={(v) =>
+                    updateItem("certifications", cert.id, { date: v })
+                  }
+                  placeholder="Date"
+                  path={`certifications.${cert.id}.date`}
+                />
+              )}
             </ItemHeaderRow>
 
             {(showIssuer || showLink) && (
@@ -103,6 +112,24 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
                   ? link
                   : editable && <span data-editor-only>{link}</span>}
               </p>
+            )}
+            {dateBelow && (
+              <Field
+                name="date"
+                as={dateBelow ? "div" : "span"}
+                className={
+                  dateBelow
+                    ? "font-medium"
+                    : "font-medium whitespace-nowrap ml-2"
+                }
+                style={{ color: dim(colors.text, 80) }}
+                value={cert.date || ""}
+                onCommit={(v) =>
+                  updateItem("certifications", cert.id, { date: v })
+                }
+                placeholder="Date"
+                path={`certifications.${cert.id}.date`}
+              />
             )}
 
             {cert.description ? (

@@ -19,6 +19,8 @@ export interface SectionContextValue {
   theme: Theme;
   /** The section sits on a dark column fill, so text must invert. */
   onFill: boolean;
+  /** The section is in the narrower column of a two-column layout. */
+  narrow?: boolean;
 }
 
 const SectionContext = createContext<SectionContextValue | null>(null);
@@ -53,8 +55,13 @@ export function fieldSpec(
   return node.fields?.[key];
 }
 
-export function isFieldVisible(node: SectionNode, key: string): boolean {
-  return node.fields?.[key]?.visible !== false;
+export { isFieldVisible } from "@/lib/schema/field-visibility";
+
+/** Whether entries in this section print their dates on a line of their own. */
+export function useDateBelow(): boolean {
+  const { node, narrow } = useSection();
+  const position = node.items.datePosition ?? "auto";
+  return position === "below" || (position === "auto" && !!narrow);
 }
 
 /**

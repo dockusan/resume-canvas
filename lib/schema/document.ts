@@ -314,6 +314,12 @@ export interface ItemLayout {
   columns: number | null;
   align: "start" | "center" | "end" | "stretch";
   justify: "start" | "center" | "end" | "between";
+  /**
+   * Where an entry's dates sit. "auto" puts them on their own line under the
+   * entry when the section is in a narrow column (a sidebar), where a
+   * right-aligned date would crowd the title.
+   */
+  datePosition?: "auto" | "beside" | "below";
 }
 
 export interface FieldSpec {
