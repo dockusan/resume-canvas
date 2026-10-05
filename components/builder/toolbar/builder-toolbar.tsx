@@ -15,10 +15,12 @@ import Link from "next/link";
 import { SaveStatus } from "./save-status";
 import { resumeStore, useResumeStore } from "@/lib/store/useResumeStore";
 import { cn } from "@/lib/utils";
+import { downloadBackup, importBackup } from "@/lib/export/backup";
 import {
   ChevronDown,
   Download,
   FileDown,
+  FileJson,
   FileText,
   FileType,
   ShieldCheck,
@@ -38,9 +40,10 @@ import {
   RotateCcw,
   Sun,
   Undo2,
+  Upload,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
 
 interface BuilderToolbarProps {
@@ -85,6 +88,9 @@ export function BuilderToolbar({
   const { theme, setTheme } = useTheme();
   const [confirmReset, setConfirmReset] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [pendingImport, setPendingImport] = useState<File | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const importInput = useRef<HTMLInputElement>(null);
 
   const { undo, redo, pastStates, futureStates } = useStore(
     resumeStore().temporal,
@@ -272,6 +278,13 @@ export function BuilderToolbar({
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => downloadBackup()}>
+              <FileJson className="h-3.5 w-3.5" /> Export resume file
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => importInput.current?.click()}>
+              <Upload className="h-3.5 w-3.5" /> Import resume file
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
               onClick={() => setConfirmReset(true)}
@@ -337,6 +350,43 @@ export function BuilderToolbar({
       </span>
 
       <ShareDialog open={shareOpen} onClose={() => setShareOpen(false)} />
+
+      {/* Moves a resume between browsers: localStorage is per browser. */}
+      <input
+        ref={importInput}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (file) setPendingImport(file);
+        }}
+      />
+      <ConfirmDialog
+        open={pendingImport !== null}
+        title="Import this resume?"
+        description={
+          importError ??
+          "This replaces the resume in this browser with the one in the file. Export yours first if you want to keep it."
+        }
+        confirmLabel="Import"
+        destructive
+        onConfirm={async () => {
+          if (!pendingImport) return;
+          try {
+            await importBackup(pendingImport);
+          } catch (err) {
+            setImportError(
+              err instanceof Error ? err.message : "Couldn't read that file.",
+            );
+          }
+        }}
+        onCancel={() => {
+          setPendingImport(null);
+          setImportError(null);
+        }}
+      />
 
       <ConfirmDialog
         open={confirmReset}

@@ -358,6 +358,10 @@ const initialSettings: ResumeSettings = {
   showContactIcons: true,
 };
 
+/** Version of the persisted `resume-storage` shape (see `migrate`). */
+export const PERSIST_VERSION = 4;
+export const STORAGE_KEY = "resume-storage";
+
 export const isCustomSectionId = (id: string): id is `custom:${string}` =>
   id.startsWith("custom:");
 
@@ -914,8 +918,8 @@ function createPersistedStore() {
         },
       }),
       {
-        name: "resume-storage",
-        version: 4,
+        name: STORAGE_KEY,
+        version: PERSIST_VERSION,
         migrate: (persisted: unknown, version: number) => {
           const state = persisted as {
             resumeData?: Partial<ResumeData> & {
