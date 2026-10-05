@@ -19,7 +19,7 @@ export const FAQS = [
   {
     question: "Is Resume Canvas really free?",
     answer:
-      "Yes. Every template, every styling control and both export formats are free, with no account and no paywall. The source is MIT licensed, so you can also read it or run it yourself.",
+      "Yes. Every template, every styling control, the ATS checker and every export format (PDF, ATS-safe PDF, Word and plain text) are free, with no account and no paywall. The source is MIT licensed, so you can also read it or run it yourself.",
   },
   {
     question: "Where is my resume stored?",
@@ -39,7 +39,7 @@ export const FAQS = [
   {
     question: "Is the output ATS-friendly?",
     answer:
-      "The PDF keeps real, selectable text rather than an image. Applicant tracking systems still read multi-column layouts unevenly, so there is also a one-click plain-text export that flattens everything to a single column for pasting into application forms.",
+      "Yes. PDFs keep real, selectable text in reading order. Multi-column layouts can still confuse older tracking systems, so the Download menu also offers an ATS-safe PDF (the same content in one clean column), a Word file and plain text. The ATS tab scores your resume against common parser and recruiter checks, and matches it against a job description you paste in, all without leaving your browser.",
   },
   {
     question: "Can I change a template after I start?",

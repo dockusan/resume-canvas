@@ -5,7 +5,7 @@ import { Fragment } from "react/jsx-runtime";
 export const metadata: Metadata = pageMetadata({
   title: "Resume builder",
   description:
-    "Write, style and export your resume in the browser. Live paged preview, six templates, drag-and-drop sections and a plain-text ATS copy.",
+    "Write, style and export your resume in the browser. Live paged preview, six templates, an ATS checker with job-description matching, and PDF, ATS-safe PDF and Word export.",
   path: "/builder",
   // The builder renders the visitor's own data; there is nothing to index.
   noIndex: true,

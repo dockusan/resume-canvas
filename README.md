@@ -13,10 +13,10 @@
 </p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Next.js](https://img.shields.io/badge/Next.js-15-black)
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.0-38B2AC)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC)
 
 </div>
 
@@ -28,17 +28,18 @@ Unlike other resume builders, **Resume Canvas** runs entirely in your browser. Y
 
 ## ✨ Features
 
-- **👀 Real-time Preview:** See your changes instantly as you type.
-- **🔒 Privacy First:** Your resume is stored locally in your browser (Local Storage) and is never uploaded as you write.
-- **🔗 Share Links:** Send someone a read-only link. The resume is encrypted in the browser and the decryption key travels in the URL fragment, so the server stores a blob it cannot read. Links expire on a schedule you choose.
-- **📄 PDF Export:** High-quality, selectable, and ATS-friendly PDF generation using `@react-pdf/renderer`.
-- **🎨 Customization:**
-  - Multiple fonts (Google Fonts integration).
-  - Custom theme colors.
-  - Adjustable font sizes and document margins.
-- **🌗 Dark/Light Mode:** Fully supported dark mode for late-night editing.
-- **📱 Responsive Design:** Edit your resume on the go with a mobile-friendly interface.
-- **🧩 Drag & Drop:** Reorder sections easily (Coming Soon).
+- **👀 Live, paginated preview:** Edit directly on the page and see exactly where each page breaks.
+- **🎨 Six templates:** Classic (filled sidebar), Modern Sidebar, Clean (ATS-first), Minimal, Executive and Compact. A template is only a starting point; everything stays editable.
+- **🔤 Typography and spacing that work:** 19 font pairings, text size, line spacing, heading hierarchy, weight and case, plus Compact / Normal / Spacious density with per-level fine-tuning.
+- **🤖 ATS tools:**
+  - A scored checklist covering contact details, dated roles, bullet quality, quantified results, standard headings, layout and length.
+  - Paste a job description to see which of its keywords you already cover.
+  - An **ATS-safe PDF** that re-flows the same content into one clean column for job portals.
+- **📄 Exports:** Designed PDF, ATS-safe PDF, Word (`.docx`) and plain text. PDFs are printed by the browser from the preview itself, so they match the editor exactly, with selectable text in reading order.
+- **🔒 Privacy first:** Your resume is stored locally in your browser and never uploaded as you write.
+- **🔗 Share links:** Send a read-only link. The resume is encrypted in the browser and the key travels in the URL fragment, so the server stores a blob it cannot read. Links expire on a schedule you choose.
+- **🧩 Drag & drop:** Reorder sections and move them between columns and pages.
+- **🌗 Dark/light mode** and a mobile-friendly editor.
 
 ## 📸 Screenshots
 
@@ -48,13 +49,13 @@ Unlike other resume builders, **Resume Canvas** runs entirely in your browser. Y
 
 ## 🛠️ Tech Stack
 
-- **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
+- **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
 - **Language:** [TypeScript](https://www.typescriptlang.org/)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Styling:** [Tailwind CSS 4](https://tailwindcss.com/)
 - **UI Components:** [Shadcn/UI](https://ui.shadcn.com/) & [Lucide React](https://lucide.dev/)
-- **State Management:** [Zustand](https://github.com/pmndrs/zustand)
-- **PDF Generation:** [@react-pdf/renderer](https://react-pdf.org/)
-- **Forms:** React Hook Form
+- **State Management:** [Zustand](https://github.com/pmndrs/zustand) with [zundo](https://github.com/charkour/zundo) for undo/redo
+- **PDF:** the browser's own print engine, driven by the paginated preview
+- **Word export:** [docx](https://docx.js.org/)
 
 ## 🏁 Getting Started
 
@@ -101,7 +102,7 @@ Follow these steps to set up the project locally on your machine.
     npm run dev
     ```
 
-4.  **Open your browser:**
+5.  **Open your browser:**
     Navigate to [http://localhost:3000](http://localhost:3000) to see the application running.
 
 ## 🤝 Contributing
@@ -121,7 +122,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## 🙏 Acknowledgments
 
 - [Shadcn/UI](https://ui.shadcn.com/) for the beautiful component library.
-- [React PDF](https://react-pdf.org/) for the powerful PDF rendering engine.
+- [docx](https://docx.js.org/) for Word document generation.
 - [Lucide](https://lucide.dev/) for the clean icons.
 
 ---

@@ -27,13 +27,13 @@ const features = [
     icon: <Download className="h-6 w-6 text-primary" />,
     title: "PDF Export",
     description:
-      "Download your resume as a high-quality PDF, ready to be sent to recruiters.",
+      "Download a pixel-perfect PDF, an ATS-safe PDF, a Word file or plain text.",
   },
   {
     icon: <Layout className="h-6 w-6 text-primary" />,
     title: "ATS Friendly",
     description:
-      "Templates designed to be easily parsed by Applicant Tracking Systems.",
+      "A built-in ATS score, job-description keyword matching and a one-click ATS-safe PDF for job portals.",
   },
   {
     icon: <Palette className="h-6 w-6 text-primary" />,
