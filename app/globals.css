@@ -185,6 +185,16 @@ html.rc-printing [data-measure-layer] .editable-field[data-placeholder]:empty {
     display: none !important;
   }
 
+  /* ATS-safe export: print the off-screen single-column copy instead of the
+     designed sheet. */
+  html.rc-print-ats [data-main-sheet] {
+    display: none !important;
+  }
+  html.rc-print-ats [data-ats-print-root] {
+    position: static !important;
+    left: auto !important;
+  }
+
   /* Editor furniture never prints. */
   [data-toolbar],
   [data-editor-only],

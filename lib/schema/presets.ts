@@ -288,7 +288,8 @@ function clean(accent: string): DocumentPreset {
       full: sectionStyle("clean", {
         heading: heading({
           step: 1.5,
-          font: capsHeading(700, 1.4),
+          // Untracked: letter-spacing makes PDF text extract as "S K I L L S".
+          font: capsHeading(700, 0),
           color: accent,
           border: border("#e5e7eb", 1),
           padding: box(0, 0, 3, 0),

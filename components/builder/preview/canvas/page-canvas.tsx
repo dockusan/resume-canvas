@@ -19,6 +19,7 @@ import {
 import {
   borderStyle,
   contentWidth,
+  dim,
   fillStyle,
   fontStyle,
   isDarkFill,
@@ -207,7 +208,9 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
                     : "flex-start"
                 : undefined,
             fontSize: fontSizeAt(theme, header.type?.contact ?? -1),
-            opacity: 0.9,
+            // Not `opacity`: that would print the contacts as a separate
+            // layer that PDF text extraction reads last.
+            color: dim(color, 90),
           }}
         >
           {shownContacts.map(({ field }, i) => (
@@ -218,6 +221,11 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
                 header.contacts.showIcons ? CONTACT_ICONS[field] : undefined
               }
               iconAfter={header.contacts.iconPosition === "after"}
+              // Only between values that will print: empty fields are
+              // editor-only and vanish from the PDF.
+              separated={shownContacts
+                .slice(i + 1)
+                .some((c) => !!info[c.field])}
               className="flex items-center gap-1.5 min-w-0"
               iconClassName="w-3 h-3 shrink-0"
               style={

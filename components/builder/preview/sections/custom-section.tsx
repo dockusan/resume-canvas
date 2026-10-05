@@ -1,5 +1,6 @@
 "use client";
 
+import { dim } from "@/lib/schema/css";
 import { EditableBullets } from "@/components/builder/inline/editable-bullets";
 import { EditableLink } from "@/components/builder/inline/editable-link";
 import { useEditing } from "@/components/builder/inline/editing-context";
@@ -110,8 +111,8 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
               </h3>
               <Field
                 name="date"
-                className="font-medium whitespace-nowrap ml-2 opacity-80"
-                style={{ color: colors.text }}
+                className="font-medium whitespace-nowrap ml-2"
+                style={{ color: dim(colors.text, 80) }}
                 value={item.date || ""}
                 onCommit={(v) => updateItem(sectionKey, item.id, { date: v })}
                 placeholder="Date"

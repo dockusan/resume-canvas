@@ -4,6 +4,7 @@ import { useEditing } from "@/components/builder/inline/editing-context";
 import { isPersonalFieldVisible } from "@/lib/personal-fields";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import { PersonalContactField } from "@/lib/types";
+import { TextSeparator } from "./ats-flow";
 import { DocIcon } from "./doc-icon";
 import { PersonalField } from "./personal-field";
 
@@ -17,6 +18,8 @@ interface ContactItemProps {
   iconStyle?: React.CSSProperties;
   /** Put the icon after the text (right-aligned headers). */
   iconAfter?: boolean;
+  /** Write an invisible " | " after the value so PDF text keeps entries apart. */
+  separated?: boolean;
   as?: React.ElementType;
 }
 
@@ -33,6 +36,7 @@ export function ContactItem({
   iconClassName,
   iconStyle,
   iconAfter,
+  separated,
   as: Tag = "div",
 }: ContactItemProps) {
   const { editable } = useEditing();
@@ -71,6 +75,7 @@ export function ContactItem({
       {!iconAfter && glyph}
       <PersonalField name={field} />
       {iconAfter && glyph}
+      {separated && <TextSeparator />}
     </Tag>
   );
 }

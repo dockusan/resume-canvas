@@ -16,8 +16,12 @@ import { SaveStatus } from "./save-status";
 import { resumeStore, useResumeStore } from "@/lib/store/useResumeStore";
 import { cn } from "@/lib/utils";
 import {
+  ChevronDown,
   Download,
+  FileDown,
   FileText,
+  FileType,
+  ShieldCheck,
   Home,
   LayoutTemplate,
   ListChecks,
@@ -45,6 +49,9 @@ interface BuilderToolbarProps {
   onPrint: () => void;
   onDownload: () => void;
   onDownloadAts: () => void;
+  /** Single-column PDF through the Clean template, for job portals. */
+  onDownloadAtsPdf: () => void;
+  onDownloadDocx: () => void;
   /** "fit" or a scale factor. */
   zoom: "fit" | number;
   fitScale: number;
@@ -62,6 +69,8 @@ export function BuilderToolbar({
   onPrint,
   onDownload,
   onDownloadAts,
+  onDownloadAtsPdf,
+  onDownloadDocx,
   isDownloading,
   zoom,
   fitScale,
@@ -257,9 +266,6 @@ export function BuilderToolbar({
             <DropdownMenuItem onClick={onPrint}>
               <Printer className="h-3.5 w-3.5" /> Print
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onDownloadAts}>
-              <FileText className="h-3.5 w-3.5" /> Plain text for ATS
-            </DropdownMenuItem>
             <DropdownMenuItem asChild className="sm:hidden">
               <Link href="/">
                 <Home className="h-3.5 w-3.5" /> Resume Canvas home
@@ -288,16 +294,46 @@ export function BuilderToolbar({
 
         {/* Never collapses into the overflow menu: exporting is the point of
             the app, and it has to be one tap away on the smallest phone. */}
-        <Button
-          size="sm"
-          className="h-8"
-          title="Save as PDF"
-          onClick={onDownload}
-          disabled={isDownloading}
-        >
-          <Download className="h-3.5 w-3.5 lg:mr-1" />
-          <span className="hidden lg:inline">Download</span>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="sm"
+              className="h-8"
+              title="Download"
+              disabled={isDownloading}
+            >
+              <Download className="h-3.5 w-3.5 lg:mr-1" />
+              <span className="hidden lg:inline">Download</span>
+              <ChevronDown className="h-3 w-3 opacity-70 hidden lg:inline" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64">
+            <DownloadItem
+              icon={<FileDown className="h-4 w-4" />}
+              label="PDF"
+              hint="Exactly as designed. Best for email and referrals."
+              onClick={onDownload}
+            />
+            <DownloadItem
+              icon={<ShieldCheck className="h-4 w-4" />}
+              label="ATS-safe PDF"
+              hint="Same content in one clean column, for job portals."
+              onClick={onDownloadAtsPdf}
+            />
+            <DownloadItem
+              icon={<FileType className="h-4 w-4" />}
+              label="Word (.docx)"
+              hint="For portals and recruiters that ask for Word."
+              onClick={onDownloadDocx}
+            />
+            <DownloadItem
+              icon={<FileText className="h-4 w-4" />}
+              label="Plain text"
+              hint="To paste into application forms."
+              onClick={onDownloadAts}
+            />
+          </DropdownMenuContent>
+        </DropdownMenu>
       </span>
 
       <ShareDialog open={shareOpen} onClose={() => setShareOpen(false)} />
@@ -405,5 +441,29 @@ function ZoomControl({
         <PlusIcon className="h-3.5 w-3.5" />
       </Button>
     </div>
+  );
+}
+
+function DownloadItem({
+  icon,
+  label,
+  hint,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  hint: string;
+  onClick: () => void;
+}) {
+  return (
+    <DropdownMenuItem onClick={onClick} className="items-start gap-2.5 py-2">
+      <span className="mt-0.5 text-muted-foreground">{icon}</span>
+      <span className="flex flex-col">
+        <span className="text-[13px] font-medium">{label}</span>
+        <span className="text-[11px] text-muted-foreground leading-snug">
+          {hint}
+        </span>
+      </span>
+    </DropdownMenuItem>
   );
 }

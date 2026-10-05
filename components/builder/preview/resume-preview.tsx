@@ -22,6 +22,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { ContentEditor } from "@/components/builder/content/content-editor";
 import { ArrangeBoard } from "@/components/builder/arrange/arrange-board";
+import { AtsPrintSheet } from "./ats-print-sheet";
 import { PaginatedResume } from "./canvas/paginated-resume";
 
 export type BuilderMode = "design" | "content" | "arrange";
@@ -78,6 +79,7 @@ function EditableSheet({
   return (
     <div
       data-print-passthrough
+      data-main-sheet
       style={{
         width: outerWidth,
         height: paperHeight ? paperHeight * fitScale : undefined,
@@ -183,15 +185,53 @@ export function ResumePreview() {
     document.title = previous;
   };
 
+  /**
+   * The same content through the Clean template, for upload to job portals:
+   * one column, so the text stream reads top to bottom for any parser.
+   * Mounted only for the duration of the print.
+   */
+  const [atsPrint, setAtsPrint] = useState(false);
+  const handleDownloadAtsPdf = async () => {
+    const previous = document.title;
+    document.title = `${resumeData.personalInfo.fullName.replace(/\s+/g, "_")}_Resume_ATS`;
+    setAtsPrint(true);
+    document.documentElement.classList.add("rc-print-ats");
+    // Let the off-screen sheet mount and paginate before settling.
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    await settleLayout();
+    window.print();
+    endPrintLayout();
+    document.documentElement.classList.remove("rc-print-ats");
+    setAtsPrint(false);
+    document.title = previous;
+  };
+
+  /** A Word file built from the same single-column structure. */
+  const handleDownloadDocx = async () => {
+    const { toDocxBlob } = await import("@/lib/export/docx");
+    const blob = await toDocxBlob(doc, resumeData, settings);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${resumeData.personalInfo.fullName.replace(/\s+/g, "_")}_Resume.docx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div
       data-print-passthrough
       className="h-full flex flex-col bg-muted relative"
     >
+      {atsPrint && <AtsPrintSheet />}
       <BuilderToolbar
         onPrint={handlePrint}
         onDownload={handleDownloadPdf}
         onDownloadAts={handleDownloadAts}
+        onDownloadAtsPdf={handleDownloadAtsPdf}
+        onDownloadDocx={handleDownloadDocx}
         zoom={zoom}
         fitScale={fitScale}
         onZoom={setZoom}
@@ -252,7 +292,11 @@ export function ResumePreview() {
               </div>
             </div>
             {mode === "design" && (
-              <Inspector open={panelOpen} onOpenChange={setPanelOpen} />
+              <Inspector
+                open={panelOpen}
+                onOpenChange={setPanelOpen}
+                pageCount={pageCount}
+              />
             )}
             {/* Outside the sheet: its fit-to-width transform would otherwise
                 become the containing block for these fixed overlays and pull

@@ -2,7 +2,7 @@
 
 import { EditableText } from "@/components/builder/inline/editable-text";
 import { useEditing } from "@/components/builder/inline/editing-context";
-import { boxStyle, headingStyle } from "@/lib/schema/css";
+import { boxStyle, dim, headingStyle } from "@/lib/schema/css";
 import { SectionNode, Theme, spacingOf } from "@/lib/schema/document";
 import {
   SectionKey,
@@ -134,7 +134,9 @@ export function SectionShell({
             rich={false}
             path={`${node.id}.heading`}
           />
-          {continued && <span className="opacity-60"> (cont.)</span>}
+          {continued && (
+            <span style={{ color: dim("currentColor", 60) }}> (cont.)</span>
+          )}
         </h2>
 
         {isEmpty ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import { dim } from "@/lib/schema/css";
 import { EditableLink } from "@/components/builder/inline/editable-link";
 import { useEditing } from "@/components/builder/inline/editing-context";
 import { IconPickerPopover } from "@/components/builder/inline/icon-picker-popover";
@@ -92,13 +93,13 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
               <Field
                 name="username"
                 as="div"
-                className="truncate max-w-[120px] opacity-80"
+                className="truncate max-w-[120px]"
                 value={social.username}
                 onCommit={(v) =>
                   updateItem("socials", social.id, { username: v })
                 }
                 placeholder="username"
-                style={{ color: colors.text }}
+                style={{ color: dim(colors.text, 80) }}
                 path={`socials.${social.id}.username`}
               />
             </div>

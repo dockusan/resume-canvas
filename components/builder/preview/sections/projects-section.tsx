@@ -1,5 +1,6 @@
 "use client";
 
+import { dim } from "@/lib/schema/css";
 import { EditableLink } from "@/components/builder/inline/editable-link";
 import { useEditing } from "@/components/builder/inline/editing-context";
 import { fontSizeAt } from "@/lib/schema/document";
@@ -63,8 +64,8 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
             </h3>
             <Field
               name="date"
-              className="font-medium whitespace-nowrap ml-2 opacity-80"
-              style={{ color: colors.text }}
+              className="font-medium whitespace-nowrap ml-2"
+              style={{ color: dim(colors.text, 80) }}
               value={project.date}
               onCommit={(v) => updateItem("projects", project.id, { date: v })}
               placeholder="Date"

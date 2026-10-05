@@ -1,5 +1,6 @@
 "use client";
 
+import { dim } from "@/lib/schema/css";
 import { EditableBullets } from "@/components/builder/inline/editable-bullets";
 import { EditableDateRange } from "@/components/builder/inline/editable-date";
 import { fontSizeAt } from "@/lib/schema/document";
@@ -53,9 +54,9 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
                 endDate={exp.endDate}
                 current={exp.current}
                 onCommit={(patch) => updateItem("experience", exp.id, patch)}
-                className="font-medium whitespace-nowrap ml-2 opacity-80"
+                className="font-medium whitespace-nowrap ml-2"
                 style={{
-                  color: colors.text,
+                  color: dim(colors.text, 80),
                   fontSize: fontSizeAt(theme, node.fields?.date?.step ?? -1),
                 }}
                 path={`experience.${exp.id}.date`}

@@ -7,7 +7,8 @@ import { boxStyle, itemLayoutStyle, separatorStyle } from "@/lib/schema/css";
 import { spacingOf } from "@/lib/schema/document";
 import { cn } from "@/lib/utils";
 import { DocIcon } from "./doc-icon";
-import type { CSSProperties } from "react";
+import { Children, Fragment, type CSSProperties } from "react";
+import { TextSeparator, useAtsFlow } from "./ats-flow";
 import {
   adaptRailColor,
   adaptSeparatorToFill,
@@ -249,6 +250,26 @@ export function ItemHeaderRow({
   children: React.ReactNode;
   className?: string;
 }) {
+  const atsFlow = useAtsFlow();
+  if (atsFlow) {
+    // Title and dates side by side, joined by a real separator in the text.
+    const parts = Children.toArray(children).filter(Boolean);
+    return (
+      <div
+        className={cn(
+          "flex flex-wrap justify-start items-baseline gap-x-2 min-w-0",
+          className,
+        )}
+      >
+        {parts.map((part, i) => (
+          <Fragment key={i}>
+            {i > 0 && <TextSeparator />}
+            {part}
+          </Fragment>
+        ))}
+      </div>
+    );
+  }
   return (
     <div
       className={cn(

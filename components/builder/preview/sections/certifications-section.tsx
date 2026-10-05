@@ -1,5 +1,6 @@
 "use client";
 
+import { dim } from "@/lib/schema/css";
 import { EditableLink } from "@/components/builder/inline/editable-link";
 import { useEditing } from "@/components/builder/inline/editing-context";
 import { useResumeStore } from "@/lib/store/useResumeStore";
@@ -41,8 +42,8 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
             name="description"
             as="p"
             multiline
-            className="mt-1 opacity-70"
-            style={{ color: colors.text }}
+            className="mt-1"
+            style={{ color: dim(colors.text, 70) }}
             value={cert.description || ""}
             onCommit={(v) =>
               updateItem("certifications", cert.id, { description: v })
@@ -75,8 +76,8 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
               />
               <Field
                 name="date"
-                className="font-medium whitespace-nowrap ml-2 opacity-80"
-                style={{ color: colors.text }}
+                className="font-medium whitespace-nowrap ml-2"
+                style={{ color: dim(colors.text, 80) }}
                 value={cert.date || ""}
                 onCommit={(v) =>
                   updateItem("certifications", cert.id, { date: v })
@@ -87,7 +88,7 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
             </ItemHeaderRow>
 
             {(showIssuer || showLink) && (
-              <p className="opacity-80" style={{ color: colors.text }}>
+              <p style={{ color: dim(colors.text, 80) }}>
                 <Field
                   name="issuer"
                   value={cert.issuer}

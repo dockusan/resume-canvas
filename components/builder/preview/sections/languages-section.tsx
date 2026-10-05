@@ -1,5 +1,6 @@
 "use client";
 
+import { dim } from "@/lib/schema/css";
 import { EditableSelect } from "@/components/builder/inline/editable-select";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import { applyHtmlOverride, resolvePathOverride } from "@/lib/style-overrides";
@@ -39,7 +40,9 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
 
   // EditableSelect has no `path` prop of its own, so the override cascade is
   // resolved here to keep per-field styling working on the proficiency.
-  const proficiencyStyle = useFieldStyle("proficiency", { color: colors.text });
+  const proficiencyStyle = useFieldStyle("proficiency", {
+    color: dim(colors.text, 70),
+  });
   const showProficiency = isFieldVisible(node, "proficiency");
   const showMeter = isFieldVisible(node, "meter");
 
@@ -71,7 +74,6 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
                   onCommit={(v) =>
                     updateItem("languages", lang.id, { proficiency: v })
                   }
-                  className="opacity-70"
                   style={applyHtmlOverride(
                     proficiencyStyle,
                     resolvePathOverride(

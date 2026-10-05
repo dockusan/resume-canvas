@@ -20,6 +20,15 @@ import {
   fontSizeAt,
 } from "./document";
 
+/**
+ * A colour faded toward transparent. Use instead of CSS `opacity` on text:
+ * Chrome prints an opacity group as a separate layer, and PDF text extraction
+ * then reads it out of order (every date and contact line collected at the
+ * end of the page), which is exactly what an ATS parser trips on.
+ */
+export const dim = (color: string, percent: number) =>
+  `color-mix(in srgb, ${color} ${percent}%, transparent)`;
+
 export function fillToCss(fill: Fill | null | undefined): string | undefined {
   if (!fill || fill.type === "none") return undefined;
   if (fill.type === "solid") return fill.color;

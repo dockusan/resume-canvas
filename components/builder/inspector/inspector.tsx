@@ -7,14 +7,21 @@ import {
 import { StylePopover } from "@/components/builder/inline/style-toolbar";
 import { useDocument } from "@/lib/schema/use-document";
 import { cn } from "@/lib/utils";
-import { FileText, LayoutPanelLeft, PanelRightClose, User } from "lucide-react";
+import {
+  FileText,
+  LayoutPanelLeft,
+  PanelRightClose,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { useState } from "react";
+import { AtsPanel } from "./ats-panel";
 import { DocumentPanel } from "./document-panel";
 import { HeaderPanel } from "./header-panel";
 import { SectionPanel } from "./section-panel";
 import { SectionsOutline } from "./sections-outline";
 
-type Tab = "document" | "selection";
+type Tab = "document" | "selection" | "ats";
 
 /**
  * Contextual property panel.
@@ -27,10 +34,13 @@ type Tab = "document" | "selection";
 export function Inspector({
   open,
   onOpenChange,
+  pageCount = 1,
 }: {
   /** Drawer state below the desktop breakpoint; docked panel above it. */
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Pages the document currently prints to, for the ATS length check. */
+  pageCount?: number;
 }) {
   const { activePath } = useEditing();
   const doc = useDocument();
@@ -103,6 +113,12 @@ export function Inspector({
             }
             label={personal ? "Header" : node ? "Section" : "Sections"}
           />
+          <TabButton
+            active={tab === "ats"}
+            onClick={() => setTab("ats")}
+            icon={<ShieldCheck className="w-3.5 h-3.5" />}
+            label="ATS"
+          />
           <button
             type="button"
             title="Hide properties"
@@ -115,6 +131,7 @@ export function Inspector({
 
         <div className="flex-1 overflow-auto">
           {tab === "document" && <DocumentPanel />}
+          {tab === "ats" && <AtsPanel pageCount={pageCount} />}
           {showSelection && personal && <HeaderPanel />}
           {showSelection && !personal && node && (
             <>

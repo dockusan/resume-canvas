@@ -1,5 +1,6 @@
 "use client";
 
+import { dim } from "@/lib/schema/css";
 import { EditableDateRange } from "@/components/builder/inline/editable-date";
 import { fontSizeAt } from "@/lib/schema/document";
 import { formatRange } from "@/lib/dates";
@@ -52,9 +53,9 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
                 endDate={edu.endDate}
                 current={edu.current}
                 onCommit={(patch) => updateItem("education", edu.id, patch)}
-                className="font-medium whitespace-nowrap ml-2 opacity-80"
+                className="font-medium whitespace-nowrap ml-2"
                 style={{
-                  color: colors.text,
+                  color: dim(colors.text, 80),
                   fontSize: fontSizeAt(theme, node.fields?.date?.step ?? -1),
                 }}
                 path={`education.${edu.id}.date`}

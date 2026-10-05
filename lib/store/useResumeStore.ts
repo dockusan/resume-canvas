@@ -138,7 +138,7 @@ export const DEFAULT_SECTION_NAMES: Record<string, string> = {
   projects: "Projects",
   strengths: "Strengths",
   skills: "Skills",
-  socials: "Find Me Online",
+  socials: "Links",
   languages: "Languages",
   certifications: "Certification",
 };
@@ -345,7 +345,7 @@ const initialSettings: ResumeSettings = {
   rightColumn: [
     { id: "strengths", name: "Strengths", visible: true },
     { id: "skills", name: "Skills", visible: true },
-    { id: "socials", name: "Find Me Online", visible: true },
+    { id: "socials", name: "Links", visible: true },
     { id: "languages", name: "Languages", visible: true },
     { id: "certifications", name: "Certification", visible: true },
   ],

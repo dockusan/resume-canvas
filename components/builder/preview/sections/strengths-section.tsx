@@ -1,5 +1,6 @@
 "use client";
 
+import { dim } from "@/lib/schema/css";
 import { useEditing } from "@/components/builder/inline/editing-context";
 import { IconPickerPopover } from "@/components/builder/inline/icon-picker-popover";
 import { getIconData, strengthIcons } from "@/lib/icons";
@@ -84,8 +85,7 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
                   name="description"
                   as="p"
                   multiline
-                  className="opacity-80"
-                  style={{ color: colors.text }}
+                  style={{ color: dim(colors.text, 80) }}
                   value={strength.description}
                   onCommit={(v) =>
                     updateItem("strengths", strength.id, { description: v })
