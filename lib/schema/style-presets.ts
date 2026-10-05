@@ -613,8 +613,8 @@ export const MARGIN_PRESETS = [
 
 export const SPACING_PRESETS = [
   { id: "tight", name: "Tight", lineHeight: 1.3 },
-  { id: "normal", name: "Normal", lineHeight: 1.45 },
-  { id: "airy", name: "Airy", lineHeight: 1.65 },
+  { id: "normal", name: "Normal", lineHeight: 1.4 },
+  { id: "airy", name: "Airy", lineHeight: 1.6 },
 ];
 
 /** Apply a heading look, preserving the choices it does not own. */

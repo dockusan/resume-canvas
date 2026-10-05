@@ -25,6 +25,7 @@ import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Group } from "./controls";
 import { DocumentAdvanced } from "./document-advanced";
+import { FitToPage } from "./fit-to-page";
 import { ChoiceRow, OptionCards, SwatchCards } from "./option-cards";
 import { ColumnsPreview, TemplatePreview } from "./previews";
 
@@ -36,7 +37,7 @@ const COLUMN_CHOICES = [
 ];
 
 /** Whole-document look: template, palette, type and page setup. */
-export function DocumentPanel() {
+export function DocumentPanel({ pageCount = 1 }: { pageCount?: number }) {
   const doc = useDocument();
   const setPreset = useResumeStore((s) => s.setPreset);
   const updateTheme = useResumeStore((s) => s.updateTheme);
@@ -233,6 +234,7 @@ export function DocumentPanel() {
           Space between sections, entries and bullet points. Fine-tune each
           under Advanced.
         </p>
+        <FitToPage pageCount={pageCount} />
       </Group>
 
       <Group title="Layout">

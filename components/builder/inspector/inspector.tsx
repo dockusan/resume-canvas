@@ -130,7 +130,7 @@ export function Inspector({
         </div>
 
         <div className="flex-1 overflow-auto">
-          {tab === "document" && <DocumentPanel />}
+          {tab === "document" && <DocumentPanel pageCount={pageCount} />}
           {tab === "ats" && <AtsPanel pageCount={pageCount} />}
           {showSelection && personal && <HeaderPanel />}
           {showSelection && !personal && node && (

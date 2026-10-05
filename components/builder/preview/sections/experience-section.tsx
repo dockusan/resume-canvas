@@ -66,7 +66,7 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
             )}
           </ItemHeaderRow>
 
-          <div className="font-medium mb-1" style={{ color: colors.accent }}>
+          <div className="font-medium mb-0.5" style={{ color: colors.accent }}>
             <Field
               name="company"
               value={exp.company}

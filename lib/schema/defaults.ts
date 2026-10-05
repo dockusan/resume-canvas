@@ -60,7 +60,7 @@ export const font = (patch: Partial<FontSpec> = {}): FontSpec => ({
   family: "inherit",
   weight: 400,
   letterSpacing: 0,
-  lineHeight: 1.45,
+  lineHeight: 1.4,
   transform: "none",
   ...patch,
 });
@@ -156,9 +156,9 @@ export const sectionStyle = (
  */
 export const DEFAULT_ITEM_LAYOUT: Record<string, Partial<ItemLayout>> = {
   summary: { direction: "column", gap: 0 },
-  experience: { direction: "column", gap: 14 },
-  education: { direction: "column", gap: 10 },
-  projects: { direction: "column", gap: 12 },
+  experience: { direction: "column", gap: 10 },
+  education: { direction: "column", gap: 8 },
+  projects: { direction: "column", gap: 10 },
   strengths: { direction: "column", gap: 10 },
   certifications: { direction: "column", gap: 10 },
   languages: { direction: "column", gap: 8 },

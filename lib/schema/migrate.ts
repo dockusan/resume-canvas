@@ -233,8 +233,11 @@ export function applyPreset(
         page: "auto" as const,
       },
       style: structuredClone(preset.sectionStyle[styleKey]),
+      // Rebuilt from defaults, not layered on the old value: otherwise one
+      // template's tighter gaps (Compact) leak into every template after it.
       items: {
-        ...section.items,
+        ...defaultItemLayout,
+        ...(DEFAULT_ITEM_LAYOUT[section.type] ?? {}),
         ...(preset.itemLayout?.[section.type] ?? {}),
       },
     };

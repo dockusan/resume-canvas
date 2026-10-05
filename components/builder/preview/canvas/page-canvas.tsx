@@ -4,7 +4,10 @@ import { PersonalShell } from "@/components/builder/preview/sections/personal-sh
 import { PersonalField } from "@/components/builder/preview/sections/personal-field";
 import { ContactItem } from "@/components/builder/preview/sections/contact-item";
 import { ResumePhoto } from "@/components/builder/preview/sections/resume-photo";
-import { useEditing } from "@/components/builder/inline/editing-context";
+import {
+  isPersonalActive,
+  useEditing,
+} from "@/components/builder/inline/editing-context";
 import {
   PERSONAL_CONTACT_FIELDS,
   isPersonalFieldVisible,
@@ -96,7 +99,11 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
   const { theme } = doc;
   const onFill = isDarkFill(header.background);
   const color = onFill ? theme.colors.onFill : theme.colors.text;
-  const { editable } = useEditing();
+  const { editable, activePath } = useEditing();
+  // Empty contacts are shown only while the header is being edited; at
+  // other times they would wrap the header onto a second line that the PDF
+  // never has, and the editor would paginate differently from the export.
+  const editingHeader = editable && isPersonalActive(activePath);
   const settings = useResumeStore((s) => s.settings);
   const info = useResumeStore((s) => s.resumeData.personalInfo);
   // Index separators over the contacts that actually render, or a hidden
@@ -105,7 +112,7 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
     ({ field }) =>
       field !== "title" &&
       isPersonalFieldVisible(settings, field) &&
-      (editable || !!info[field]),
+      (editingHeader || !!info[field]),
   );
 
   const alignItems =
@@ -149,7 +156,7 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
     >
       {photo}
       <div
-        className="flex min-w-0 flex-1 gap-4"
+        className="flex min-w-0 flex-1 gap-2.5"
         style={{
           flexDirection: beside ? "row" : "column",
           alignItems: beside ? "flex-start" : alignItems,
@@ -178,7 +185,7 @@ function ResumeHeader({ doc }: { doc: ResumeDocument }) {
               color: onFill ? theme.colors.onFill : theme.colors.accent,
               fontWeight: 500,
               marginTop: 2,
-              marginBottom: beside ? 0 : 6,
+              marginBottom: beside ? 0 : 4,
             }}
           />
         </div>

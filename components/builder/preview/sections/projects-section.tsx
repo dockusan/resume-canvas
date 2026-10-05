@@ -82,7 +82,7 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
                 onCommit={(v) =>
                   updateItem("projects", project.id, { link: v })
                 }
-                className="block mb-1 hover:underline line-clamp-1"
+                className="block mb-0.5 hover:underline line-clamp-1"
                 style={{
                   color: colors.accent,
                   fontSize: fontSizeAt(theme, node.fields?.link?.step ?? 0),

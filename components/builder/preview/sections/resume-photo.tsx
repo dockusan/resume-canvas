@@ -40,21 +40,20 @@ export function ResumePhoto({
 
   if (showPhoto === false) {
     if (!editable) return null;
+    // A slim link rather than a photo-sized ghost: a full-size placeholder
+    // pushed the column down by ~100px that the PDF never has, so the
+    // editor broke pages in different places from the export.
     return (
       <button
         type="button"
         title="Show photo"
-        onClick={() => updateSettings({ showPhoto: true })}
         data-editor-only
-        className={cn(
-          "flex flex-col items-center justify-center gap-0.5 border border-dashed border-current opacity-30 hover:opacity-80 transition-opacity",
-          className,
-        )}
-        style={{ ...style, borderRadius: photoBorderRadius }}
+        onClick={() => updateSettings({ showPhoto: true })}
+        className="inline-flex items-center gap-1 rounded border border-dashed border-current px-1.5 py-0.5 text-[9px] uppercase tracking-wide opacity-30 hover:opacity-80 transition-opacity"
         contentEditable={false}
       >
-        <ImagePlus className="w-5 h-5" />
-        <span className="text-[7px] uppercase tracking-wide">Show photo</span>
+        <ImagePlus className="w-3 h-3" />
+        Add photo
       </button>
     );
   }

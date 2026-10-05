@@ -210,10 +210,12 @@ export function EditableBullets({
     >
       {rows}
       {editable && pendingIndex === null && (
-        <li data-editor-only>
+        // Zero-height: the button floats in the gap below the list instead
+        // of adding a line, so the editor paginates exactly like the PDF.
+        <li data-editor-only className="relative h-0">
           <button
             type="button"
-            className="flex items-center gap-1 opacity-0 hover:opacity-70 focus:opacity-70 transition-opacity text-[10px] mt-0.5"
+            className="absolute left-0 top-0 flex items-center gap-1 opacity-0 hover:opacity-70 focus:opacity-70 transition-opacity text-[10px] leading-none"
             style={{ color: textColor }}
             onClick={() => setPendingIndex(lines.length)}
           >

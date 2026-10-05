@@ -580,7 +580,18 @@ const createResumeState: StateCreator<ResumeState, [], []> = (set, get) => ({
       if (singleColumn) return;
       const target = direction === "left" ? "left" : "right";
       if (target === column) return;
-      moveSectionTo(sectionId, { column: target });
+      // Keep roughly the same position rather than dropping to the bottom:
+      // at the foot of a full sidebar a moved section spills onto page two
+      // and looks as if the move did nothing.
+      const rank = (col: string) =>
+        doc.sections
+          .filter((s) => s.visible && s.placement.column === col)
+          .sort((a, b) => a.placement.order - b.placement.order);
+      const from = rank(column).findIndex((s) => s.id === sectionId);
+      moveSectionTo(sectionId, {
+        column: target,
+        index: Math.max(0, Math.min(from, rank(target).length)),
+      });
       return;
     }
 
