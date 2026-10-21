@@ -6,8 +6,16 @@ import {
   DEFAULT_SECTION_NAMES,
   useResumeStore,
 } from "@/lib/store/useResumeStore";
+import { useAiDialogs, useAiEnabled } from "@/lib/ai/client";
 import { cn } from "@/lib/utils";
-import { ArrowDown, ArrowUp, Plus, RotateCcw } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  FileUp,
+  Plus,
+  RotateCcw,
+  Sparkles,
+} from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Group } from "./controls";
 
@@ -27,6 +35,9 @@ export function SectionsOutline() {
   const restoreSection = useResumeStore((s) => s.restoreSection);
   const addCustomSection = useResumeStore((s) => s.addCustomSection);
   const moveSection = useResumeStore((s) => s.moveSection);
+  const aiEnabled = useAiEnabled();
+  const openImport = useAiDialogs((s) => s.openImport);
+  const openQuickAdd = useAiDialogs((s) => s.openQuickAdd);
 
   const all = [...settings.leftColumn, ...settings.rightColumn];
   const removed = Object.keys(DEFAULT_SECTION_NAMES).filter(
@@ -41,6 +52,25 @@ export function SectionsOutline() {
 
   return (
     <div className="px-3">
+      {/* First thing a new visitor sees in the panel: the fastest way past
+          the sample resume is the one they already have. */}
+      {aiEnabled && (
+        <button
+          type="button"
+          onClick={openImport}
+          className="mt-3 flex w-full items-start gap-2.5 rounded-md border border-primary/30 bg-primary/5 p-2.5 text-left hover:bg-primary/10"
+        >
+          <FileUp className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <span>
+            <span className="block text-[13px] font-medium">
+              Already have a resume?
+            </span>
+            <span className="block text-[11px] leading-snug text-muted-foreground">
+              Import a PDF or text file and skip the typing.
+            </span>
+          </span>
+        </button>
+      )}
       <Group title="Sections">
         <div className="space-y-0.5">
           {ordered.map((node) => (
@@ -100,6 +130,15 @@ export function SectionsOutline() {
         >
           <Plus className="w-3 h-3" /> Add a section
         </button>
+        {aiEnabled && (
+          <button
+            type="button"
+            onClick={() => openQuickAdd()}
+            className="w-full mt-1 flex items-center justify-center gap-1.5 rounded-md border border-dashed px-2 py-1.5 text-[13px] hover:bg-muted"
+          >
+            <Sparkles className="w-3 h-3" /> Quick add with AI
+          </button>
+        )}
       </Group>
 
       {removed.length > 0 && (

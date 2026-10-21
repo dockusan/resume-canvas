@@ -16,6 +16,7 @@ import { SaveStatus } from "./save-status";
 import { resumeStore, useResumeStore } from "@/lib/store/useResumeStore";
 import { cn } from "@/lib/utils";
 import { downloadBackup, importBackup } from "@/lib/export/backup";
+import { useAiDialogs, useAiEnabled } from "@/lib/ai/client";
 import {
   ChevronDown,
   Download,
@@ -36,6 +37,7 @@ import {
   Plus as PlusIcon,
   Printer,
   SlidersHorizontal,
+  Sparkles,
   Redo2,
   RotateCcw,
   Sun,
@@ -85,6 +87,9 @@ export function BuilderToolbar({
 }: BuilderToolbarProps) {
   const addCustomSection = useResumeStore((s) => s.addCustomSection);
   const resetResume = useResumeStore((s) => s.resetResume);
+  const aiEnabled = useAiEnabled();
+  const openImport = useAiDialogs((s) => s.openImport);
+  const openQuickAdd = useAiDialogs((s) => s.openQuickAdd);
   const { theme, setTheme } = useTheme();
   const [confirmReset, setConfirmReset] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -210,18 +215,48 @@ export function BuilderToolbar({
 
         {/* A divider and a label keep this from reading as a second zoom-in
             button, which is what a bare "+" beside the zoom stepper does. */}
-        {mode !== "arrange" && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="hidden h-8 md:inline-flex"
-            title="Add a custom section"
-            onClick={() => addCustomSection()}
-          >
-            <SquarePlus className="h-3.5 w-3.5 md:mr-1" />
-            <span className="hidden md:inline">Section</span>
-          </Button>
-        )}
+        {mode !== "arrange" &&
+          (aiEnabled ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden h-8 md:inline-flex"
+                  title="Add a section"
+                >
+                  <SquarePlus className="h-3.5 w-3.5 md:mr-1" />
+                  <span className="hidden md:inline">Section</span>
+                  <ChevronDown className="h-3 w-3 opacity-70" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <HintItem
+                  icon={<Sparkles className="h-4 w-4" />}
+                  label="Quick add with AI"
+                  hint="Describe it in a few words; get polished entries."
+                  onClick={() => openQuickAdd()}
+                />
+                <HintItem
+                  icon={<SquarePlus className="h-4 w-4" />}
+                  label="Blank section"
+                  hint="An empty custom section to fill in yourself."
+                  onClick={() => addCustomSection()}
+                />
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden h-8 md:inline-flex"
+              title="Add a custom section"
+              onClick={() => addCustomSection()}
+            >
+              <SquarePlus className="h-3.5 w-3.5 md:mr-1" />
+              <span className="hidden md:inline">Section</span>
+            </Button>
+          ))}
 
         {mode === "design" && (
           <Button
@@ -258,6 +293,14 @@ export function BuilderToolbar({
                 <SquarePlus className="h-3.5 w-3.5" /> Add a section
               </DropdownMenuItem>
             )}
+            {mode !== "arrange" && aiEnabled && (
+              <DropdownMenuItem
+                className="md:hidden"
+                onClick={() => openQuickAdd()}
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Quick add with AI
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator className="md:hidden" />
             <DropdownMenuItem
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -278,6 +321,11 @@ export function BuilderToolbar({
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            {aiEnabled && (
+              <DropdownMenuItem onClick={openImport}>
+                <Sparkles className="h-3.5 w-3.5" /> Import from PDF or text
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => downloadBackup()}>
               <FileJson className="h-3.5 w-3.5" /> Export resume file
             </DropdownMenuItem>
@@ -321,25 +369,25 @@ export function BuilderToolbar({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
-            <DownloadItem
+            <HintItem
               icon={<FileDown className="h-4 w-4" />}
               label="PDF"
               hint="Exactly as designed. Best for email and referrals."
               onClick={onDownload}
             />
-            <DownloadItem
+            <HintItem
               icon={<ShieldCheck className="h-4 w-4" />}
               label="ATS-safe PDF"
               hint="Same content in one clean column, for job portals."
               onClick={onDownloadAtsPdf}
             />
-            <DownloadItem
+            <HintItem
               icon={<FileType className="h-4 w-4" />}
               label="Word (.docx)"
               hint="For portals and recruiters that ask for Word."
               onClick={onDownloadDocx}
             />
-            <DownloadItem
+            <HintItem
               icon={<FileText className="h-4 w-4" />}
               label="Plain text"
               hint="To paste into application forms."
@@ -494,7 +542,7 @@ function ZoomControl({
   );
 }
 
-function DownloadItem({
+function HintItem({
   icon,
   label,
   hint,

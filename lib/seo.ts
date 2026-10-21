@@ -33,7 +33,7 @@ export const SITE = {
 export const UPDATED = {
   home: "2026-07-31",
   templates: "2026-07-30",
-  privacy: "2026-07-31",
+  privacy: "2026-10-21",
   terms: "2026-07-31",
   cookies: "2026-07-30",
 } as const;

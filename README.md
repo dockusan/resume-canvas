@@ -36,6 +36,9 @@ Unlike other resume builders, **Resume Canvas** runs entirely in your browser. Y
   - Paste a job description to see which of its keywords you already cover.
   - An **ATS-safe PDF** that re-flows the same content into one clean column for job portals.
 - **📄 Exports:** Designed PDF, ATS-safe PDF, Word (`.docx`) and plain text. PDFs are printed by the browser from the preview itself, so they match the editor exactly, with selectable text in reading order.
+- **✨ AI import and quick add (optional):**
+  - Upload the resume you already have (PDF, `.txt`, `.md`) or paste its text, and the editor fills itself in. Review what was found, then replace your content or add to it — one undo puts it all back.
+  - Describe a job, degree, project or skills in a few words, in any language, and get polished entries to edit before adding — plus prompts for what would make them stronger.
 - **🔒 Privacy first:** Your resume is stored locally in your browser and never uploaded as you write.
 - **🔗 Share links:** Send a read-only link. The resume is encrypted in the browser and the key travels in the URL fragment, so the server stores a blob it cannot read. Links expire on a schedule you choose.
 - **🧩 Drag & drop:** Reorder sections and move them between columns and pages.
@@ -63,7 +66,7 @@ Follow these steps to set up the project locally on your machine.
 
 ### Prerequisites
 
-- Node.js 18+ installed
+- Node.js 22+ installed
 - pnpm (recommended), npm, or yarn
 
 ### Installation
@@ -94,7 +97,22 @@ Follow these steps to set up the project locally on your machine.
     develop; a production build refuses to create links without it rather
     than handing out ones that would silently break.
 
-4.  **Run the development server:**
+4.  **Enable AI import and quick add (optional):**
+
+    ```bash
+    # .env.local
+    OPENROUTER_API_KEY=sk-or-...
+    # Optional: any OpenRouter model that supports structured outputs.
+    OPENROUTER_MODEL=anthropic/claude-haiku-5.5
+    ```
+
+    Without a key the AI buttons simply don't appear. Requests are rate
+    limited per address (30 an hour) through the same Redis store as share
+    links; set a credit limit on the key in OpenRouter as a backstop.
+    `OPENROUTER_BASE_URL` points the app at any other OpenAI-compatible
+    endpoint instead.
+
+5.  **Run the development server:**
 
     ```bash
     pnpm dev
@@ -102,7 +120,7 @@ Follow these steps to set up the project locally on your machine.
     npm run dev
     ```
 
-5.  **Open your browser:**
+6.  **Open your browser:**
     Navigate to [http://localhost:3000](http://localhost:3000) to see the application running.
 
 ## 🤝 Contributing

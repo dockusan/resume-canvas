@@ -81,7 +81,27 @@ export interface ResumeState {
   duplicateSection: (sectionId: string) => void;
   removeSectionFromLayout: (sectionId: string) => void;
   restoreSection: (sectionId: string) => void;
-  addCustomSection: () => string;
+  /** Adds a custom section, empty or holding `items`, and returns its id. */
+  addCustomSection: (
+    name?: string,
+    items?: Omit<CustomSectionItem, "id">[],
+  ) => string;
+  /**
+   * Appends items to a section in one step (one undo entry), bringing the
+   * section back into the layout first if it was removed or hidden.
+   */
+  insertItems: (section: SectionKey, items: Record<string, unknown>[]) => void;
+  /**
+   * Loads content read from an existing resume. "replace" swaps all content
+   * (and drops custom sections) but keeps the design and photo; "merge"
+   * appends items and only fills header fields that are empty. `titles`
+   * names each custom section in `data`, keyed by its uuid.
+   */
+  importContent: (
+    data: ResumeData,
+    titles: Record<string, string>,
+    mode: "replace" | "merge",
+  ) => void;
 
   // Style overrides (section / item / field level, keyed by path)
   setStyleOverride: (path: string, patch: Partial<StyleOverride>) => void;
@@ -405,6 +425,39 @@ function findSectionConfig(
   return null;
 }
 
+/**
+ * Puts each section on the page: restores it to its default column if it was
+ * removed, and unhides it if it was hidden.
+ */
+function showSections(
+  settings: ResumeSettings,
+  sectionIds: string[],
+): ResumeSettings {
+  let next = settings;
+  for (const id of sectionIds) {
+    const pos = findSectionConfig(next, id);
+    if (pos && next[pos.column][pos.index].visible) continue;
+    if (pos) {
+      next = {
+        ...next,
+        [pos.column]: next[pos.column].map((s) =>
+          s.id === id ? { ...s, visible: true } : s,
+        ),
+      };
+      continue;
+    }
+    const column = DEFAULT_SECTION_COLUMN[id] ?? "rightColumn";
+    next = {
+      ...next,
+      [column]: [
+        ...next[column],
+        { id, name: DEFAULT_SECTION_NAMES[id] ?? id, visible: true },
+      ],
+    };
+  }
+  return next;
+}
+
 function formatDateRange(start: string, end: string, current: boolean): string {
   if (!start && !end && !current) return "";
   return `${start}${start || end || current ? " - " : ""}${current ? "Present" : end}`;
@@ -706,7 +759,7 @@ const createResumeState: StateCreator<ResumeState, [], []> = (set, get) => ({
         },
       };
     }),
-  addCustomSection: () => {
+  addCustomSection: (name, items) => {
     const uuid = uuidv4();
     set((state) => {
       const column =
@@ -720,7 +773,11 @@ const createResumeState: StateCreator<ResumeState, [], []> = (set, get) => ({
             ...state.resumeData.customSections,
             {
               id: uuid,
-              items: [{ ...DEFAULT_CUSTOM_ITEM, id: uuidv4() }],
+              items: (items?.length ? items : [{}]).map((item) => ({
+                ...DEFAULT_CUSTOM_ITEM,
+                ...item,
+                id: uuidv4(),
+              })),
             },
           ],
         },
@@ -728,13 +785,104 @@ const createResumeState: StateCreator<ResumeState, [], []> = (set, get) => ({
           ...state.settings,
           [column]: [
             ...state.settings[column],
-            { id: `custom:${uuid}`, name: "New Section", visible: true },
+            {
+              id: `custom:${uuid}`,
+              name: name || "New Section",
+              visible: true,
+            },
           ],
         },
       };
     });
     return `custom:${uuid}`;
   },
+  insertItems: (section, items) =>
+    set((state) => {
+      const defaults = isCustomSectionId(section)
+        ? DEFAULT_CUSTOM_ITEM
+        : DEFAULT_ITEMS[section];
+      const existing = readItems(state.resumeData, section);
+      // A skill already listed isn't listed twice, whatever its casing.
+      const known = new Set(
+        section === "skills"
+          ? existing.map((s) => String(s.name).toLowerCase())
+          : [],
+      );
+      const fresh = items.filter(
+        (item) => !known.has(String(item.name).toLowerCase()),
+      );
+      return {
+        resumeData: writeItems(state.resumeData, section, [
+          ...existing,
+          ...fresh.map((item) => ({ ...defaults, ...item, id: uuidv4() })),
+        ]),
+        settings: showSections(state.settings, [section]),
+      };
+    }),
+  importContent: (data, titles, mode) =>
+    set((state) => {
+      const current = state.resumeData;
+      const replace = mode === "replace";
+
+      // Header: replace takes the file's values; merge only fills blanks.
+      const personalInfo = { ...current.personalInfo };
+      for (const [key, value] of Object.entries(data.personalInfo) as [
+        keyof PersonalInfo,
+        string,
+      ][]) {
+        if (key === "photoUrl") continue;
+        if (replace || !personalInfo[key]) personalInfo[key] = value;
+      }
+
+      const append = <T extends { id: string }>(mine: T[], theirs: T[]) =>
+        replace ? theirs : [...mine, ...theirs];
+      const known = new Set(
+        replace ? [] : current.skills.map((s) => s.name.toLowerCase()),
+      );
+
+      const resumeData: ResumeData = {
+        personalInfo,
+        experience: append(current.experience, data.experience),
+        education: append(current.education, data.education),
+        projects: append(current.projects, data.projects),
+        skills: append(
+          current.skills,
+          data.skills.filter((s) => !known.has(s.name.toLowerCase())),
+        ),
+        languages: append(current.languages, data.languages),
+        certifications: append(current.certifications, data.certifications),
+        strengths: append(current.strengths, data.strengths),
+        socials: append(current.socials, data.socials),
+        customSections: append(current.customSections, data.customSections),
+      };
+
+      // Layout: replaced custom sections leave it; every section the file
+      // filled is put back on the page; new custom sections join the main
+      // column, where headings like "Awards" usually live.
+      const dropCustom = (list: SectionConfig[]) =>
+        replace ? list.filter((s) => !isCustomSectionId(s.id)) : list;
+      let settings: ResumeSettings = {
+        ...state.settings,
+        leftColumn: [
+          ...dropCustom(state.settings.leftColumn),
+          ...data.customSections.map((c) => ({
+            id: `custom:${c.id}`,
+            name: titles[c.id] || "New Section",
+            visible: true,
+          })),
+        ],
+        rightColumn: dropCustom(state.settings.rightColumn),
+      };
+      const filled = [
+        ...(data.personalInfo.summary ? ["summary"] : []),
+        ...(Object.keys(DEFAULT_ITEMS) as BuiltinSectionKey[]).filter(
+          (key) => data[key].length > 0,
+        ),
+      ];
+      settings = showSections(settings, filled);
+
+      return { resumeData, settings };
+    }),
 
   // ------- Style overrides -------
 

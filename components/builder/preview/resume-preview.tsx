@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 
 import { ContentEditor } from "@/components/builder/content/content-editor";
+import { ImportDialog } from "@/components/builder/ai/import-dialog";
+import { QuickAddDialog } from "@/components/builder/ai/quick-add-dialog";
 import { ArrangeBoard } from "@/components/builder/arrange/arrange-board";
 import { AtsPrintSheet } from "./ats-print-sheet";
 import { PaginatedResume } from "./canvas/paginated-resume";
@@ -305,6 +307,9 @@ export function ResumePreview() {
             <SelectionRail />
           </div>
         </SectionDndProvider>
+        {/* Inside the editing context so quick add can select what it adds. */}
+        <ImportDialog />
+        <QuickAddDialog />
       </EditingProvider>
     </div>
   );

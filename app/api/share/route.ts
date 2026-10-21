@@ -5,6 +5,7 @@ import {
   MAX_BLOB_BYTES,
   clampExpiryDays,
 } from "@/lib/share/limits";
+import { clientBucket } from "@/lib/server/client-bucket.server";
 import {
   isPersistent,
   putShare,
@@ -20,24 +21,6 @@ const noStore = { "cache-control": "no-store" };
 function newShareId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   return Buffer.from(bytes).toString("base64url");
-}
-
-/**
- * Rate-limit bucket for the caller.
- *
- * The address is hashed and only the digest is stored, for one window. There
- * is deliberately no way to go from a stored share back to who created it.
- */
-async function bucketFor(request: NextRequest): Promise<string> {
-  const address =
-    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
-    request.headers.get("x-real-ip") ||
-    "unknown";
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(address),
-  );
-  return Buffer.from(digest).toString("hex").slice(0, 32);
 }
 
 export async function POST(request: NextRequest) {
@@ -78,7 +61,7 @@ export async function POST(request: NextRequest) {
 
   if (
     !(await withinRateLimit(
-      await bucketFor(request),
+      await clientBucket(request),
       CREATE_LIMIT,
       CREATE_WINDOW_SECONDS,
     ))

@@ -14,7 +14,15 @@ import {
   useResumeStore,
 } from "@/lib/store/useResumeStore";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Copy, GripVertical, Plus, Trash2 } from "lucide-react";
+import { useAiDialogs, useAiEnabled } from "@/lib/ai/client";
+import {
+  ChevronDown,
+  Copy,
+  GripVertical,
+  Plus,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { FieldInput } from "./field-input";
@@ -114,6 +122,8 @@ function PersonalCard({
 }) {
   const info = useResumeStore((s) => s.resumeData.personalInfo);
   const setPersonalInfo = useResumeStore((s) => s.setPersonalInfo);
+  const aiEnabled = useAiEnabled();
+  const openQuickAdd = useAiDialogs((s) => s.openQuickAdd);
 
   return (
     <CardShell
@@ -136,10 +146,22 @@ function PersonalCard({
           </div>
         ))}
         <div className="sm:col-span-2 space-y-1.5">
-          <label className="text-[11px] font-medium text-muted-foreground">
-            Professional summary
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] font-medium text-muted-foreground">
+              Professional summary
+            </label>
+            {aiEnabled && (
+              <button
+                type="button"
+                onClick={() => openQuickAdd("summary")}
+                className="flex items-center gap-1 text-[11px] text-primary hover:underline"
+              >
+                <Sparkles className="h-3 w-3" /> Write with AI
+              </button>
+            )}
+          </div>
           <Textarea
+            key={info.summary}
             defaultValue={toPlainText(info.summary ?? "")}
             rows={4}
             className="text-sm"
@@ -167,6 +189,8 @@ function SectionCard({
   const toggleVisibility = useResumeStore((s) => s.toggleSectionVisibility);
   const renameSection = useResumeStore((s) => s.renameSection);
   const addItem = useResumeStore((s) => s.addItem);
+  const aiEnabled = useAiEnabled();
+  const openQuickAdd = useAiDialogs((s) => s.openQuickAdd);
   const items = useResumeStore((s) => {
     if (node.type === "summary") return NO_ITEMS;
     if (isCustomSectionId(node.id)) {
@@ -228,14 +252,26 @@ function SectionCard({
           />
         ))}
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          onClick={() => addItem(sectionKey)}
-        >
-          <Plus className="mr-1 h-3.5 w-3.5" /> Add {form.itemNoun}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => addItem(sectionKey)}
+          >
+            <Plus className="mr-1 h-3.5 w-3.5" /> Add {form.itemNoun}
+          </Button>
+          {aiEnabled && node.type !== "socials" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => openQuickAdd(node.id)}
+            >
+              <Sparkles className="mr-1 h-3.5 w-3.5" /> Quick add with AI
+            </Button>
+          )}
+        </div>
       </div>
     </CardShell>
   );
