@@ -1,16 +1,15 @@
 "use client";
 
-import { EditingProvider } from "@/components/builder/inline/editing-context";
-import { PaginatedResume } from "@/components/builder/preview/canvas/paginated-resume";
-import { PAGE_DIMENSIONS } from "@/lib/schema/document";
-import { PRESET_META } from "@/lib/schema/presets";
-import { normalizeFontFamily } from "@/lib/schema/style-presets";
 import {
-  ResumeStoreProvider,
-  createDetachedStore,
-  sampleResume,
-} from "@/lib/store/useResumeStore";
+  FirstPage,
+  PAGE,
+  pageFrameClass,
+  sampleStore,
+  useFitScale,
+} from "@/components/home/sample-resume";
+import { PRESET_META } from "@/lib/schema/presets";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { useReducedMotion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -37,24 +36,8 @@ export function LivePreview({ className }: { className?: string }) {
   // is idle, so switching to them is a fade rather than a fresh layout.
   const [mounted, setMounted] = useState(1);
   const frameRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState<number | null>(null);
-
-  const page = PAGE_DIMENSIONS.A4;
-  const stores = useMemo(
-    () => SHOWCASE.map((id) => createDetachedStore(sampleResume(id))),
-    [],
-  );
-  const font = normalizeFontFamily(stores[0].getState().settings.fontFamily);
-
-  useEffect(() => {
-    const el = frameRef.current;
-    if (!el) return;
-    const update = () => setScale(el.clientWidth / page.width);
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [page.width]);
+  const scale = useFitScale(frameRef);
+  const stores = useMemo(() => SHOWCASE.map((id) => sampleStore(id)), []);
 
   useEffect(() => {
     const idle =
@@ -86,34 +69,28 @@ export function LivePreview({ className }: { className?: string }) {
         // out of the tab order. The caption says what it is.
         aria-hidden
         inert
-        className="relative w-full overflow-hidden rounded-md bg-white shadow-2xl ring-1 ring-black/10"
-        style={{ aspectRatio: `${page.width} / ${page.height}` }}
+        className={cn(pageFrameClass, "rounded-md shadow-2xl")}
+        style={{ aspectRatio: `${PAGE.width} / ${PAGE.height}` }}
       >
         {SHOWCASE.slice(0, mounted).map((id, i) => (
-          <div
+          <FirstPage
             key={id}
-            data-template={id}
-            // Page labels are editor furniture; only the paper shows here.
-            className="absolute inset-0 origin-top-left transition-opacity duration-700 [&_[data-editor-only]]:hidden"
-            style={{
-              width: page.width,
-              fontFamily: font,
-              transform: scale ? `scale(${scale})` : undefined,
-              opacity: scale && i === active ? 1 : 0,
-            }}
-          >
-            <ResumeStoreProvider store={stores[i]}>
-              <EditingProvider editable={false}>
-                <PaginatedResume />
-              </EditingProvider>
-            </ResumeStoreProvider>
-          </div>
+            store={stores[i]}
+            scale={scale}
+            visible={i === active}
+          />
         ))}
       </div>
 
       <figcaption className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <span className="text-muted-foreground">
-          The real editor, rendering the sample resume
+          The real editor, rendering the sample resume.{" "}
+          <Link
+            href={`/builder?template=${SHOWCASE[active]}`}
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            Start with {nameOf(SHOWCASE[active])}
+          </Link>
         </span>
         <span
           role="group"
