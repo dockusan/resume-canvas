@@ -92,3 +92,25 @@ export interface QuickAddDraft {
   /** Short prompts for what would make the entry stronger. */
   suggestions: string[];
 }
+
+/** Item sections whose points AI can rewrite in place. */
+export type RewriteKind = "experience" | "projects" | "custom";
+
+export interface RewriteRequest {
+  kind: RewriteKind;
+  /** The entry's name: job title, project name, custom heading. */
+  title: string;
+  /** Who and where: company and location, a link, a custom subtitle. */
+  subtitle: string;
+  dates: string;
+  /** Its current points, plain text, no bullet characters. */
+  bullets: string[];
+  /** What the person wants changed; may be empty. */
+  instruction: string;
+}
+
+export interface Rewrite {
+  bullets: string[];
+  /** Short questions about what would make the points stronger. */
+  notes: string[];
+}

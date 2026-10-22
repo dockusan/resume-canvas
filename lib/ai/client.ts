@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { create } from "zustand";
-import { ImportedResume, QuickAddDraft, QuickAddSection } from "./types";
+import {
+  ImportedResume,
+  QuickAddDraft,
+  QuickAddSection,
+  Rewrite,
+  RewriteRequest,
+} from "./types";
 
 let availability: Promise<boolean> | null = null;
 
@@ -75,6 +81,15 @@ export async function draftSection(request: {
     true,
   );
   return draft;
+}
+
+export async function rewriteItem(request: RewriteRequest): Promise<Rewrite> {
+  const { rewrite } = await post<{ rewrite: Rewrite }>(
+    "/api/ai/rewrite",
+    JSON.stringify(request),
+    true,
+  );
+  return rewrite;
 }
 
 /**

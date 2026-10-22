@@ -15,7 +15,10 @@ export const MAX_SOURCE_CHARS = 40_000;
 /** Quick add takes a few lines in the user's own words. */
 export const MAX_OVERVIEW_CHARS = 4_000;
 
-/** AI requests per address per hour, across import and quick add. */
+/** A rewrite instruction is a nudge — "shorter", "in English" — not a brief. */
+export const MAX_INSTRUCTION_CHARS = 300;
+
+/** AI requests per address per hour, across every AI feature. */
 export const AI_LIMIT = 30;
 export const AI_WINDOW_SECONDS = 60 * 60;
 

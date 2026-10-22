@@ -1,6 +1,9 @@
 "use client";
 
+import { RewritePopover } from "@/components/builder/ai/rewrite-popover";
 import { SectionDragHandle } from "@/components/builder/dnd/section-dnd";
+import { rewriteKind } from "@/lib/ai/apply";
+import { useAiEnabled } from "@/lib/ai/client";
 import { useDocument } from "@/lib/schema/use-document";
 import { SectionKey, useResumeStore } from "@/lib/store/useResumeStore";
 import { cn } from "@/lib/utils";
@@ -16,6 +19,7 @@ import {
   EyeOff,
   GripVertical,
   Plus,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import {
@@ -162,33 +166,29 @@ export function SelectionRail() {
 }
 
 function RailButton({
-  title,
-  onClick,
   danger,
   active,
-  disabled,
+  className,
   children,
-}: {
+  ...props
+}: React.ComponentProps<"button"> & {
   title: string;
-  onClick?: () => void;
   danger?: boolean;
   active?: boolean;
-  disabled?: boolean;
-  children: React.ReactNode;
 }) {
+  // Props pass through so a popover can use the button as its trigger.
   return (
     <button
       type="button"
-      title={title}
-      onClick={onClick}
-      disabled={disabled}
+      {...props}
       className={cn(
         "h-6 w-6 rounded flex items-center justify-center disabled:opacity-30",
         active
           ? "bg-sky-50 text-sky-600"
           : danger
             ? "text-muted-foreground hover:bg-red-50 hover:text-red-600"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            : "text-muted-foreground hover:bg-muted hover:text-foreground data-[state=open]:bg-sky-50 data-[state=open]:text-sky-600",
+        className,
       )}
     >
       {children}
@@ -310,6 +310,8 @@ function ItemActions({
   const removeItem = useResumeStore((s) => s.removeItem);
   const reorderItem = useResumeStore((s) => s.reorderItem);
   const { setActivePath } = useEditing();
+  const aiEnabled = useAiEnabled();
+  const kind = rewriteKind(sectionKey);
 
   const index = Number(
     findElement({ kind: "item", sectionId: sectionKey, itemId })?.dataset
@@ -321,6 +323,22 @@ function ItemActions({
 
   return (
     <>
+      {aiEnabled && kind && (
+        <>
+          {/* Keyed so a suggestion never follows the rail to another item. */}
+          <RewritePopover
+            key={itemId}
+            kind={kind}
+            sectionKey={sectionKey}
+            itemId={itemId}
+          >
+            <RailButton title="Improve with AI">
+              <Sparkles className="w-3.5 h-3.5" />
+            </RailButton>
+          </RewritePopover>
+          <span className="mx-0.5 h-4 w-px bg-border" />
+        </>
+      )}
       <RailButton
         title="Add item below"
         onClick={() => {

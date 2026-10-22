@@ -4,13 +4,18 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
+import { bulletLines } from "@/lib/ats/checks";
 import { ICON_REGISTRY } from "@/lib/icons";
+import { toPlainText } from "@/lib/richtext/runs";
+import { SectionKey, isCustomSectionId } from "@/lib/store/useResumeStore";
 import { CustomSectionItem, ResumeData } from "@/lib/types";
 import {
   DraftItem,
   ImportedResume,
   PROFICIENCIES,
   QuickAddSection,
+  RewriteKind,
+  RewriteRequest,
 } from "./types";
 
 type Item = Record<string, unknown>;
@@ -176,4 +181,88 @@ export function importSummary(r: ImportedResume): string[] {
     ...count(r.profiles.length, "profile link"),
     ...r.otherSections.map((s) => `${s.title} (${s.entries.length})`),
   ];
+}
+
+/** Which kind of entry an item is for a rewrite, or null if it has no points. */
+export function rewriteKind(section: SectionKey): RewriteKind | null {
+  if (section === "experience" || section === "projects") return section;
+  return isCustomSectionId(section) ? "custom" : null;
+}
+
+const text = (value: unknown) =>
+  typeof value === "string" ? toPlainText(value).trim() : "";
+
+/** An item as the rewrite route reads it: plain text, points split out. */
+export function rewriteRequestFor(
+  kind: RewriteKind,
+  item: Item,
+  instruction: string,
+): RewriteRequest {
+  const range = [
+    text(item.startDate),
+    item.current ? "present" : text(item.endDate),
+  ]
+    .filter(Boolean)
+    .join(" – ");
+  const base = {
+    kind,
+    bullets: bulletLines(text(item.description)),
+    instruction: instruction.trim(),
+  };
+  switch (kind) {
+    case "experience":
+      return {
+        ...base,
+        title: text(item.title),
+        subtitle: [text(item.company), text(item.location)]
+          .filter(Boolean)
+          .join(" • "),
+        dates: range,
+      };
+    case "projects":
+      return {
+        ...base,
+        title: text(item.name),
+        subtitle: text(item.link),
+        dates: text(item.date),
+      };
+    case "custom":
+      return {
+        ...base,
+        title: text(item.title),
+        subtitle: text(item.subtitle),
+        dates: text(item.date),
+      };
+  }
+}
+
+const TYPED_BULLET = /^\s*[•\-*◦▪]\s+/;
+
+/**
+ * The patch that swaps an item's points for `bullets`, written the way the
+ * item already writes them: typed "•" markers stay typed, a chosen bullet
+ * style is left alone. The rest of the item — title, dates — is untouched.
+ */
+export function rewritePatch(
+  kind: RewriteKind,
+  item: Item,
+  bullets: string[],
+): Item {
+  if (kind === "projects") return { description: typedBullets(bullets) };
+  const lines = text(item.description)
+    .split("\n")
+    .filter((l) => l.trim());
+  if (
+    !item.bulletStyle &&
+    lines.length &&
+    lines.every((l) => TYPED_BULLET.test(l))
+  ) {
+    return { description: bullets.map((b) => `• ${b}`).join("\n") };
+  }
+  return {
+    description: bullets.join("\n"),
+    ...(!item.bulletStyle && bullets.length > 1
+      ? { bulletStyle: "default" }
+      : {}),
+  };
 }
