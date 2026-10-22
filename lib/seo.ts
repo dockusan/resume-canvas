@@ -8,9 +8,17 @@ import type { Metadata } from "next";
  * Resume Builder") and how `metadataBase` drifted to a path instead of an
  * origin — that breaks every relative asset URL Next resolves against it.
  */
+/**
+ * Where this copy is served from and where its source lives. A fork deployed
+ * elsewhere sets these so its canonical URLs, sitemap and GitHub links point
+ * at itself; left unset they name the upstream project. Read at build time.
+ */
+const env = (value: string | undefined, fallback: string) =>
+  (value?.trim() || fallback).replace(/\/+$/, "");
+
 export const SITE = {
   name: "Resume Canvas",
-  url: "https://resumecanvas.site",
+  url: env(process.env.NEXT_PUBLIC_SITE_URL, "https://resumecanvas.site"),
   tagline: "Free, open-source resume builder",
   // Kept under ~155 characters so search results show it whole rather than
   // truncating mid-sentence, and worded to stay true now that share links
@@ -18,7 +26,10 @@ export const SITE = {
   // it is encrypted before it leaves the device.
   description:
     "Build an ATS-friendly resume in your browser. Live paged preview, PDF export and fourteen templates — free, no sign-up, and nothing uploaded.",
-  repo: "https://github.com/kstmostofa/resume-canvas",
+  repo: env(
+    process.env.NEXT_PUBLIC_REPO_URL,
+    "https://github.com/kstmostofa/resume-canvas",
+  ),
   author: "Md Mostafijur Rahman",
   ogImage: "/og-image.png",
 } as const;
@@ -32,7 +43,7 @@ export const SITE = {
  */
 export const UPDATED = {
   home: "2026-07-31",
-  templates: "2026-07-30",
+  templates: "2026-10-22",
   privacy: "2026-10-21",
   terms: "2026-07-31",
   cookies: "2026-07-30",
@@ -145,6 +156,20 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
       position: i + 1,
       name: item.name,
       item: `${SITE.url}${item.path}`,
+    })),
+  };
+}
+
+/** A list of pages, in order — the template gallery's entries. */
+export function itemListJsonLd(items: { name: string; path: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      url: `${SITE.url}${item.path}`,
     })),
   };
 }
