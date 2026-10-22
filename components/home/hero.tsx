@@ -55,8 +55,8 @@ export function Hero() {
             className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground sm:text-xl"
           >
             Write, style and export a professional resume entirely in your
-            browser. Six templates, live page breaks, and a PDF that matches
-            what you see exactly — with no account and nothing uploaded.
+            browser. Fourteen templates, live page breaks, and a PDF that
+            matches what you see exactly — with no account and nothing uploaded.
           </motion.p>
 
           <motion.div

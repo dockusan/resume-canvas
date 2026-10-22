@@ -1,5 +1,6 @@
 /**
- * The six former templates, re-expressed as data.
+ * The built-in templates, re-expressed as data: the six this app started with,
+ * then eight adapted from Reactive Resume.
  *
  * These are starting points, not modes: once a document is seeded from a preset
  * every value below is editable. `themeColor` is threaded in at seed time so an
@@ -16,6 +17,7 @@ import {
   ColumnId,
   DocumentPreset,
   HeaderSpec,
+  HeadingStyle,
   Placement,
   SectionStyle,
   SectionType,
@@ -35,7 +37,7 @@ import {
   sides,
   solid,
 } from "./defaults";
-import { darkenColor } from "@/lib/utils";
+import { darkenColor, tintColor } from "@/lib/utils";
 
 const withAccent = (accent: string, patch: Partial<Theme> = {}): Theme => ({
   ...DEFAULT_THEME,
@@ -495,6 +497,410 @@ function compact(accent: string): DocumentPreset {
 }
 
 // --------------------------------------------------------------------------
+// Adapted from Reactive Resume's templates (MIT, © Amruth Pillai) — Chikorita,
+// Ditto, Gengar, Glalie, Kakuna, Lapras, Pikachu and Porygon. Re-expressed as
+// data, so each keeps the original's layout and use of the accent rather than
+// its exact pixels.
+
+/** What Reactive Resume keeps in its sidebar; everything else is main. */
+const ASIDE_TYPES: SectionType[] = ["strengths", "languages", "certifications"];
+
+const mainAndAside = (
+  main: ColumnId,
+): Partial<Record<SectionType, Placement>> => {
+  const aside: ColumnId = main === "left" ? "right" : "left";
+  return Object.fromEntries(
+    (Object.keys(ALL_LEFT) as SectionType[]).map((type) => [
+      type,
+      ASIDE_TYPES.includes(type) ? aside : main,
+    ]),
+  );
+};
+
+/** Sentence-case section titles, as Reactive Resume sets them. */
+const titleFont = (weight = 600) => font({ weight });
+
+/** A title in the accent over a hairline rule of the same colour. */
+const ruledHeading = (color: string, patch: Partial<HeadingStyle> = {}) =>
+  heading({
+    step: 1.5,
+    font: titleFont(),
+    color,
+    border: border(color, 1),
+    padding: box(0, 0, 2, 0),
+    marginBottom: 6,
+    ...patch,
+  });
+
+/** A bare title in the accent, no rule. */
+const plainHeading = (color: string, patch: Partial<HeadingStyle> = {}) =>
+  heading({
+    variant: "plain",
+    step: 1.5,
+    font: titleFont(),
+    color,
+    border: null,
+    padding: box(0),
+    marginBottom: 6,
+    ...patch,
+  });
+
+const gapBelow = (bottom = 12) => emptyBox({ padding: box(0, 0, bottom, 0) });
+
+function accentPanel(accent: string): DocumentPreset {
+  return {
+    id: "accent-panel",
+    name: "Accent Panel",
+    description:
+      "Photo beside the name, with a full-height accent panel for the extras.",
+    page: { margin: box(0), background: solid("#ffffff") },
+    theme: withAccent(accent),
+    layout: {
+      columns: 2,
+      ratio: 0.68,
+      gap: 0,
+      fills: { left: noFill, right: solid(accent) },
+      padding: { left: box(30, 24, 26, 32), right: box(30, 26, 26, 22) },
+      header: {
+        ...defaultHeader(),
+        placement: "left",
+        photoPosition: "start",
+        padding: box(0, 0, 14, 0),
+        type: { name: 4.5, title: 1.25, contact: -1 },
+        photo: { ...defaultHeader().photo, size: 84, shape: "rounded" },
+        contacts: { ...defaultHeader().contacts, direction: "column", gap: 3 },
+      },
+      decorations: [],
+    },
+    sectionStyle: {
+      left: sectionStyle("accent-panel", {
+        heading: ruledHeading(accent),
+        container: gapBelow(),
+      }),
+      right: sectionStyle("accent-panel", {
+        heading: ruledHeading(ON_FILL_TEXT, {
+          border: border("rgba(255,255,255,0.55)", 1),
+        }),
+        container: gapBelow(),
+      }),
+      full: sectionStyle("accent-panel"),
+    },
+    defaultPlacement: mainAndAside("left"),
+  };
+}
+
+function banner(accent: string): DocumentPreset {
+  return {
+    id: "banner",
+    name: "Banner",
+    description:
+      "Name and photo on an accent banner, over a slim sidebar and a main column.",
+    page: { margin: box(0), background: solid("#ffffff") },
+    theme: withAccent(accent),
+    layout: {
+      columns: 2,
+      ratio: 0.32,
+      gap: 0,
+      fills: { left: noFill, right: noFill },
+      padding: { left: box(22, 16, 26, 32), right: box(22, 32, 26, 18) },
+      header: {
+        ...defaultHeader(),
+        placement: "band",
+        background: solid(accent),
+        padding: box(24, 32, 20, 32),
+        photoPosition: "start",
+        type: { name: 4.5, title: 1.25, contact: -1 },
+        photo: {
+          ...defaultHeader().photo,
+          size: 88,
+          shape: "rounded",
+          border: border("#ffffff", 3, sides(true, true, true, true)),
+        },
+      },
+      decorations: [],
+    },
+    sectionStyle: {
+      left: sectionStyle("banner", {
+        heading: plainHeading(accent),
+        container: gapBelow(),
+      }),
+      right: sectionStyle("banner", {
+        heading: plainHeading(accent),
+        container: gapBelow(),
+      }),
+      full: sectionStyle("banner"),
+    },
+    defaultPlacement: mainAndAside("right"),
+  };
+}
+
+function duotone(accent: string): DocumentPreset {
+  return {
+    id: "duotone",
+    name: "Duotone",
+    description:
+      "An accent name card heading a tinted sidebar, beside a main column.",
+    page: { margin: box(0), background: solid("#ffffff") },
+    theme: withAccent(accent),
+    layout: {
+      columns: 2,
+      ratio: 0.32,
+      gap: 0,
+      // Kept pale enough that sections on it stay in dark text.
+      fills: { left: solid(tintColor(accent, 0.2)), right: noFill },
+      padding: { left: box(20, 16, 24, 20), right: box(26, 32, 26, 22) },
+      header: {
+        ...defaultHeader(),
+        placement: "left",
+        direction: "column",
+        photoPosition: "start",
+        background: solid(accent),
+        padding: box(18, 16, 16, 16),
+        type: { name: 4, title: 1.25, contact: -1 },
+        photo: { ...defaultHeader().photo, size: 84, shape: "rounded" },
+        contacts: { ...defaultHeader().contacts, direction: "column", gap: 3 },
+      },
+      decorations: [],
+    },
+    sectionStyle: {
+      left: sectionStyle("duotone", {
+        heading: ruledHeading(accent),
+        container: gapBelow(),
+      }),
+      right: sectionStyle("duotone", {
+        heading: ruledHeading(accent),
+        container: gapBelow(),
+      }),
+      full: sectionStyle("duotone"),
+    },
+    defaultPlacement: mainAndAside("right"),
+  };
+}
+
+function softSidebar(accent: string): DocumentPreset {
+  return {
+    id: "soft-sidebar",
+    name: "Soft Sidebar",
+    description:
+      "Centred photo and name in a tinted sidebar, beside a main column.",
+    page: { margin: box(0), background: solid("#ffffff") },
+    theme: withAccent(accent),
+    layout: {
+      columns: 2,
+      ratio: 0.3,
+      gap: 0,
+      fills: { left: solid(tintColor(accent, 0.22)), right: noFill },
+      padding: { left: box(26, 18, 24, 22), right: box(26, 32, 26, 22) },
+      header: {
+        ...defaultHeader(),
+        placement: "left",
+        direction: "column",
+        align: "center",
+        photoPosition: "start",
+        padding: box(0, 0, 16, 0),
+        type: { name: 4, title: 1.25, contact: -1 },
+        photo: { ...defaultHeader().photo, size: 96, shape: "rounded" },
+        contacts: {
+          ...defaultHeader().contacts,
+          direction: "column",
+          align: "start",
+          gap: 3,
+        },
+      },
+      decorations: [],
+    },
+    sectionStyle: {
+      left: sectionStyle("soft-sidebar", {
+        heading: ruledHeading(accent),
+        container: gapBelow(),
+      }),
+      right: sectionStyle("soft-sidebar", {
+        heading: ruledHeading(accent),
+        container: gapBelow(),
+      }),
+      full: sectionStyle("soft-sidebar"),
+    },
+    defaultPlacement: mainAndAside("right"),
+  };
+}
+
+function centered(accent: string): DocumentPreset {
+  return {
+    id: "centered",
+    name: "Centered",
+    description:
+      "One column under a centred photo and name, with centred accent titles.",
+    page: { margin: box(36, 44), background: solid("#ffffff") },
+    theme: withAccent(accent),
+    layout: {
+      columns: 1,
+      ratio: 1,
+      gap: 0,
+      fills: { left: noFill, right: noFill },
+      padding: { left: box(0), right: box(0) },
+      header: {
+        ...defaultHeader(),
+        direction: "column",
+        align: "center",
+        photoPosition: "start",
+        padding: box(0, 0, 14, 0),
+        type: { name: 4.5, title: 1.25, contact: -1 },
+        photo: {
+          ...defaultHeader().photo,
+          size: 84,
+          shape: "rounded",
+          border: border(accent, 2, sides(true, true, true, true)),
+        },
+        contacts: { ...defaultHeader().contacts, align: "center", gap: 10 },
+      },
+      decorations: [],
+    },
+    sectionStyle: {
+      left: sectionStyle("centered"),
+      right: sectionStyle("centered"),
+      full: sectionStyle("centered", {
+        heading: ruledHeading(accent, { align: "center" }),
+        container: gapBelow(),
+      }),
+    },
+    defaultPlacement: ALL_LEFT,
+  };
+}
+
+function cards(accent: string): DocumentPreset {
+  return {
+    id: "cards",
+    name: "Cards",
+    description: "One column with every section in its own outlined card.",
+    page: { margin: box(28, 30), background: solid("#ffffff") },
+    theme: withAccent(accent),
+    layout: {
+      columns: 1,
+      ratio: 1,
+      gap: 0,
+      fills: { left: noFill, right: noFill },
+      padding: { left: box(0), right: box(0) },
+      header: {
+        ...defaultHeader(),
+        photoPosition: "start",
+        padding: box(0, 4, 14, 4),
+        type: { name: 4.5, title: 1.25, contact: -1 },
+        photo: { ...defaultHeader().photo, size: 76, shape: "rounded" },
+        contacts: { ...defaultHeader().contacts, gap: 10 },
+      },
+      decorations: [],
+    },
+    sectionStyle: {
+      left: sectionStyle("cards"),
+      right: sectionStyle("cards"),
+      full: sectionStyle("cards", {
+        heading: plainHeading(accent, { step: 1.25 }),
+        container: emptyBox({
+          padding: box(12, 16, 12, 16),
+          border: border("#d4d4d4", 1, sides(true, true, true, true)),
+          radius: 8,
+          margin: 10,
+        }),
+      }),
+    },
+    defaultPlacement: ALL_LEFT,
+  };
+}
+
+function spotlight(accent: string): DocumentPreset {
+  return {
+    id: "spotlight",
+    name: "Spotlight",
+    description:
+      "A large portrait atop the sidebar, beside a main column under an accent name card.",
+    page: { margin: box(0), background: solid("#ffffff") },
+    theme: withAccent(accent),
+    layout: {
+      columns: 2,
+      ratio: 0.3,
+      gap: 0,
+      fills: { left: noFill, right: noFill },
+      padding: { left: box(28, 14, 24, 28), right: box(28, 28, 24, 16) },
+      header: {
+        ...defaultHeader(),
+        placement: "right",
+        background: solid(accent),
+        padding: box(16, 18, 14, 18),
+        type: { name: 4, title: 1.25, contact: -1 },
+        photo: {
+          ...defaultHeader().photo,
+          size: 176,
+          shape: "rounded",
+          slot: "left",
+        },
+        contacts: { ...defaultHeader().contacts, gap: 10 },
+      },
+      decorations: [],
+    },
+    sectionStyle: {
+      left: sectionStyle("spotlight", {
+        heading: ruledHeading(accent),
+        container: gapBelow(),
+      }),
+      right: sectionStyle("spotlight", {
+        heading: ruledHeading(accent),
+        container: gapBelow(),
+      }),
+      full: sectionStyle("spotlight"),
+    },
+    defaultPlacement: mainAndAside("right"),
+  };
+}
+
+function framed(accent: string): DocumentPreset {
+  return {
+    id: "framed",
+    name: "Framed",
+    description:
+      "One column: the header in an accent frame, each section under a solid title bar.",
+    page: { margin: box(32, 36), background: solid("#ffffff") },
+    theme: withAccent(accent),
+    layout: {
+      columns: 1,
+      ratio: 1,
+      gap: 0,
+      fills: { left: noFill, right: noFill },
+      padding: { left: box(0), right: box(0) },
+      header: {
+        ...defaultHeader(),
+        border: border(accent, 1.5, sides(true, true, true, true)),
+        padding: box(14, 16),
+        photoPosition: "end",
+        type: { name: 4.5, title: 1.25, contact: -1 },
+        photo: { ...defaultHeader().photo, size: 84, shape: "square" },
+        contacts: { ...defaultHeader().contacts, gap: 10 },
+      },
+      decorations: [],
+    },
+    sectionStyle: {
+      left: sectionStyle("framed"),
+      right: sectionStyle("framed"),
+      full: sectionStyle("framed", {
+        heading: heading({
+          variant: "plain",
+          step: 1,
+          // Untracked: letter-spacing makes PDF text extract as "S K I L L S".
+          font: capsHeading(700, 0),
+          color: "#ffffff",
+          background: solid(accent),
+          border: null,
+          padding: box(3, 8),
+          marginBottom: 6,
+        }),
+        // The gap sits above each section, so the first bar clears the frame.
+        container: emptyBox({ padding: box(14, 0, 0, 0) }),
+      }),
+    },
+    defaultPlacement: ALL_LEFT,
+  };
+}
+
+// --------------------------------------------------------------------------
 
 export const PRESET_BUILDERS: Record<
   string,
@@ -506,6 +912,14 @@ export const PRESET_BUILDERS: Record<
   minimal,
   executive,
   compact,
+  "accent-panel": accentPanel,
+  banner,
+  duotone,
+  "soft-sidebar": softSidebar,
+  centered,
+  cards,
+  spotlight,
+  framed,
 };
 
 /**

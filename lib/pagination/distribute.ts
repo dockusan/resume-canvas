@@ -23,6 +23,12 @@ export interface MeasuredSection {
   order: number;
   /** Height of the heading block including its bottom margin. */
   headingHeight: number;
+  /**
+   * What the section's own box adds around its heading and items: top
+   * padding and borders. Every fragment draws its own box, so this is
+   * charged on each page the section lands on.
+   */
+  frame: number;
   /** Space below the section (container bottom padding). */
   trailing: number;
   items: MeasuredItem[];
@@ -141,6 +147,7 @@ export function distribute(
 
       const total =
         section.headingHeight +
+        section.frame +
         sumItems(section, 0, section.items.length) +
         section.trailing;
 
@@ -170,7 +177,7 @@ export function distribute(
         // items, so the last one on a page is not charged for it — otherwise
         // every page loses a gap's worth of room and breaks early.
         let fitted = 0;
-        let height = headingHeight;
+        let height = headingHeight + section.frame;
         for (let i = itemIndex; i < section.items.length; i++) {
           const lead = fitted > 0 ? section.items[i - 1].gap : 0;
           const next = height + lead + section.items[i].height;
@@ -200,6 +207,7 @@ export function distribute(
               itemIndex + forced,
               continued,
               headingHeight +
+                section.frame +
                 sumItems(section, itemIndex, itemIndex + forced) +
                 (itemIndex + forced >= section.items.length
                   ? section.trailing
@@ -216,6 +224,7 @@ export function distribute(
 
         const slotHeight =
           headingHeight +
+          section.frame +
           sumItems(section, itemIndex, itemIndex + fitted) +
           (isLastChunk ? section.trailing : 0);
         pushSlot(

@@ -29,7 +29,7 @@ Unlike other resume builders, **Resume Canvas** runs entirely in your browser. Y
 ## ✨ Features
 
 - **👀 Live, paginated preview:** Edit directly on the page and see exactly where each page breaks.
-- **🎨 Six templates:** Classic (filled sidebar), Modern Sidebar, Clean (ATS-first), Minimal, Executive and Compact. A template is only a starting point; everything stays editable.
+- **🎨 Fourteen templates:** Classic (filled sidebar), Modern Sidebar, Clean (ATS-first), Minimal, Executive and Compact, plus Accent Panel, Banner, Duotone, Soft Sidebar, Centered, Cards, Spotlight and Framed, adapted from Reactive Resume. A template is only a starting point; everything stays editable.
 - **🔤 Typography and spacing that work:** 19 font pairings, text size, line spacing, heading hierarchy, weight and case, plus Compact / Normal / Spacious density with per-level fine-tuning.
 - **🤖 ATS tools:**
   - A scored checklist covering contact details, dated roles, bullet quality, quantified results, standard headings, layout and length.
@@ -142,6 +142,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 - [Shadcn/UI](https://ui.shadcn.com/) for the beautiful component library.
 - [docx](https://docx.js.org/) for Word document generation.
 - [Lucide](https://lucide.dev/) for the clean icons.
+- [Reactive Resume](https://github.com/reactive-resume/reactive-resume) (MIT, © Amruth Pillai), whose Chikorita, Ditto, Gengar, Glalie, Kakuna, Lapras, Pikachu and Porygon templates the eight newer layouts are adapted from.
 
 ---
 

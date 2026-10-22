@@ -51,6 +51,11 @@ export interface BoxStyle {
   shadow: string | null;
   /** Gap between the box's children. */
   gap: number;
+  /**
+   * Space kept clear below the box, outside its border — what separates
+   * outlined cards. Without it the gap to the next section is bottom padding.
+   */
+  margin?: number;
 }
 
 /** Rule drawn *between* items, not around them. */

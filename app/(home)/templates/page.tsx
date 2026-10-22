@@ -11,7 +11,7 @@ import Link from "next/link";
 export const metadata = pageMetadata({
   title: "Resume templates",
   description:
-    "Six free resume templates: classic sidebar, modern sidebar, ATS-friendly clean, minimal, executive and compact. Restyle any of them completely, then export to PDF.",
+    "Fourteen free resume templates, from ATS-friendly single columns to accent sidebars, banners and cards. Restyle any of them completely, then export to PDF.",
   path: "/templates",
 });
 
@@ -47,6 +47,46 @@ const NOTES: Record<string, { best: string; detail: string }> = {
     detail:
       "Tight margins, side-rule headings and contacts beside your name. The densest layout here, for long histories that must stay on a single page.",
   },
+  "accent-panel": {
+    best: "Showing a face with your story",
+    detail:
+      "Your photo sits beside your name at the top of the main column, while a full-height accent panel holds strengths, languages and certifications.",
+  },
+  banner: {
+    best: "Making a strong first impression",
+    detail:
+      "Name, photo and contacts on an accent banner across the top. Below it a slim sidebar takes the extras and a wide column takes your history.",
+  },
+  duotone: {
+    best: "Creative and design-adjacent roles",
+    detail:
+      "An accent name card heads a softly tinted sidebar. Two tones of one colour give it personality while the main column stays plain and readable.",
+  },
+  "soft-sidebar": {
+    best: "Client-facing roles",
+    detail:
+      "A centred portrait and name in a tinted sidebar, with contacts listed underneath. Friendly and approachable without losing structure.",
+  },
+  centered: {
+    best: "Balanced, traditional layouts",
+    detail:
+      "One column under a centred photo and name, with centred accent titles. Symmetrical and calm, and easy for a reader to scan top to bottom.",
+  },
+  cards: {
+    best: "Modern tech and startup roles",
+    detail:
+      "Every section sits in its own outlined card. Clear boundaries make a long resume easy to skim, and the single column keeps it parser-friendly.",
+  },
+  spotlight: {
+    best: "Roles where presence matters",
+    detail:
+      "A large portrait tops the sidebar, and your name sits on an accent card above the main column. The most visual layout here.",
+  },
+  framed: {
+    best: "Structured, formal resumes",
+    detail:
+      "Your header inside an accent frame, and each section under a solid title bar. Crisp and orderly, with a clear rhythm down the page.",
+  },
 };
 
 export default function TemplatesPage() {
@@ -69,9 +109,9 @@ export default function TemplatesPage() {
               Resume templates
             </h1>
             <p className="mt-4 text-lg text-muted-foreground">
-              Six starting points, all free. A template only seeds the document
-              — colours, fonts, columns, spacing and every section style stay
-              editable afterwards.
+              Fourteen starting points, all free. A template only seeds the
+              document — colours, fonts, columns, spacing and every section
+              style stay editable afterwards.
             </p>
             <Button asChild size="lg" className="mt-8">
               <Link href="/builder">

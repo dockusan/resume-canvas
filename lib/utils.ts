@@ -34,6 +34,28 @@ export function darkenColor(hexColor: string, factor: number = 0.7): string {
 }
 
 /**
+ * A pale version of a colour, as if laid over white at `strength` opacity
+ * (0 = white, 1 = the colour itself). Opaque, so it reads the same in print
+ * and fill-contrast checks treat it as the light fill it is.
+ */
+export function tintColor(hexColor: string, strength: number): string {
+  let color = hexColor.replace("#", "");
+  if (color.length === 3) {
+    color = color
+      .split("")
+      .map((c) => c + c)
+      .join("");
+  }
+  const channel = (i: number) => {
+    const c = parseInt(color.substring(i, i + 2), 16);
+    return Math.round(255 + (c - 255) * strength)
+      .toString(16)
+      .padStart(2, "0");
+  };
+  return `#${channel(0)}${channel(2)}${channel(4)}`;
+}
+
+/**
  * A URL as it should read on paper: no scheme, no "www.", no trailing slash.
  * "https://www.linkedin.com/in/jane/" → "linkedin.com/in/jane".
  */

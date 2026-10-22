@@ -76,7 +76,10 @@ export function useMeasuredSections(
       if (!node) return;
 
       const styles = getComputedStyle(el);
-      const trailing = parseFloat(styles.paddingBottom) || 0;
+      // An outlined card keeps its gap to the next section as a margin,
+      // which the box's own height doesn't include.
+      const marginBelow = parseFloat(styles.marginBottom) || 0;
+      const trailing = (parseFloat(styles.paddingBottom) || 0) + marginBelow;
 
       // Fractional heights matter: offsetHeight rounds to whole pixels, and
       // rounding *down* on every item makes the paginator believe more fits
@@ -107,7 +110,10 @@ export function useMeasuredSections(
         !flowStyle ||
         (flowStyle.display !== "grid" && flowStyle.flexDirection === "column");
 
-      const blockHeight = Math.max(0, height(el) - headingHeight - trailing);
+      const blockHeight = Math.max(
+        0,
+        height(el) + marginBelow - headingHeight - trailing,
+      );
 
       const items =
         itemEls.length && stacked
@@ -120,11 +126,20 @@ export function useMeasuredSections(
           : // Summary (no item chrome) and any side-by-side flow.
             [{ height: blockHeight, gap: 0 }];
 
+      // Whatever the block holds beyond its items is the box itself: top
+      // padding and borders. A single-block section already counts it.
+      const itemsHeight = items.reduce(
+        (sum, it) => sum + it.height + it.gap,
+        0,
+      );
+      const frame = Math.max(0, blockHeight - itemsHeight);
+
       next.push({
         id,
         column: effectiveColumn(doc, node),
         order: node.placement.order,
         headingHeight,
+        frame,
         trailing,
         items,
         renderCount: itemEls.length || items.length,

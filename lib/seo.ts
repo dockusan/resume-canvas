@@ -17,7 +17,7 @@ export const SITE = {
   // exist: nothing is uploaded unless the user asks for a link, and even then
   // it is encrypted before it leaves the device.
   description:
-    "Build an ATS-friendly resume in your browser. Live paged preview, PDF export and six templates — free, no sign-up, and nothing uploaded.",
+    "Build an ATS-friendly resume in your browser. Live paged preview, PDF export and fourteen templates — free, no sign-up, and nothing uploaded.",
   repo: "https://github.com/kstmostofa/resume-canvas",
   author: "Md Mostafijur Rahman",
   ogImage: "/og-image.png",
@@ -114,7 +114,7 @@ export function softwareApplicationJsonLd() {
     license: "https://opensource.org/licenses/MIT",
     softwareHelp: `${SITE.url}/templates`,
     featureList: [
-      "Six resume templates",
+      "Fourteen resume templates",
       "Live paged preview that matches the PDF exactly",
       "Drag-and-drop section arrangement",
       "Plain-text export for applicant tracking systems",

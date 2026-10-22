@@ -84,10 +84,19 @@ export function SectionShell({
         )}
         style={{
           ...boxStyle(node.style.container),
-          // The space below a section is the gap to the next one; scale it
-          // with the document's section spacing.
-          paddingBottom:
-            node.style.container.padding.bottom * spacingOf(theme).section,
+          // The space below a section is the gap to the next one — its
+          // margin when it is an outlined card, otherwise its bottom
+          // padding. Either scales with the document's section spacing.
+          ...(node.style.container.margin
+            ? {
+                marginBottom:
+                  node.style.container.margin * spacingOf(theme).section,
+              }
+            : {
+                paddingBottom:
+                  node.style.container.padding.bottom *
+                  spacingOf(theme).section,
+              }),
         }}
         onClick={
           editable
