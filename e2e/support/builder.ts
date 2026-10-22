@@ -136,17 +136,23 @@ export interface PdfContent {
   text: string;
   /** Link annotations (clickable URLs), in page order. */
   links: string[];
+  /** Page sizes in PDF points. */
+  sizes: { width: number; height: number }[];
 }
 
 export async function readPdf(pdf: Buffer): Promise<PdfContent> {
   const doc = await getDocumentProxy(new Uint8Array(pdf));
   const { text: pages } = await extractText(doc, { mergePages: false });
   const links: string[] = [];
+  const sizes: PdfContent["sizes"] = [];
   for (let i = 1; i <= doc.numPages; i++) {
-    const annotations = await (await doc.getPage(i)).getAnnotations();
-    for (const a of annotations) if (a.url) links.push(a.url);
+    const pdfPage = await doc.getPage(i);
+    for (const a of await pdfPage.getAnnotations())
+      if (a.url) links.push(a.url);
+    const { width, height } = pdfPage.getViewport({ scale: 1 });
+    sizes.push({ width: Math.round(width), height: Math.round(height) });
   }
-  return { pages, text: pages.join("\n"), links };
+  return { pages, text: pages.join("\n"), links, sizes };
 }
 
 /**
@@ -223,4 +229,32 @@ export function expectInOrder(haystack: string, needles: string[]) {
   const at = positions(haystack, needles);
   const sorted = [...at].sort((a, b) => a - b);
   expect(at, `expected in order: ${needles.join(" → ")}`).toEqual(sorted);
+}
+
+/** Collapse line wraps and spacing so a sentence can be found whole. */
+export const flat = (text: string) => text.replace(/\s+/g, " ");
+
+/**
+ * Items whose box runs past the bottom (or top) of the page they are on, in
+ * the print layout. Anything outside the page box is cut off in the PDF.
+ */
+export async function overflowingItems(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    document.documentElement.classList.add("rc-printing");
+    const out: string[] = [];
+    document
+      .querySelectorAll<HTMLElement>("[data-main-sheet] [data-page]")
+      .forEach((sheet, index) => {
+        const box = sheet.getBoundingClientRect();
+        sheet
+          .querySelectorAll<HTMLElement>("[data-item-id]")
+          .forEach((item) => {
+            const r = item.getBoundingClientRect();
+            if (r.bottom > box.bottom + 1 || r.top < box.top - 1)
+              out.push(`page ${index + 1}: ${item.dataset.itemId}`);
+          });
+      });
+    document.documentElement.classList.remove("rc-printing");
+    return out;
+  });
 }
