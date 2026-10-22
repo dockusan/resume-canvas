@@ -100,6 +100,7 @@ export function Inspector({
             onClick={() => setTab("document")}
             icon={<FileText className="w-3.5 h-3.5" />}
             label="Document"
+            tour="document-tab"
           />
           <TabButton
             active={tab === "selection"}
@@ -176,15 +177,19 @@ function TabButton({
   onClick,
   icon,
   label,
+  tour,
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
+  /** Lets the first-use tour point at this tab. */
+  tour?: string;
 }) {
   return (
     <button
       type="button"
+      data-tour={tour}
       onClick={onClick}
       className={cn(
         "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[13px]",

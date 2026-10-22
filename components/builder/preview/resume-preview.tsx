@@ -26,6 +26,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { ContentEditor } from "@/components/builder/content/content-editor";
 import { ImportDialog } from "@/components/builder/ai/import-dialog";
+import { Onboarding } from "@/components/builder/onboarding/onboarding";
 import { QuickAddDialog } from "@/components/builder/ai/quick-add-dialog";
 import { ArrangeBoard } from "@/components/builder/arrange/arrange-board";
 import { AtsPrintSheet } from "./ats-print-sheet";
@@ -342,6 +343,7 @@ export function ResumePreview() {
         {/* Inside the editing context so quick add can select what it adds. */}
         <ImportDialog />
         <QuickAddDialog />
+        <Onboarding />
       </EditingProvider>
     </div>
   );

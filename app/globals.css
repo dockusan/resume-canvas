@@ -127,6 +127,29 @@
   }
 }
 
+/* The first-use tour points at one control at a time. Screen only: a tour
+   step left open while printing must not outline anything in the PDF. */
+@media screen {
+  [data-tour-target] {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    border-radius: 4px;
+    animation: rc-tour-pulse 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes rc-tour-pulse {
+  50% {
+    outline-color: color-mix(in oklab, var(--primary) 35%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-tour-target] {
+    animation: none;
+  }
+}
+
 /* While a print is being prepared, measure the document as it will print:
    without editor furniture. See settleLayout(). */
 html.rc-printing [data-measure-layer] [data-editor-only],
