@@ -38,8 +38,23 @@ export async function stubPrint(page: Page) {
   });
 }
 
+const toured = new WeakSet<Page>();
+
+/**
+ * Mark the first-use tour as seen, so it doesn't sit over the page in tests
+ * about something else. The onboarding spec opens the builder without this.
+ */
+export async function skipTour(page: Page) {
+  if (toured.has(page)) return;
+  toured.add(page);
+  await page.addInitScript(() =>
+    localStorage.setItem("rc-onboarding", JSON.stringify("done")),
+  );
+}
+
 /** Open the builder and wait for the first paginated page to render. */
 export async function openBuilder(page: Page, path = "/builder") {
+  await skipTour(page);
   await page.goto(path);
   await waitForPages(page);
 }
