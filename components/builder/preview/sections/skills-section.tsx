@@ -1,5 +1,6 @@
 "use client";
 
+import { ItemSortProvider } from "@/components/builder/dnd/item-sort";
 import { useEditing } from "@/components/builder/inline/editing-context";
 import { fontSizeAt } from "@/lib/schema/document";
 import { useResumeStore } from "@/lib/store/useResumeStore";
@@ -26,29 +27,37 @@ function Body({ itemRange }: { itemRange?: [number, number] }) {
     display: "inline-block" as const,
   };
 
+  const shown = inRange(skills, itemRange);
+
   return (
     <ItemFlow>
-      {inRange(skills, itemRange).map(([skill, index]) => (
-        <Item
-          key={skill.id}
-          sectionKey="skills"
-          itemId={skill.id}
-          index={index}
-          count={skills.length}
-          compact
-        >
-          <Field
-            name="name"
-            as="span"
-            className="font-medium"
-            style={pill}
-            value={skill.name}
-            onCommit={(v) => updateItem("skills", skill.id, { name: v })}
-            placeholder="Skill"
-            path={`skills.${skill.id}.name`}
-          />
-        </Item>
-      ))}
+      <ItemSortProvider
+        sectionKey="skills"
+        ids={shown.map(([skill]) => skill.id)}
+      >
+        {shown.map(([skill, index]) => (
+          <Item
+            key={skill.id}
+            sectionKey="skills"
+            itemId={skill.id}
+            index={index}
+            count={skills.length}
+            compact
+            sortable
+          >
+            <Field
+              name="name"
+              as="span"
+              className="font-medium"
+              style={pill}
+              value={skill.name}
+              onCommit={(v) => updateItem("skills", skill.id, { name: v })}
+              placeholder="Skill"
+              path={`skills.${skill.id}.name`}
+            />
+          </Item>
+        ))}
+      </ItemSortProvider>
       {editable && (
         <button
           type="button"

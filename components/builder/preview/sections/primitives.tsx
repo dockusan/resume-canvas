@@ -88,6 +88,8 @@ export interface ItemProps {
   count: number;
   /** Compact chrome for chip-sized items (skills). */
   compact?: boolean;
+  /** Drag to reorder; must sit inside an `ItemSortProvider`. */
+  sortable?: boolean;
   className?: string;
   style?: CSSProperties;
   children: React.ReactNode;
@@ -103,6 +105,7 @@ export function Item({
   index,
   count,
   compact,
+  sortable,
   className,
   style,
   children,
@@ -145,6 +148,7 @@ export function Item({
       index={index}
       count={count}
       compact={compact}
+      sortable={sortable}
       className={cn("relative", className)}
       style={merged}
     >

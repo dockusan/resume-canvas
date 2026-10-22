@@ -1,5 +1,6 @@
 "use client";
 
+import { useSortableItem } from "@/components/builder/dnd/item-sort";
 import { SectionKey } from "@/lib/store/useResumeStore";
 import { cn } from "@/lib/utils";
 import { useEditing } from "./editing-context";
@@ -11,6 +12,8 @@ interface ItemChromeProps {
   count: number;
   /** Compact items (skill chips) get no extra affordances of their own. */
   compact?: boolean;
+  /** Drag to reorder; must sit inside an `ItemSortProvider`. */
+  sortable?: boolean;
   className?: string;
   style?: React.CSSProperties;
   children: React.ReactNode;
@@ -24,7 +27,18 @@ interface ItemChromeProps {
  * there — and intercepted clicks aimed at those fields. All this does now is
  * mark the item and register the selection.
  */
-export function ItemChrome({
+export function ItemChrome(props: ItemChromeProps) {
+  const { editable } = useEditing();
+  if (editable && props.sortable) return <SortableChrome {...props} />;
+  return <Chrome {...props} />;
+}
+
+function SortableChrome(props: ItemChromeProps) {
+  const drag = useSortableItem(props.itemId, props.index);
+  return <Chrome {...props} drag={drag} />;
+}
+
+function Chrome({
   sectionKey,
   itemId,
   index,
@@ -32,7 +46,8 @@ export function ItemChrome({
   className,
   style,
   children,
-}: ItemChromeProps) {
+  drag,
+}: ItemChromeProps & { drag?: ReturnType<typeof useSortableItem> }) {
   const { editable, activePath, setActivePath } = useEditing();
 
   if (!editable) {
@@ -54,6 +69,8 @@ export function ItemChrome({
 
   return (
     <div
+      ref={drag?.ref}
+      {...drag?.listeners}
       data-item-index={index}
       data-item-id={itemId}
       className={cn(
@@ -64,7 +81,7 @@ export function ItemChrome({
         !compact && "hover:outline hover:outline-1 hover:outline-sky-300/40",
         className,
       )}
-      style={style}
+      style={drag ? { ...style, ...drag.style } : style}
       onClick={(e) => {
         // The item box spans the column, so a click to the right of the text
         // is empty space; let it fall through to the section instead.
