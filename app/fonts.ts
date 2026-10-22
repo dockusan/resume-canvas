@@ -31,9 +31,10 @@ import {
  * Loaded through next/font, so the files are served from this origin. That is
  * what keeps the privacy policy's "no third-party font CDN" claim true.
  *
- * Only Khand is preloaded: it dresses the site chrome and is the default. The
- * rest are fetched on demand, when a document actually asks for one, so
- * offering eighteen faces costs a first-time visitor nothing.
+ * Only Inter and Khand are preloaded: Inter dresses the site chrome and Khand
+ * is the document default. The rest are fetched on demand, when a document
+ * actually asks for one, so offering eighteen faces costs a first-time
+ * visitor nothing.
  *
  * Every call passes a literal object — next/font reads these at build time and
  * rejects a spread, so the repetition is required rather than careless.
@@ -50,7 +51,6 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
-  preload: false,
 });
 const roboto = Roboto({
   subsets: ["latin"],
