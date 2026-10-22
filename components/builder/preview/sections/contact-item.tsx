@@ -1,7 +1,7 @@
 "use client";
 
 import { useEditing } from "@/components/builder/inline/editing-context";
-import { isPersonalFieldVisible } from "@/lib/personal-fields";
+import { contactHref, isPersonalFieldVisible } from "@/lib/personal-fields";
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import { PersonalContactField } from "@/lib/types";
 import { TextSeparator } from "./ats-flow";
@@ -64,10 +64,28 @@ export function ContactItem({
       />
     ) : null;
 
+  // A contact someone can act on is a real link, so the PDF carries a
+  // clickable annotation (Chrome writes one only for an <a href>). While
+  // editing, a click edits the text rather than following it.
+  const href = contactHref(field, value);
+  const linkProps = href
+    ? {
+        href,
+        target: "_blank",
+        rel: "noreferrer",
+        draggable: false,
+        onClick: editable
+          ? (e: React.MouseEvent) => e.preventDefault()
+          : undefined,
+      }
+    : {};
+  const Element = href ? "a" : Tag;
+
   return (
     // An empty contact is only on the page so it can be filled in; its icon
     // and ghost label must not reach the PDF.
-    <Tag
+    <Element
+      {...linkProps}
       className={className}
       style={style}
       data-editor-only={value ? undefined : true}
@@ -76,6 +94,6 @@ export function ContactItem({
       <PersonalField name={field} />
       {iconAfter && glyph}
       {separated && <TextSeparator />}
-    </Tag>
+    </Element>
   );
 }
