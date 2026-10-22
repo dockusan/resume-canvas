@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { CircleAlert, CircleCheck, CircleX } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Group } from "./controls";
+import { RequirementsMatch } from "./requirements-match";
 
 const JD_KEY = "rc-job-description";
 
@@ -172,8 +173,10 @@ export function AtsPanel({ pageCount }: { pageCount: number }) {
         <p className="text-[11px] text-muted-foreground">
           Stays in this browser. Nothing is uploaded.
         </p>
+        {jobText.trim() && <RequirementsMatch jobText={jobText} />}
         {match && (
-          <div className="space-y-3">
+          <div className="space-y-3 border-t pt-3">
+            <div className="text-[12px] font-medium">Keywords</div>
             <ScoreRing
               score={match.score}
               caption={`${match.matched.length} of ${
