@@ -76,7 +76,7 @@ export function PaginatedResume({
   const live = useDocument();
   const doc = docProp ?? live;
   const layerRef = useRef<HTMLDivElement>(null);
-  const { setActivePath } = useEditing();
+  const { editable, setActivePath } = useEditing();
   const { measured, chrome, ready } = useMeasuredSections(layerRef, doc);
 
   const dims = pageDimensions(doc.page);
@@ -115,6 +115,11 @@ export function PaginatedResume({
     }
     return height;
   };
+
+  const pageOverflows = (page: PageModel) =>
+    (["left", "right", "full"] as ColumnKey[]).some((c) =>
+      page.columns[c].slots.some((slot) => slot.overflows),
+    );
 
   const pages: PageModel[] = ready
     ? trimEmptyPages(distribute(measured, { contentHeight: usable, heightFor }))
@@ -223,6 +228,16 @@ export function PaginatedResume({
               </div>
             )}
             {pageWrapper ? pageWrapper(content, index, total) : content}
+            {editable && page && pageOverflows(page) && (
+              <p
+                data-editor-only
+                role="alert"
+                className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 font-sans text-xs text-amber-900 dark:text-amber-200"
+              >
+                An entry on this page is longer than a whole page, so its end is
+                cut off in the PDF. Split it into two entries or shorten it.
+              </p>
+            )}
           </div>
         );
       })}

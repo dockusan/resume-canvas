@@ -54,6 +54,12 @@ export interface Slot {
   /** True when this slot continues a section started on an earlier page. */
   continued: boolean;
   height: number;
+  /**
+   * The slot is taller than its column even on a page of its own — an item
+   * longer than a page. The renderer clips it at the page edge, so whatever
+   * is past that point is missing from the PDF.
+   */
+  overflows?: boolean;
 }
 
 export type ColumnKey = "left" | "right" | "full";
@@ -284,6 +290,7 @@ export function distribute(
       itemEnd: atomic ? section.renderCount : end,
       continued,
       height,
+      ...(col.used + height > capacity + 0.5 ? { overflows: true } : {}),
     });
     col.used += height;
     col.free = Math.max(0, capacity - col.used);
