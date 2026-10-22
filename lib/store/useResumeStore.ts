@@ -1207,6 +1207,33 @@ export function createDetachedStore(
   return store;
 }
 
+/**
+ * The sample resume a new visitor starts from, optionally in another
+ * template. A fresh copy on every call, so a caller can't change the defaults.
+ */
+export function sampleResume(
+  presetId?: string,
+): Pick<ResumeState, "resumeData" | "settings" | "document"> {
+  const settings = structuredClone(initialSettings);
+  const document = documentFromSettings(settings);
+  if (!presetId) {
+    return {
+      resumeData: structuredClone(initialResumeData),
+      settings,
+      document,
+    };
+  }
+  return {
+    resumeData: structuredClone(initialResumeData),
+    settings: { ...settings, template: presetId as never },
+    document: applyPreset(
+      document,
+      presetId,
+      settings.themeColor || document.theme.colors.accent,
+    ),
+  };
+}
+
 const StoreContext = createContext<StoreApi<ResumeState> | null>(null);
 
 /**
