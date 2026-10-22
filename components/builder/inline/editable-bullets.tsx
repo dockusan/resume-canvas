@@ -35,7 +35,8 @@ function BulletLine({ value, autoFocus, onDone, style }: BulletLineProps) {
       contentEditable
       suppressContentEditableWarning
       spellCheck={false}
-      data-placeholder="Bullet point"
+      // A prompt rather than a label: an empty point is where people stall.
+      data-placeholder="What you did, and what changed — with a number"
       className={cn(
         "editable-field flex-1 cursor-text outline-none rounded-[2px] transition-colors",
         "hover:bg-black/5 focus:bg-black/5 focus:ring-1 focus:ring-sky-400/70",

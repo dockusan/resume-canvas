@@ -90,7 +90,8 @@ export const SECTION_FORMS: Record<SectionType, SectionForm> = {
         key: "description",
         label: "What you did",
         type: "bullets",
-        placeholder: "One achievement per line",
+        placeholder:
+          "One achievement per line: what you did, and what changed because of it",
       },
     ],
   },
