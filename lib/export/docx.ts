@@ -31,6 +31,7 @@ import { isFieldVisible } from "@/lib/schema/field-visibility";
 import { reconcileSections } from "@/lib/schema/migrate";
 import { PersonalContactField, ResumeData, ResumeSettings } from "@/lib/types";
 import { shortUrl } from "@/lib/utils";
+import { readingOrder } from "./reading-order";
 
 const FONT = "Calibri";
 /** Half-points, as Word measures font size. */
@@ -299,14 +300,7 @@ export async function toDocxBlob(
 
   // --------------------------------------------------------------- sections
   // Columns flattened to reading order: main column first, then sidebar.
-  const order = { left: 0, full: 0, right: 1 } as const;
-  const sections = reconcileSections(doc, settings)
-    .sections.filter((s) => s.visible)
-    .sort(
-      (a, b) =>
-        order[a.placement.column] - order[b.placement.column] ||
-        a.placement.order - b.placement.order,
-    );
+  const sections = readingOrder(reconcileSections(doc, settings));
 
   const children: Paragraph[] = [...header];
   for (const node of sections) {

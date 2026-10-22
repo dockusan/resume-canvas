@@ -76,8 +76,14 @@ export function SectionShell({
         data-section-id={node.id}
         // An empty section exists only as an "add item" target in the editor.
         data-editor-only={isEmpty ? true : undefined}
+        // Always positioned, not only while editing: items are, and a PDF's
+        // text follows paint order, which draws positioned boxes after
+        // everything else. An unpositioned section would emit every heading
+        // on the page before any of their items — the ATS-safe PDF read as
+        // "Experience, Education, Projects" followed by all the entries.
         className={cn(
-          editable && "relative group/section rounded-[3px]",
+          "relative",
+          editable && "group/section rounded-[3px]",
           editable &&
             selected &&
             "outline outline-1 outline-sky-400/70 outline-offset-4",
