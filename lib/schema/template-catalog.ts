@@ -132,3 +132,7 @@ export const TEMPLATE_CATALOG: TemplateInfo[] = PRESET_IDS.map((id) => {
     ...(NOTES[id] ?? { best: "", detail: preset.description, uses: [] }),
   };
 });
+
+/** Where a template is opened from: the builder, restyled, content kept. */
+export const builderHref = (id: string) =>
+  `/builder?template=${encodeURIComponent(id)}`;

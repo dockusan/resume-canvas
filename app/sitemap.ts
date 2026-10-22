@@ -1,4 +1,5 @@
 import { MetadataRoute } from "next";
+import { TEMPLATE_CATALOG } from "@/lib/schema/template-catalog";
 import { SITE, UPDATED } from "@/lib/seo";
 
 /**
@@ -21,6 +22,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       freq: "monthly",
       lastModified: UPDATED.templates,
     },
+    // One landing page per template.
+    ...TEMPLATE_CATALOG.map((t) => ({
+      path: `/templates/${t.id}`,
+      priority: 0.8,
+      freq: "monthly" as const,
+      lastModified: UPDATED.templates,
+    })),
     {
       path: "/privacy",
       priority: 0.3,
