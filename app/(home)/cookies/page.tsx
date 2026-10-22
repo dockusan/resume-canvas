@@ -4,7 +4,7 @@ import { UPDATED, pageMetadata, updatedLabel } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "Cookie policy",
   description:
-    "Resume Canvas sets no tracking cookies. Only your theme preference and your resume are stored, both locally in your browser.",
+    "Resume Canvas sets no tracking cookies. Your resume and a few preferences are kept in your own browser's local storage, never sent anywhere.",
   path: "/cookies",
 });
 
@@ -20,9 +20,21 @@ export default function CookiesPage() {
         <p>
           {"We use "}
           <strong>local storage</strong>
-          {
-            ", not cookies, and only for two things: the resume you are working on, and whether you chose the light or dark theme. Both stay on your device and are never transmitted."
-          }
+          {", not cookies, and only for:"}
+        </p>
+        <ul>
+          <li>the resume you are working on;</li>
+          <li>whether you chose the light or dark theme;</li>
+          <li>a job description you paste into the ATS tab, if you do;</li>
+          <li>
+            the list of share links you have created, so the share dialog can
+            show when each one expires.
+          </li>
+        </ul>
+        <p>
+          All of it stays on your device and is never transmitted by itself. The
+          resume only leaves when you create a share link or use an AI tool, as
+          the privacy policy explains.
         </p>
       </section>
 
@@ -39,9 +51,10 @@ export default function CookiesPage() {
       <section>
         <h2>Clearing it</h2>
         <p>
-          Clearing site data in your browser removes both the theme preference
-          and your resume. The resume cannot be recovered afterwards, so export
-          a PDF first if you want to keep it.
+          Clearing site data in your browser removes all of the above. The
+          resume cannot be recovered afterwards, so use Export resume file in
+          the builder&rsquo;s menu first if you want to keep it; you can import
+          that file again later.
         </p>
       </section>
     </LegalPage>

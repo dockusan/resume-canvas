@@ -158,9 +158,9 @@ export default function TemplatesPage() {
               Not sure which one to pick?
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Start with Modern and change it later. Switching templates keeps
-              everything you have written — it only replaces the styling — so
-              nothing is lost by trying another.
+              Start with Classic — the builder opens with it — and change it
+              later. Switching templates keeps everything you have written; it
+              only replaces the styling, so nothing is lost by trying another.
             </p>
             <Button asChild variant="outline" className="mt-5">
               <Link href="/builder">Start writing</Link>

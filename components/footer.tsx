@@ -24,7 +24,9 @@ const footerLinks = [
     links: [
       { label: "Source code", href: REPO, external: true },
       { label: "Report an issue", href: `${REPO}/issues`, external: true },
-      { label: "Releases", href: `${REPO}/releases`, external: true },
+      // The repo publishes no releases, so its Releases page is empty; the
+      // commit history is where changes actually show up.
+      { label: "Recent changes", href: `${REPO}/commits/main`, external: true },
       {
         label: "MIT licence",
         href: `${REPO}/blob/main/LICENSE`,
@@ -112,7 +114,8 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
           <p>
-            © {new Date().getFullYear()} Resume Canvas. All rights reserved.
+            © {new Date().getFullYear()} Resume Canvas. Released under the MIT
+            licence.
           </p>
           <p>
             Built with <span className="text-red-500">♥</span> by the Open
