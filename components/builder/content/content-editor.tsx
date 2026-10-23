@@ -26,6 +26,8 @@ import {
 import { useId, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { FieldInput } from "./field-input";
+import { WritingGuide } from "@/components/builder/guidance/writing-guide";
+import { guideKindFor } from "@/lib/guidance/writing";
 
 type Item = { id: string } & Record<string, unknown>;
 
@@ -175,6 +177,10 @@ function PersonalCard({
                 setPersonalInfo({ summary: e.target.value });
             }}
           />
+          <WritingGuide
+            kind="summary"
+            summary={toPlainText(info.summary ?? "")}
+          />
         </div>
       </div>
     </CardShell>
@@ -195,6 +201,7 @@ function SectionCard({
   const renameSection = useResumeStore((s) => s.renameSection);
   const addItem = useResumeStore((s) => s.addItem);
   const headingId = useId();
+  const guideKind = guideKindFor(node.type);
   const aiEnabled = useAiEnabled();
   const openQuickAdd = useAiDialogs((s) => s.openQuickAdd);
   const items = useResumeStore((s) => {
@@ -250,6 +257,12 @@ function SectionCard({
             }}
           />
         </div>
+
+        {guideKind && guideKind !== "summary" && (
+          <div className="rounded-md border border-dashed p-3">
+            <WritingGuide kind={guideKind} />
+          </div>
+        )}
 
         {items.map((item, index) => (
           <ItemRow
