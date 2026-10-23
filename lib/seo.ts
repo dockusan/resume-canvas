@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 
 /**
+ * Where this copy is served from and where its source lives. A fork deployed
+ * elsewhere sets these so its canonical URLs, sitemap and GitHub links point
+ * at itself; left unset they name the upstream project. Read at build time.
+ */
+const env = (value: string | undefined, fallback: string) =>
+  (value?.trim() || fallback).replace(/\/+$/, "");
+
+/**
  * One source of truth for site-wide SEO values.
  *
  * Previously each route repeated the whole metadata object, which is how the
@@ -10,14 +18,17 @@ import type { Metadata } from "next";
  */
 export const SITE = {
   name: "Resume Canvas",
-  url: "https://resumecanvas.site",
+  url: env(process.env.NEXT_PUBLIC_SITE_URL, "https://resumecanvas.site"),
   tagline: "Free, open-source resume builder",
   // Kept under ~155 characters so search results show it whole rather than
   // truncating mid-sentence, and worded to stay true with share links and AI
   // tools: nothing leaves the device as you write, only when you ask.
   description:
     "Build an ATS-friendly resume in your browser. Live paged preview, PDF and Word export, fourteen templates — free, no sign-up, saved on your device.",
-  repo: "https://github.com/kstmostofa/resume-canvas",
+  repo: env(
+    process.env.NEXT_PUBLIC_REPO_URL,
+    "https://github.com/kstmostofa/resume-canvas",
+  ),
   author: "Md Mostafijur Rahman",
   ogImage: "/og-image.png",
 } as const;
@@ -30,9 +41,9 @@ export const SITE = {
  * moment of every crawl, which teaches search engines to ignore the signal.
  */
 export const UPDATED = {
-  home: "2026-10-22",
+  home: "2026-10-23",
   templates: "2026-10-22",
-  privacy: "2026-10-22",
+  privacy: "2026-10-23",
   terms: "2026-07-31",
   cookies: "2026-10-22",
 } as const;
@@ -145,6 +156,20 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
       position: i + 1,
       name: item.name,
       item: `${SITE.url}${item.path}`,
+    })),
+  };
+}
+
+/** A list of pages, in order — the template gallery's entries. */
+export function itemListJsonLd(items: { name: string; path: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      url: `${SITE.url}${item.path}`,
     })),
   };
 }

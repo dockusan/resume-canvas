@@ -1,0 +1,54 @@
+name: Bug report
+description: Something in the builder or an export doesn't work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. **Please don't paste your real resume** — a few lines of made-up content that show the problem are perfect.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: And what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Pick the Banner template
+        2. Add a fourth role
+        3. Download → PDF
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      options:
+        - Editing on the page
+        - Content mode
+        - Templates or styling
+        - Page breaks
+        - PDF export
+        - ATS-safe PDF, Word or plain text export
+        - ATS tab or job matching
+        - AI import or suggestions
+        - Share links
+        - Website (home, templates pages)
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: Chrome 140 on macOS, Safari on iPhone 15…
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots help. A resume file (⋯ → Export resume file) with made-up content reproduces most layout issues exactly.

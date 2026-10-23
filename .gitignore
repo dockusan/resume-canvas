@@ -50,3 +50,6 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# The template above is meant to be committed.
+!.env.example

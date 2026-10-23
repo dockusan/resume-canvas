@@ -3,7 +3,7 @@ import { JsonLd } from "@/components/json-ld";
 import { TemplateGallery } from "@/components/templates/template-gallery";
 import { Button } from "@/components/shared/button";
 import { TEMPLATE_CATALOG } from "@/lib/schema/template-catalog";
-import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
+import { breadcrumbJsonLd, itemListJsonLd, pageMetadata } from "@/lib/seo";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
@@ -22,6 +22,14 @@ export default function TemplatesPage() {
           { name: "Home", path: "" },
           { name: "Templates", path: "/templates" },
         ])}
+      />
+      <JsonLd
+        data={itemListJsonLd(
+          TEMPLATE_CATALOG.map((t) => ({
+            name: `${t.name} resume template`,
+            path: `/templates/${t.id}`,
+          })),
+        )}
       />
       <main className="flex min-h-screen flex-col">
         <div className="container mx-auto px-4 py-20 md:px-6 md:py-28">

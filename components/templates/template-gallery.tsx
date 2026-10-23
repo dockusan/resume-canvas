@@ -6,6 +6,7 @@ import {
   TemplateInfo,
   USE_CASES,
   UseCase,
+  builderHref,
 } from "@/lib/schema/template-catalog";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
@@ -34,10 +35,6 @@ const PHOTOS: { id: Photo; label: string }[] = [
   { id: "with", label: "Room for a photo" },
   { id: "without", label: "No photo" },
 ];
-
-/** Where a template is opened from: the builder, restyled, content kept. */
-export const builderHref = (id: string) =>
-  `/builder?template=${encodeURIComponent(id)}`;
 
 function matches(t: TemplateInfo, f: Filters) {
   return (
@@ -233,7 +230,14 @@ export function TemplateGallery({ templates }: { templates: TemplateInfo[] }) {
                 </Link>
                 <div className="flex flex-1 flex-col p-5">
                   <div className="flex items-baseline justify-between gap-2">
-                    <h2 className="text-base font-semibold">{t.name}</h2>
+                    <h2 className="text-base font-semibold">
+                      <Link
+                        href={`/templates/${t.id}`}
+                        className="underline-offset-4 hover:underline"
+                      >
+                        {t.name}
+                      </Link>
+                    </h2>
                     <span className="text-xs text-muted-foreground">
                       {t.columns === 2 ? "Two columns" : "One column"}
                       {t.photo ? " · photo optional" : " · no photo"}
