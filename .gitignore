@@ -44,5 +44,12 @@ next-env.d.ts
 
 .idea/
 /docs
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # The template above is meant to be committed.
 !.env.example

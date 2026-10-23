@@ -1,14 +1,6 @@
 import type { Metadata } from "next";
 
 /**
- * One source of truth for site-wide SEO values.
- *
- * Previously each route repeated the whole metadata object, which is how the
- * title ended up duplicated ("Open Source Resume Builder | Free Open Source
- * Resume Builder") and how `metadataBase` drifted to a path instead of an
- * origin — that breaks every relative asset URL Next resolves against it.
- */
-/**
  * Where this copy is served from and where its source lives. A fork deployed
  * elsewhere sets these so its canonical URLs, sitemap and GitHub links point
  * at itself; left unset they name the upstream project. Read at build time.
@@ -16,16 +8,23 @@ import type { Metadata } from "next";
 const env = (value: string | undefined, fallback: string) =>
   (value?.trim() || fallback).replace(/\/+$/, "");
 
+/**
+ * One source of truth for site-wide SEO values.
+ *
+ * Previously each route repeated the whole metadata object, which is how the
+ * title ended up duplicated ("Open Source Resume Builder | Free Open Source
+ * Resume Builder") and how `metadataBase` drifted to a path instead of an
+ * origin — that breaks every relative asset URL Next resolves against it.
+ */
 export const SITE = {
   name: "Resume Canvas",
   url: env(process.env.NEXT_PUBLIC_SITE_URL, "https://resumecanvas.site"),
   tagline: "Free, open-source resume builder",
   // Kept under ~155 characters so search results show it whole rather than
-  // truncating mid-sentence, and worded to stay true now that share links
-  // exist: nothing is uploaded unless the user asks for a link, and even then
-  // it is encrypted before it leaves the device.
+  // truncating mid-sentence, and worded to stay true with share links and AI
+  // tools: nothing leaves the device as you write, only when you ask.
   description:
-    "Build an ATS-friendly resume in your browser. Live paged preview, PDF export and fourteen templates — free, no sign-up, and nothing uploaded.",
+    "Build an ATS-friendly resume in your browser. Live paged preview, PDF and Word export, fourteen templates — free, no sign-up, saved on your device.",
   repo: env(
     process.env.NEXT_PUBLIC_REPO_URL,
     "https://github.com/kstmostofa/resume-canvas",
@@ -42,11 +41,11 @@ export const SITE = {
  * moment of every crawl, which teaches search engines to ignore the signal.
  */
 export const UPDATED = {
-  home: "2026-07-31",
+  home: "2026-10-23",
   templates: "2026-10-22",
-  privacy: "2026-10-21",
+  privacy: "2026-10-23",
   terms: "2026-07-31",
-  cookies: "2026-07-30",
+  cookies: "2026-10-22",
 } as const;
 
 /** "2026-07-31" → "31 July 2026", for the last-updated line on legal pages. */
@@ -128,9 +127,10 @@ export function softwareApplicationJsonLd() {
       "Fourteen resume templates",
       "Live paged preview that matches the PDF exactly",
       "Drag-and-drop section arrangement",
-      "Plain-text export for applicant tracking systems",
+      "ATS score and job-description keyword matching",
+      "PDF, ATS-safe PDF, Word and plain-text export",
       "Encrypted share links that expire",
-      "Runs entirely in the browser with no account",
+      "Saved in the browser with no account",
     ],
   };
 }

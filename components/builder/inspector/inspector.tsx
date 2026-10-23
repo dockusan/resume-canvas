@@ -5,6 +5,10 @@ import {
   useEditing,
 } from "@/components/builder/inline/editing-context";
 import { StylePopover } from "@/components/builder/inline/style-toolbar";
+import { WritingGuide } from "@/components/builder/guidance/writing-guide";
+import { guideKindFor } from "@/lib/guidance/writing";
+import { toPlainText } from "@/lib/richtext/runs";
+import { useResumeStore } from "@/lib/store/useResumeStore";
 import { useDocument } from "@/lib/schema/use-document";
 import { cn } from "@/lib/utils";
 import {
@@ -16,6 +20,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { AtsPanel } from "./ats-panel";
+import { Group } from "./controls";
 import { DocumentPanel } from "./document-panel";
 import { HeaderPanel } from "./header-panel";
 import { SectionPanel } from "./section-panel";
@@ -68,6 +73,26 @@ export function Inspector({
 
   const showSelection = tab === "selection" && (node || personal);
 
+  // Writing guidance for the selected section, and the selected entry's own
+  // points when one is selected ("experience.<id>…").
+  const guideKind = node ? guideKindFor(node.type) : null;
+  const itemId =
+    activePath && sectionId && activePath.startsWith(`${sectionId}.`)
+      ? activePath.slice(sectionId.length + 1).split(".")[0]
+      : null;
+  const resumeData = useResumeStore((s) => s.resumeData);
+  const selectedItem = (() => {
+    if (!node || !itemId) return null;
+    const list: { id: string; description?: string }[] =
+      node.type === "custom"
+        ? (resumeData.customSections.find(
+            (c) => c.id === (node.sourceId ?? node.id.replace(/^custom:/, "")),
+          )?.items ?? [])
+        : ((resumeData as unknown as Record<string, typeof list>)[node.type] ??
+          []);
+    return list.find((item) => item.id === itemId) ?? null;
+  })();
+
   return (
     <>
       {/* Below lg the panel is a drawer over the canvas: docking it would
@@ -100,6 +125,7 @@ export function Inspector({
             onClick={() => setTab("document")}
             icon={<FileText className="w-3.5 h-3.5" />}
             label="Document"
+            tour="document-tab"
           />
           <TabButton
             active={tab === "selection"}
@@ -145,6 +171,21 @@ export function Inspector({
                     : `${node.placement.column} column`}
                 </div>
               </div>
+              {guideKind && (
+                <div className="px-3">
+                  <Group title="Writing">
+                    <WritingGuide
+                      kind={guideKind}
+                      description={selectedItem?.description ?? undefined}
+                      summary={
+                        guideKind === "summary"
+                          ? toPlainText(resumeData.personalInfo.summary ?? "")
+                          : undefined
+                      }
+                    />
+                  </Group>
+                </div>
+              )}
               <SectionPanel node={node} />
             </>
           )}
@@ -176,15 +217,19 @@ function TabButton({
   onClick,
   icon,
   label,
+  tour,
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
+  /** Lets the first-use tour point at this tab. */
+  tour?: string;
 }) {
   return (
     <button
       type="button"
+      data-tour={tour}
       onClick={onClick}
       className={cn(
         "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[13px]",

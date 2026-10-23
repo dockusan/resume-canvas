@@ -24,8 +24,8 @@ export default function PrivacyPage() {
         </p>
         <p>
           There are only two ways anything leaves your device, and each happens
-          only when you ask for it: creating a share link, and using the AI
-          import or quick-add tools. Both are described in full below.
+          only when you ask for it: creating a share link, and using one of the
+          AI tools. Both are described in full below.
         </p>
       </section>
 
@@ -36,7 +36,10 @@ export default function PrivacyPage() {
           your own machine. It stays there until you clear it, either with the
           &ldquo;Start over&rdquo; action in the builder or by clearing your
           browser data. Because it is stored per-browser, your resume will not
-          appear on another device or in a private window.
+          appear on another device or in a private window; to move it, export a
+          resume file from the builder&rsquo;s menu and import it there. A job
+          description you paste into the ATS tab is kept the same way and is
+          matched against your resume on your device.
         </p>
       </section>
 
@@ -66,13 +69,18 @@ export default function PrivacyPage() {
       </section>
 
       <section>
-        <h2>AI import and quick add</h2>
+        <h2>AI tools</h2>
         <p>
           Where a deployment has AI enabled, you can import an existing resume
-          (a PDF or text file, or pasted text) and draft entries from a short
-          description. These are the one case where your content is sent
-          unencrypted, because a model has to read it: the text goes to our
-          server and from there to an AI model through{" "}
+          (a PDF or text file, or pasted text), draft entries from a short
+          description, ask for one entry&rsquo;s points to be improved, and ask
+          for edits that match a job description. Each sends only what that tool
+          needs — the resume you import, the words you give quick add, the one
+          entry being improved, or a job&rsquo;s unmet requirements together
+          with your resume&rsquo;s lines. Matching a job description without AI
+          happens entirely in your browser. These are the one case where your
+          content is sent unencrypted, because a model has to read it: the text
+          goes to our server and from there to an AI model through{" "}
           <a className="underline" href="https://openrouter.ai/privacy">
             OpenRouter
           </a>
@@ -100,9 +108,9 @@ export default function PrivacyPage() {
       <section>
         <h2>Exporting</h2>
         <p>
-          PDF export uses your browser&rsquo;s own print engine, and the
-          plain-text export is generated in the page. Neither sends your content
-          anywhere.
+          PDF export, designed or ATS-safe, uses your browser&rsquo;s own print
+          engine; the Word, plain-text and resume-file exports are generated in
+          the page. None of them sends your content anywhere.
         </p>
       </section>
 
@@ -139,7 +147,7 @@ export default function PrivacyPage() {
           </li>
           <li>
             Choose whether to use AI at all — nothing is sent to a model unless
-            you start an import or a quick add.
+            you start an import, a quick add, an improvement or a job match.
           </li>
           <li>
             Inspect exactly what is stored — the code is open source and runs in

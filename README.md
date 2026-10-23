@@ -50,15 +50,21 @@ paywall, no tracking.
 - **Every export format:** PDF exactly as designed, an ATS-safe one-column
   PDF, Word (`.docx`) and plain text, plus a resume file to move between
   browsers.
+- **Writing guidance where you write:** notes on each of your points (weak
+  openers, first person, length, a missing number), the questions that turn a
+  duty into a result, and weak → strong examples for six fields of work.
 - **ATS tools:** a scored checklist (contact details, dates, bullet quality,
-  numbers, headings, layout, length) and matching against a job description
-  you paste in.
+  numbers, headings, layout, length), and job matching: paste a posting and
+  each requirement is marked shown, partly shown or not shown, quoting the
+  line of your resume that shows it.
 - **Optional AI** (when the deployment configures a key): import an existing
   resume from PDF or text, draft entries from a few words, improve an entry's
-  points. Nothing changes until you accept it.
+  points, and suggest edits for a job's requirements that only reword what
+  your resume already says. Nothing changes until you accept it.
 - **Share links** that are encrypted end to end and expire on a schedule you
   choose.
-- Undo/redo, light and dark themes, and Fit to one page.
+- A short first-use tour (start from the sample or a blank page), undo/redo,
+  light and dark themes, and Fit to one page.
 
 ## Run it yourself
 

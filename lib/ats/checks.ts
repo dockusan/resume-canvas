@@ -32,7 +32,7 @@ const plain = (v: string | undefined) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const words = (v: string) => (v.match(/\S+/g) ?? []).length;
+export const words = (v: string) => (v.match(/\S+/g) ?? []).length;
 
 /** Bullet lines of a description, with any typed markers stripped. */
 export function bulletLines(description: string | undefined): string[] {
@@ -45,11 +45,12 @@ export function bulletLines(description: string | undefined): string[] {
 const EMAIL = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 /** Domains reserved for documentation — mail sent there goes nowhere. */
 const PLACEHOLDER_DOMAINS = /@(example\.(com|org|net)|test\.com|domain\.com)$/i;
-const HAS_NUMBER =
+/** Shared with the writing guidance, so tips and the score agree. */
+export const HAS_NUMBER =
   /\d|%|\$|€|£|\b(one|two|three|four|five|six|seven|eight|nine|ten|double|triple|half)\b/i;
-const WEAK_OPENERS =
+export const WEAK_OPENERS =
   /^(responsible for|worked on|helped( with)?|assisted( with)?|involved in|duties included|tasked with|in charge of)\b/i;
-const FIRST_PERSON = /\b(I|me|my|myself)\b/;
+export const FIRST_PERSON = /\b(I|me|my|myself)\b/;
 
 /** Headings parsers recognise, per section type. */
 const STANDARD_HEADINGS: Record<string, RegExp> = {

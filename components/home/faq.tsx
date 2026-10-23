@@ -24,7 +24,22 @@ export const FAQS = [
   {
     question: "Where is my resume stored?",
     answer:
-      "In your own browser. Nothing is uploaded as you write, there is no sign-up and no analytics. The one exception is if you create a share link, and even then the resume is encrypted on your device first — see the next question. The trade-off is that your work lives on one device and one browser, so export a PDF when you have something worth keeping.",
+      "In your own browser. Nothing is uploaded as you write, there is no sign-up and no analytics. Your resume only leaves your device when you ask it to: when you create a share link, which is encrypted on your device first, or when you use an AI tool. Both are explained below. The trade-off is that your work lives in one browser on one device, so use Export resume file in the builder's menu to keep a copy you can import again.",
+  },
+  {
+    question: "How do I move my resume to another browser or device?",
+    answer:
+      "Open the builder's menu and choose Export resume file. That saves everything — content, layout and styling — as one small file. On the other browser, choose Import resume file and pick it. A PDF is for sending to employers; the resume file is the one to keep.",
+  },
+  {
+    question: "Can I start from the resume I already have?",
+    answer:
+      "Yes, where the site has AI tools turned on: upload a PDF, .txt or .md file, or paste the text, and the builder fills itself in. You review what was found before anything changes, then replace your content or add to it, and one undo puts it all back. Without AI, start from the sample and type over it — switching templates later keeps everything you've written.",
+  },
+  {
+    question: "What do the AI tools send, and where?",
+    answer:
+      "Only what you hand them, only when you click: the resume you import, the few words you give quick add, the one entry you ask to improve, or — when you ask for edits that match a job — that job's requirements and your resume's lines. That text goes to our server and on to an AI model through OpenRouter, and our server keeps no copy. Nothing in your resume changes until you accept the result. They are optional — if a site has them turned off, or you'd rather not use them, everything else works the same. Each address can make 30 AI requests an hour.",
   },
   {
     question: "Can I share my resume with a link?",
@@ -34,7 +49,7 @@ export const FAQS = [
   {
     question: "Will the PDF look exactly like the preview?",
     answer:
-      "Yes. The preview renders real page boxes and the PDF is produced by printing those same pages with your browser's own engine, so there is no second renderer that could disagree with what you see.",
+      "Yes. The preview renders real page boxes and the PDF is produced by printing those same pages with your browser's own engine, so there is no second renderer that could disagree with what you see. Links in the PDF stay clickable.",
   },
   {
     question: "Is the output ATS-friendly?",
@@ -49,7 +64,7 @@ export const FAQS = [
   {
     question: "How many pages can my resume be?",
     answer:
-      "As many as you need. The builder shows real page breaks as you type, tells you the page count, and lets you force a section onto a new page or keep it from splitting.",
+      "As many as you need. The builder shows real page breaks as you type, tells you the page count, and lets you force a section onto a new page or keep it from splitting. Running a little long? Fit to 1 page (or 2) tightens spacing, then line height, then text size only if it must, and one undo reverts it.",
   },
   {
     question: "Do I need to install anything?",
