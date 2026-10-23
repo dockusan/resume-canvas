@@ -17,8 +17,10 @@ import { resumeStore, useResumeStore } from "@/lib/store/useResumeStore";
 import { cn } from "@/lib/utils";
 import { downloadBackup, importBackup } from "@/lib/export/backup";
 import { useAiDialogs, useAiEnabled } from "@/lib/ai/client";
+import { useTour } from "@/components/builder/onboarding/onboarding";
 import {
   ChevronDown,
+  Compass,
   Download,
   FileDown,
   FileJson,
@@ -274,6 +276,7 @@ export function BuilderToolbar({
             size="sm"
             className="h-8 lg:hidden"
             title="Design and sections"
+            data-tour="design-panel"
             onClick={onOpenPanel}
           >
             <SlidersHorizontal className="h-3.5 w-3.5" />
@@ -321,6 +324,9 @@ export function BuilderToolbar({
                 <Moon className="h-3.5 w-3.5" />
               )}
               {theme === "dark" ? "Light appearance" : "Dark appearance"}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => useTour.getState().start(0)}>
+              <Compass className="h-3.5 w-3.5" /> Show the quick tour
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onPrint}>
               <Printer className="h-3.5 w-3.5" /> Print
@@ -371,6 +377,7 @@ export function BuilderToolbar({
               size="sm"
               className="h-8"
               title="Download"
+              data-tour="download"
               disabled={isDownloading}
             >
               <Download className="h-3.5 w-3.5 lg:mr-1" />

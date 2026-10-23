@@ -126,6 +126,11 @@ export interface ResumeState {
   ) => void;
 
   resetResume: () => void;
+  /**
+   * Empties the content — header, summary and every section's items — while
+   * keeping the sections, layout and styling. One undo brings it back.
+   */
+  startBlank: () => void;
 }
 
 type DeepPartial<T> = {
@@ -1119,6 +1124,21 @@ const createResumeState: StateCreator<ResumeState, [], []> = (set, get) => ({
       settings: { ...state.settings, template: presetId as never },
     })),
 
+  startBlank: () =>
+    set({
+      resumeData: {
+        personalInfo: { ...EMPTY_PERSONAL_INFO },
+        experience: [],
+        education: [],
+        projects: [],
+        skills: [],
+        languages: [],
+        certifications: [],
+        strengths: [],
+        socials: [],
+        customSections: [],
+      },
+    }),
   resetResume: () =>
     set({
       resumeData: initialResumeData,
@@ -1290,8 +1310,26 @@ let persisted: PersistedResumeStore | null = null;
  * than merely intended.
  */
 export function resumeStore(): PersistedResumeStore {
-  return (persisted ??= createPersistedStore());
+  if (!persisted) {
+    // Read before the store exists: hydrating writes the key straight back,
+    // after which a first visit looks like any other.
+    try {
+      hadSave = localStorage.getItem(STORAGE_KEY) !== null;
+    } catch {
+      hadSave = true; // Storage unavailable: don't assume a newcomer.
+    }
+    persisted = createPersistedStore();
+  }
+  return persisted;
 }
+
+let hadSave = true;
+
+/** True when this browser had no saved resume before the builder opened. */
+export const isFirstVisit = () => {
+  resumeStore();
+  return !hadSave;
+};
 
 /**
  * A store that holds a resume but is wired to nothing: no localStorage, no
