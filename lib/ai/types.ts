@@ -114,3 +114,24 @@ export interface Rewrite {
   /** Short questions about what would make the points stronger. */
   notes: string[];
 }
+
+/** Requirements a resume doesn't fully show, and the lines it does have. */
+export interface MatchRequest {
+  requirements: { id: string; text: string }[];
+  /** Resume lines; only those marked editable can be rewritten. */
+  evidence: { id: string; where: string; text: string; editable: boolean }[];
+}
+
+/**
+ * Either a rewrite of one existing line that brings out a requirement it
+ * already supports, or — when nothing in the resume does — a question.
+ */
+export interface MatchSuggestion {
+  requirementId: string;
+  /** The line to replace; empty for a question. */
+  evidenceId: string;
+  revised: string;
+  /** Why the line supports the requirement, in a sentence. */
+  why: string;
+  question: string;
+}

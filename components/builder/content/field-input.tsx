@@ -14,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { normalizeUrl, toPlainText } from "@/lib/richtext/runs";
 import { FormField } from "@/lib/schema/form-fields";
 import { cn } from "@/lib/utils";
+import { useId, useState } from "react";
+import { BulletReview } from "@/components/builder/guidance/writing-guide";
 
 type Item = Record<string, unknown>;
 
@@ -42,8 +44,17 @@ export function FieldInput({
     onChange({ [field.key]: next });
   };
 
+  // Ties the label to its control, so it names the field for screen readers
+  // and a click on it focuses the input.
+  const id = useId();
+  // What's in the box right now, so suggestions follow the typing rather than
+  // waiting for the field to be left.
+  const [draft, setDraft] = useState(value);
   const label = (
-    <label className="text-[11px] font-medium text-muted-foreground">
+    <label
+      htmlFor={id}
+      className="text-[11px] font-medium text-muted-foreground"
+    >
       {field.label}
     </label>
   );
@@ -103,7 +114,7 @@ export function FieldInput({
           value={(item[field.key] as string) ?? ""}
           onValueChange={(v) => onChange({ [field.key]: v })}
         >
-          <SelectTrigger className="h-9 w-full" size="sm">
+          <SelectTrigger id={id} className="h-9 w-full" size="sm">
             <SelectValue placeholder={field.label} />
           </SelectTrigger>
           <SelectContent>
@@ -123,6 +134,7 @@ export function FieldInput({
       <div className="space-y-1.5">
         {label}
         <Textarea
+          id={id}
           defaultValue={value}
           rows={field.type === "bullets" ? 5 : 3}
           placeholder={
@@ -130,12 +142,19 @@ export function FieldInput({
             (field.type === "bullets" ? "One point per line" : undefined)
           }
           onBlur={(e) => commit(e.target.value)}
+          onChange={(e) => setDraft(e.target.value)}
           className="text-sm"
         />
         {field.type === "bullets" && (
-          <p className="text-[10px] text-muted-foreground">
-            Each line becomes its own bullet.
-          </p>
+          <>
+            <p className="text-[10px] text-muted-foreground">
+              Each line becomes its own bullet.
+            </p>
+            <BulletReview
+              description={draft}
+              className="rounded-md bg-amber-500/5 px-2 py-1.5"
+            />
+          </>
         )}
       </div>
     );
@@ -145,6 +164,7 @@ export function FieldInput({
     <div className={cn("space-y-1.5")}>
       {label}
       <Input
+        id={id}
         defaultValue={value}
         placeholder={field.placeholder}
         inputMode={field.type === "url" ? "url" : undefined}

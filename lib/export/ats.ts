@@ -13,6 +13,7 @@ import { ResumeDocument, SectionNode } from "@/lib/schema/document";
 import { isFieldVisible } from "@/lib/schema/field-visibility";
 import { PersonalContactField, ResumeData } from "@/lib/types";
 import { isPersonalFieldVisible } from "@/lib/personal-fields";
+import { readingOrder } from "./reading-order";
 
 const clean = (value: unknown): string =>
   typeof value === "string"
@@ -213,17 +214,7 @@ export function toAtsText(
   if (contacts.length) lines.push(contacts.join(" | "));
   lines.push("");
 
-  // Columns are flattened to reading order: left column first, then right.
-  const order = { left: 0, full: 0, right: 1 } as const;
-  const sections = doc.sections
-    .filter((s) => s.visible)
-    .sort(
-      (a, b) =>
-        order[a.placement.column] - order[b.placement.column] ||
-        a.placement.order - b.placement.order,
-    );
-
-  for (const node of sections) {
+  for (const node of readingOrder(doc)) {
     const body = sectionBody(node, data).map((l) => l.trimEnd());
     if (!body.some((l) => l.length > 0)) continue;
     lines.push(clean(node.title).toUpperCase());

@@ -97,15 +97,15 @@ const SHORT_TERMS = new Set([
 
 const TOKEN = /[a-z0-9][a-z0-9+#./-]*[a-z0-9+#]|[a-z0-9]/g;
 
-function tokens(text: string): string[] {
+export function tokens(text: string): string[] {
   return (text.toLowerCase().match(TOKEN) ?? []).map((t) =>
     t.replace(/[.]+$/, ""),
   );
 }
 
-const canon = (term: string) => ALIASES[term] ?? term;
+export const canon = (term: string) => ALIASES[term] ?? term;
 
-const usable = (t: string) =>
+export const usable = (t: string) =>
   !STOPWORDS.has(t) && !/^\d+$/.test(t) && (t.length > 2 || SHORT_TERMS.has(t));
 
 /** The terms a job description emphasises, most important first. */

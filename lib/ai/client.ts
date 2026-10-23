@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { create } from "zustand";
+import { keepsToEvidence } from "./evidence";
 import {
   ImportedResume,
+  MatchRequest,
+  MatchSuggestion,
   QuickAddDraft,
   QuickAddSection,
   Rewrite,
@@ -90,6 +93,28 @@ export async function rewriteItem(request: RewriteRequest): Promise<Rewrite> {
     true,
   );
   return rewrite;
+}
+
+/**
+ * Evidence-based edits for a job's unmet requirements. Suggestions that add a
+ * number the original line lacks are dropped here too, whatever the server
+ * returned.
+ */
+export async function suggestMatches(
+  request: MatchRequest,
+): Promise<MatchSuggestion[]> {
+  const { suggestions } = await post<{ suggestions: MatchSuggestion[] }>(
+    "/api/ai/match",
+    JSON.stringify(request),
+    true,
+  );
+  const lines = new Map(request.evidence.map((e) => [e.id, e.text]));
+  return suggestions.filter(
+    (s) =>
+      !s.revised ||
+      (lines.has(s.evidenceId) &&
+        keepsToEvidence(lines.get(s.evidenceId)!, s.revised)),
+  );
 }
 
 /**

@@ -17,8 +17,10 @@ import { resumeStore, useResumeStore } from "@/lib/store/useResumeStore";
 import { cn } from "@/lib/utils";
 import { downloadBackup, importBackup } from "@/lib/export/backup";
 import { useAiDialogs, useAiEnabled } from "@/lib/ai/client";
+import { useTour } from "@/components/builder/onboarding/onboarding";
 import {
   ChevronDown,
+  Compass,
   Download,
   FileDown,
   FileJson,
@@ -105,6 +107,16 @@ export function BuilderToolbar({
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      // The browser's own shortcut would print the sheet as it stands, with
+      // page breaks that still leave room for editor-only furniture; route
+      // it through the same preparation as the Print menu item.
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        // Commit a field still being typed in, as clicking the menu would.
+        (document.activeElement as HTMLElement | null)?.blur();
+        onPrint();
+        return;
+      }
       const target = e.target as HTMLElement | null;
       // Let the browser handle undo inside text editors; ours applies after commit.
       if (
@@ -122,7 +134,7 @@ export function BuilderToolbar({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [undo, redo]);
+  }, [undo, redo, onPrint]);
 
   return (
     <div
@@ -264,6 +276,7 @@ export function BuilderToolbar({
             size="sm"
             className="h-8 lg:hidden"
             title="Design and sections"
+            data-tour="design-panel"
             onClick={onOpenPanel}
           >
             <SlidersHorizontal className="h-3.5 w-3.5" />
@@ -311,6 +324,9 @@ export function BuilderToolbar({
                 <Moon className="h-3.5 w-3.5" />
               )}
               {theme === "dark" ? "Light appearance" : "Dark appearance"}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => useTour.getState().start(0)}>
+              <Compass className="h-3.5 w-3.5" /> Show the quick tour
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onPrint}>
               <Printer className="h-3.5 w-3.5" /> Print
@@ -361,6 +377,7 @@ export function BuilderToolbar({
               size="sm"
               className="h-8"
               title="Download"
+              data-tour="download"
               disabled={isDownloading}
             >
               <Download className="h-3.5 w-3.5 lg:mr-1" />
