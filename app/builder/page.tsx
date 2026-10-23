@@ -1,11 +1,32 @@
 "use client";
 
 import { ResumePreview } from "@/components/builder/preview/resume-preview";
-import { useResumeStore } from "@/lib/store/useResumeStore";
+import { PRESET_IDS } from "@/lib/schema/presets";
+import { resumeStore, useResumeStore } from "@/lib/store/useResumeStore";
 import { FileText } from "lucide-react";
+import { useEffect } from "react";
+
+/**
+ * `/builder?template=banner` — the "Use this template" links. Applies the
+ * template like picking it in the Document tab (content kept, one undo puts
+ * the old styling back), then drops the parameter so a reload doesn't
+ * re-apply it over later changes.
+ */
+function useTemplateFromUrl(ready: boolean) {
+  useEffect(() => {
+    if (!ready) return;
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("template");
+    if (!id) return;
+    if (PRESET_IDS.includes(id)) resumeStore().getState().setPreset(id);
+    url.searchParams.delete("template");
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+  }, [ready]);
+}
 
 export default function BuilderPage() {
   const hasHydrated = useResumeStore((s) => s._hasHydrated);
+  useTemplateFromUrl(hasHydrated);
 
   if (!hasHydrated) {
     return (
