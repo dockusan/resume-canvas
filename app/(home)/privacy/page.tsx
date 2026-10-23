@@ -73,12 +73,14 @@ export default function PrivacyPage() {
         <p>
           Where a deployment has AI enabled, you can import an existing resume
           (a PDF or text file, or pasted text), draft entries from a short
-          description, and ask for one entry&rsquo;s points to be improved. Each
-          sends only what that tool needs — the resume you import, the words you
-          give quick add, or the one entry being improved. These are the one
-          case where your content is sent unencrypted, because a model has to
-          read it: the text goes to our server and from there to an AI model
-          through{" "}
+          description, ask for one entry&rsquo;s points to be improved, and ask
+          for edits that match a job description. Each sends only what that tool
+          needs — the resume you import, the words you give quick add, the one
+          entry being improved, or a job&rsquo;s unmet requirements together
+          with your resume&rsquo;s lines. Matching a job description without AI
+          happens entirely in your browser. These are the one case where your
+          content is sent unencrypted, because a model has to read it: the text
+          goes to our server and from there to an AI model through{" "}
           <a className="underline" href="https://openrouter.ai/privacy">
             OpenRouter
           </a>
@@ -145,7 +147,7 @@ export default function PrivacyPage() {
           </li>
           <li>
             Choose whether to use AI at all — nothing is sent to a model unless
-            you start an import, a quick add or an improvement.
+            you start an import, a quick add, an improvement or a job match.
           </li>
           <li>
             Inspect exactly what is stored — the code is open source and runs in

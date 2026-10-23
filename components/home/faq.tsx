@@ -39,7 +39,7 @@ export const FAQS = [
   {
     question: "What do the AI tools send, and where?",
     answer:
-      "Only what you hand them, only when you click: the resume you import, the few words you give quick add, or the one entry you ask to improve. That text goes to our server and on to an AI model through OpenRouter, and our server keeps no copy. Nothing in your resume changes until you accept the result. They are optional — if a site has them turned off, or you'd rather not use them, everything else works the same. Each address can make 30 AI requests an hour.",
+      "Only what you hand them, only when you click: the resume you import, the few words you give quick add, the one entry you ask to improve, or — when you ask for edits that match a job — that job's requirements and your resume's lines. That text goes to our server and on to an AI model through OpenRouter, and our server keeps no copy. Nothing in your resume changes until you accept the result. They are optional — if a site has them turned off, or you'd rather not use them, everything else works the same. Each address can make 30 AI requests an hour.",
   },
   {
     question: "Can I share my resume with a link?",
