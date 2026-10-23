@@ -28,6 +28,10 @@ import { Switch } from "@/components/ui/switch";
 import { FieldInput } from "./field-input";
 import { WritingGuide } from "@/components/builder/guidance/writing-guide";
 import { guideKindFor } from "@/lib/guidance/writing";
+import {
+  SortableList,
+  useSortableRow,
+} from "@/components/builder/dnd/sortable-list";
 
 type Item = { id: string } & Record<string, unknown>;
 
@@ -200,6 +204,7 @@ function SectionCard({
   const toggleVisibility = useResumeStore((s) => s.toggleSectionVisibility);
   const renameSection = useResumeStore((s) => s.renameSection);
   const addItem = useResumeStore((s) => s.addItem);
+  const reorderItem = useResumeStore((s) => s.reorderItem);
   const headingId = useId();
   const guideKind = guideKindFor(node.type);
   const aiEnabled = useAiEnabled();
@@ -264,16 +269,23 @@ function SectionCard({
           </div>
         )}
 
-        {items.map((item, index) => (
-          <ItemRow
-            key={item.id}
-            sectionKey={sectionKey}
-            item={item}
-            index={index}
-            count={items.length}
-            form={form}
-          />
-        ))}
+        <SortableList
+          ids={items.map((item) => item.id)}
+          onMove={(from, to) => reorderItem(sectionKey, from, to)}
+        >
+          <div className="space-y-3">
+            {items.map((item, index) => (
+              <ItemRow
+                key={item.id}
+                sectionKey={sectionKey}
+                item={item}
+                index={index}
+                count={items.length}
+                form={form}
+              />
+            ))}
+          </div>
+        </SortableList>
 
         <div className="flex gap-2">
           <Button
@@ -318,6 +330,9 @@ function ItemRow({
   const duplicateItem = useResumeStore((s) => s.duplicateItem);
   const reorderItem = useResumeStore((s) => s.reorderItem);
   const [open, setOpen] = useState(false);
+  const { setNodeRef, style, isDragging, handleProps } = useSortableRow(
+    item.id,
+  );
 
   const title = toPlainText((item[form.titleKey] as string) ?? "");
   const subtitle = form.subtitleKey
@@ -325,14 +340,32 @@ function ItemRow({
     : "";
 
   return (
-    <div className="rounded-md border bg-background">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "rounded-md border bg-background",
+        isDragging && "shadow-lg ring-1 ring-primary/40",
+      )}
+    >
       <div className="flex items-center gap-1 px-2 py-2">
+        <button
+          type="button"
+          {...handleProps}
+          aria-label={`Drag to reorder ${title || "item"}`}
+          title="Drag to reorder"
+          className={cn(
+            "flex h-7 w-5 shrink-0 touch-none items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground",
+            isDragging ? "cursor-grabbing" : "cursor-grab",
+          )}
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </button>
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           className="flex flex-1 items-center gap-2 min-w-0 text-left"
         >
-          <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
           <span className="min-w-0">
             <span className="block truncate text-sm">
               {title || <span className="text-muted-foreground">Untitled</span>}
