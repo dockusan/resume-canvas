@@ -76,18 +76,24 @@ export function useMeasuredSections(
       if (!node) return;
 
       const styles = getComputedStyle(el);
+      // A section that isn't rendered (an empty one while printing) takes no
+      // room. Its computed padding and its heading's margins still read as
+      // non-zero, and charging them used to push the page break early or
+      // open a blank page at the end of the PDF.
+      const rendered = el.getClientRects().length > 0;
       // An outlined card keeps its gap to the next section as a margin,
       // which the box's own height doesn't include.
-      const marginBelow = parseFloat(styles.marginBottom) || 0;
-      const trailing = (parseFloat(styles.paddingBottom) || 0) + marginBelow;
+      const marginBelow = rendered ? parseFloat(styles.marginBottom) || 0 : 0;
+      const trailing = rendered
+        ? (parseFloat(styles.paddingBottom) || 0) + marginBelow
+        : 0;
 
       // Fractional heights matter: offsetHeight rounds to whole pixels, and
       // rounding *down* on every item makes the paginator believe more fits
       // than really does, which shows up as a clipped last line.
       const headingEl = el.querySelector<HTMLElement>("[data-section-heading]");
-      const headingHeight = headingEl
-        ? height(headingEl) + margins(headingEl)
-        : 0;
+      const headingHeight =
+        headingEl && rendered ? height(headingEl) + margins(headingEl) : 0;
 
       const itemEls = Array.from(
         el.querySelectorAll<HTMLElement>("[data-item-index]"),
@@ -119,8 +125,11 @@ export function useMeasuredSections(
         itemEls.length && stacked
           ? itemEls.map((item, i) => ({
               // Line separators put their spacing in marginTop, so both
-              // margins count or each divided item is under-measured.
-              height: height(item) + margins(item),
+              // margins count or each divided item is under-measured. A
+              // hidden item contributes nothing, margins included.
+              height: item.getClientRects().length
+                ? height(item) + margins(item)
+                : 0,
               gap: i < itemEls.length - 1 ? gap : 0,
             }))
           : // Summary (no item chrome) and any side-by-side flow.
