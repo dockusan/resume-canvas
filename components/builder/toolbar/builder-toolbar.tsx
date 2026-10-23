@@ -105,6 +105,16 @@ export function BuilderToolbar({
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      // The browser's own shortcut would print the sheet as it stands, with
+      // page breaks that still leave room for editor-only furniture; route
+      // it through the same preparation as the Print menu item.
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        // Commit a field still being typed in, as clicking the menu would.
+        (document.activeElement as HTMLElement | null)?.blur();
+        onPrint();
+        return;
+      }
       const target = e.target as HTMLElement | null;
       // Let the browser handle undo inside text editors; ours applies after commit.
       if (
@@ -122,7 +132,7 @@ export function BuilderToolbar({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [undo, redo]);
+  }, [undo, redo, onPrint]);
 
   return (
     <div

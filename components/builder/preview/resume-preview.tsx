@@ -1,6 +1,10 @@
 "use client";
 
-import { endPrintLayout, settleLayout } from "@/lib/pagination/use-measure";
+import {
+  endPrintLayout,
+  printDocument,
+  settleLayout,
+} from "@/lib/pagination/use-measure";
 import { normalizeFontFamily } from "@/lib/schema/style-presets";
 import { PAGE_DIMENSIONS } from "@/lib/schema/document";
 import {
@@ -134,6 +138,34 @@ export function ResumePreview() {
     return () => observer.disconnect();
   }, [paperPxWidth]);
 
+  // Fields write to the store on blur, so an edit in progress lives only in
+  // the DOM. Leaving the page — a reload, closing the tab, a phone putting
+  // the tab in the background — must not throw it away: blurring the field
+  // commits it, and the store persists to localStorage synchronously.
+  useEffect(() => {
+    const flush = () => {
+      const el = document.activeElement;
+      if (
+        el instanceof HTMLElement &&
+        (el.isContentEditable ||
+          el.tagName === "INPUT" ||
+          el.tagName === "TEXTAREA")
+      )
+        el.blur();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    window.addEventListener("pagehide", flush);
+    window.addEventListener("beforeunload", flush);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      window.removeEventListener("beforeunload", flush);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
+
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
@@ -151,7 +183,7 @@ export function ResumePreview() {
    */
   const handlePrint = async () => {
     await settleLayout();
-    window.print();
+    await printDocument();
     endPrintLayout();
   };
 
@@ -182,7 +214,7 @@ export function ResumePreview() {
     const previous = document.title;
     document.title = `${resumeData.personalInfo.fullName.replace(/\s+/g, "_")}_Resume`;
     await settleLayout();
-    window.print();
+    await printDocument();
     endPrintLayout();
     document.title = previous;
   };
@@ -201,7 +233,7 @@ export function ResumePreview() {
     // Let the off-screen sheet mount and paginate before settling.
     await new Promise((resolve) => setTimeout(resolve, 250));
     await settleLayout();
-    window.print();
+    await printDocument();
     endPrintLayout();
     document.documentElement.classList.remove("rc-print-ats");
     setAtsPrint(false);

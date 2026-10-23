@@ -132,6 +132,71 @@ type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> | T[K] : T[K];
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+/**
+ * `value` with every field of `shape` present and of the right type. Missing
+ * text becomes blank rather than the shape's placeholder, so repairing a save
+ * never writes "New Position" into someone's resume.
+ */
+function withShape(
+  value: Record<string, unknown>,
+  shape: Record<string, unknown>,
+): Record<string, unknown> {
+  const out = { ...value };
+  for (const [key, base] of Object.entries(shape)) {
+    if (typeof out[key] !== typeof base)
+      out[key] = typeof base === "string" ? "" : base;
+  }
+  return out;
+}
+
+const saneItems = (value: unknown, shape: Record<string, unknown>) =>
+  Array.isArray(value)
+    ? value
+        .filter(isRecord)
+        .map((item) =>
+          withShape(
+            { ...item, id: typeof item.id === "string" ? item.id : uuidv4() },
+            shape,
+          ),
+        )
+    : [];
+
+/**
+ * Persisted content repaired to the shape the editor renders. A save that
+ * parses but isn't that shape — a hand-edited or foreign backup file — would
+ * otherwise take the whole page down on the first render that reads it.
+ */
+function saneResumeData(persisted: unknown, fallback: ResumeData): ResumeData {
+  if (!isRecord(persisted)) return fallback;
+  // A key the save never had (one added in a later version) takes its
+  // default, as zustand's own merge would; one it has in the wrong shape is
+  // emptied rather than swapped for the sample's content.
+  const out: Record<string, unknown> = { ...fallback, ...persisted };
+  if ("personalInfo" in persisted)
+    out.personalInfo = withShape(
+      isRecord(persisted.personalInfo) ? persisted.personalInfo : {},
+      { ...EMPTY_PERSONAL_INFO },
+    );
+  for (const key of Object.keys(DEFAULT_ITEMS) as BuiltinSectionKey[]) {
+    if (key in persisted)
+      out[key] = saneItems(persisted[key], DEFAULT_ITEMS[key]);
+  }
+  if ("customSections" in persisted)
+    out.customSections = Array.isArray(persisted.customSections)
+      ? persisted.customSections
+          .filter(isRecord)
+          .filter((c) => typeof c.id === "string")
+          .map((c) => ({
+            ...c,
+            items: saneItems(c.items, DEFAULT_CUSTOM_ITEM),
+          }))
+      : [];
+  return out as unknown as ResumeData;
+}
+
 /** Merge nested plain objects; arrays and non-objects replace wholesale. */
 function deepMerge<T>(base: T, patch: unknown): T {
   if (
@@ -209,6 +274,19 @@ const DEFAULT_CUSTOM_ITEM: Omit<CustomSectionItem, "id"> = {
   subtitle: "",
   date: "",
   description: "",
+};
+
+const EMPTY_PERSONAL_INFO: PersonalInfo = {
+  fullName: "",
+  title: "",
+  email: "",
+  phone: "",
+  location: "",
+  website: "",
+  linkedin: "",
+  github: "",
+  twitter: "",
+  summary: "",
 };
 
 const initialResumeData: ResumeData = {
@@ -381,6 +459,8 @@ const initialSettings: ResumeSettings = {
 /** Version of the persisted `resume-storage` shape (see `migrate`). */
 export const PERSIST_VERSION = 4;
 export const STORAGE_KEY = "resume-storage";
+/** Where a save that could not be read is kept, rather than overwritten. */
+export const UNREADABLE_KEY = "resume-storage-unreadable";
 
 export const isCustomSectionId = (id: string): id is `custom:${string}` =>
   id.startsWith("custom:");
@@ -1145,11 +1225,14 @@ function createPersistedStore() {
                 document?: ResumeDocument;
               }
             | undefined;
-          const settings = { ...current.settings, ...state?.settings };
+          const settings = {
+            ...current.settings,
+            ...(isRecord(state?.settings) ? state.settings : {}),
+          };
           // A document persisted before a schema field was added is filled in
           // from the preset it was seeded from, so new keys are never undefined.
           settings.fontFamily = normalizeFontFamily(settings.fontFamily);
-          const document = state?.document
+          const document = isRecord(state?.document)
             ? deepMerge(documentFromSettings(settings), state.document)
             : documentFromSettings(settings);
           for (const role of ["heading", "body"] as const) {
@@ -1159,13 +1242,28 @@ function createPersistedStore() {
           return {
             ...current,
             ...(state ?? {}),
-            resumeData: { ...current.resumeData, ...state?.resumeData },
+            resumeData: saneResumeData(state?.resumeData, current.resumeData),
             settings,
             document,
           };
         },
-        onRehydrateStorage: () => (state) => {
-          state?.setHasHydrated(true);
+        onRehydrateStorage: () => (state, error) => {
+          if (error || !state) {
+            // The save could not be read (not JSON, or a migration threw).
+            // Open the editor anyway — on the sample — rather than spinning
+            // on "Loading" forever, but set the unreadable value aside first:
+            // the next edit overwrites the key, and it may still be repairable.
+            console.error("Could not restore the saved resume", error);
+            try {
+              const raw = localStorage.getItem(STORAGE_KEY);
+              if (raw) localStorage.setItem(UNREADABLE_KEY, raw);
+            } catch {
+              // Storage unavailable; nothing to keep.
+            }
+            setTimeout(() => resumeStore().getState().setHasHydrated(true), 0);
+            return;
+          }
+          state.setHasHydrated(true);
           // Clear undo history so users can't undo past the loaded state.
           // Deferred: the store variable isn't initialized yet when
           // hydration runs synchronously from localStorage.

@@ -23,7 +23,7 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { FieldInput } from "./field-input";
 
@@ -123,6 +123,7 @@ function PersonalCard({
   const info = useResumeStore((s) => s.resumeData.personalInfo);
   const setPersonalInfo = useResumeStore((s) => s.setPersonalInfo);
   const aiEnabled = useAiEnabled();
+  const summaryId = useId();
   const openQuickAdd = useAiDialogs((s) => s.openQuickAdd);
 
   return (
@@ -147,7 +148,10 @@ function PersonalCard({
         ))}
         <div className="sm:col-span-2 space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-[11px] font-medium text-muted-foreground">
+            <label
+              htmlFor={summaryId}
+              className="text-[11px] font-medium text-muted-foreground"
+            >
               Professional summary
             </label>
             {aiEnabled && (
@@ -161,6 +165,7 @@ function PersonalCard({
             )}
           </div>
           <Textarea
+            id={summaryId}
             key={info.summary}
             defaultValue={toPlainText(info.summary ?? "")}
             rows={4}
@@ -189,6 +194,7 @@ function SectionCard({
   const toggleVisibility = useResumeStore((s) => s.toggleSectionVisibility);
   const renameSection = useResumeStore((s) => s.renameSection);
   const addItem = useResumeStore((s) => s.addItem);
+  const headingId = useId();
   const aiEnabled = useAiEnabled();
   const openQuickAdd = useAiDialogs((s) => s.openQuickAdd);
   const items = useResumeStore((s) => {
@@ -228,10 +234,14 @@ function SectionCard({
     >
       <div className="space-y-3">
         <div className="space-y-1.5">
-          <label className="text-[11px] font-medium text-muted-foreground">
+          <label
+            htmlFor={headingId}
+            className="text-[11px] font-medium text-muted-foreground"
+          >
             Section heading
           </label>
           <Input
+            id={headingId}
             defaultValue={node.title}
             className="h-9 text-sm"
             onBlur={(e) => {

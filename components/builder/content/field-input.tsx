@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { normalizeUrl, toPlainText } from "@/lib/richtext/runs";
 import { FormField } from "@/lib/schema/form-fields";
 import { cn } from "@/lib/utils";
+import { useId } from "react";
 
 type Item = Record<string, unknown>;
 
@@ -42,8 +43,14 @@ export function FieldInput({
     onChange({ [field.key]: next });
   };
 
+  // Ties the label to its control, so it names the field for screen readers
+  // and a click on it focuses the input.
+  const id = useId();
   const label = (
-    <label className="text-[11px] font-medium text-muted-foreground">
+    <label
+      htmlFor={id}
+      className="text-[11px] font-medium text-muted-foreground"
+    >
       {field.label}
     </label>
   );
@@ -103,7 +110,7 @@ export function FieldInput({
           value={(item[field.key] as string) ?? ""}
           onValueChange={(v) => onChange({ [field.key]: v })}
         >
-          <SelectTrigger className="h-9 w-full" size="sm">
+          <SelectTrigger id={id} className="h-9 w-full" size="sm">
             <SelectValue placeholder={field.label} />
           </SelectTrigger>
           <SelectContent>
@@ -123,6 +130,7 @@ export function FieldInput({
       <div className="space-y-1.5">
         {label}
         <Textarea
+          id={id}
           defaultValue={value}
           rows={field.type === "bullets" ? 5 : 3}
           placeholder={
@@ -145,6 +153,7 @@ export function FieldInput({
     <div className={cn("space-y-1.5")}>
       {label}
       <Input
+        id={id}
         defaultValue={value}
         placeholder={field.placeholder}
         inputMode={field.type === "url" ? "url" : undefined}

@@ -252,3 +252,25 @@ export async function settleLayout(): Promise<void> {
 export function endPrintLayout(): void {
   document.documentElement.classList.remove("rc-printing");
 }
+
+/**
+ * Open the print dialog and resolve once printing is over.
+ *
+ * `window.print()` blocks until the dialog closes in desktop Chrome and
+ * Firefox, but not everywhere: where it returns at once, tearing the print
+ * layout down straight after the call strips it before the page is captured.
+ * `afterprint` is the browser's own signal that the capture is done. Should a
+ * browser never send it, the next interaction with the page ends the wait,
+ * since the dialog is closed by then.
+ */
+export function printDocument(): Promise<void> {
+  return new Promise((resolve) => {
+    const events = ["afterprint", "pointerdown", "keydown"] as const;
+    const done = () => {
+      events.forEach((e) => window.removeEventListener(e, done, true));
+      resolve();
+    };
+    events.forEach((e) => window.addEventListener(e, done, true));
+    window.print();
+  });
+}
