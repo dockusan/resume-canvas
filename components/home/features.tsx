@@ -2,50 +2,54 @@
 
 import { motion } from "framer-motion";
 import {
-  CheckCircle2,
   Download,
-  Layout,
+  Github,
   Lock,
+  MousePointerClick,
   Palette,
-  Zap,
+  ShieldCheck,
 } from "lucide-react";
 
+/**
+ * Each card names something a visitor can check in the builder within a
+ * minute — counts, formats, where data goes — rather than adjectives.
+ */
 const features = [
   {
-    icon: <Zap className="h-6 w-6 text-primary" />,
-    title: "Real-time Preview",
+    icon: <MousePointerClick className="h-6 w-6 text-primary" />,
+    title: "Edit on the page itself",
     description:
-      "See changes instantly as you edit your resume. No more guessing how it will look.",
+      "Click any line of the preview and type. Page breaks are real and move as you write, so you always know what fits.",
   },
   {
     icon: <Lock className="h-6 w-6 text-primary" />,
-    title: "Privacy First",
+    title: "Stays in your browser",
     description:
-      "Your data stays on your device. We don't store your personal information on our servers.",
+      "Saved on your device as you type, with no account and no analytics. It leaves only when you create a share link, encrypted first, or use an AI tool.",
   },
   {
     icon: <Download className="h-6 w-6 text-primary" />,
-    title: "PDF Export",
+    title: "Every format you'll be asked for",
     description:
-      "Download a pixel-perfect PDF, an ATS-safe PDF, a Word file or plain text.",
+      "A PDF exactly as designed, an ATS-safe one-column PDF, a Word file and plain text — from the same content.",
   },
   {
-    icon: <Layout className="h-6 w-6 text-primary" />,
-    title: "ATS Friendly",
+    icon: <ShieldCheck className="h-6 w-6 text-primary" />,
+    title: "ATS check built in",
     description:
-      "A built-in ATS score, job-description keyword matching and a one-click ATS-safe PDF for job portals.",
+      "A scored checklist for contact details, dates, bullet quality, numbers and length, plus keyword matching against a job description you paste in.",
   },
   {
     icon: <Palette className="h-6 w-6 text-primary" />,
-    title: "Customizable Themes",
+    title: "Fourteen templates, all restylable",
     description:
-      "Choose from a variety of professional themes and customize colors to match your style.",
+      "Twenty font pairings, eight colour palettes, one or two columns and adjustable spacing. Switching template keeps everything you've written.",
   },
   {
-    icon: <CheckCircle2 className="h-6 w-6 text-primary" />,
-    title: "Open Source",
+    icon: <Github className="h-6 w-6 text-primary" />,
+    title: "Open source",
     description:
-      "Free forever and open for contributions. Built by the community, for the community.",
+      "MIT licensed. Read exactly what the code does with your data, run your own copy, or contribute on GitHub.",
   },
 ];
 
@@ -55,18 +59,17 @@ export function Features() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-            Everything you need to build a perfect resume
+            What&rsquo;s in the builder
           </h2>
           <p className="text-lg text-muted-foreground">
-            Our builder is packed with powerful features to help you land your
-            dream job.
+            All of it free, none of it behind an account.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <motion.div
-              key={index}
+              key={feature.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/shared/button";
+import { SITE } from "@/lib/seo";
 import { motion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, Github } from "lucide-react";
 import Link from "next/link";
@@ -51,9 +52,8 @@ export function CTA() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="mx-auto max-w-xl text-lg text-primary-foreground/90 mb-10"
             >
-              Join thousands of job seekers who have successfully landed
-              interviews using our open-source builder. No hidden fees, no
-              watermarks.
+              Start from the sample, make it yours and download it — free, with
+              no account and no watermark.
             </motion.p>
 
             <motion.div
@@ -78,10 +78,7 @@ export function CTA() {
                 asChild
                 className="h-14 px-8 text-lg font-semibold text-primary shadow-lg bg-zinc-200 hover:shadow-xl transition-all hover:-translate-y-1 hover:bg-zinc-300"
               >
-                <Link
-                  href="https://github.com/kstmostofa/resume-canvas"
-                  target="_blank"
-                >
+                <Link href={SITE.repo} target="_blank" rel="noreferrer">
                   <Github className="inline-block mr-2 h-5 w-5" />
                   Star on GitHub
                 </Link>
