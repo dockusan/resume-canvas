@@ -296,7 +296,7 @@ function SharedResumeSheet({ state }: { state: Loaded["state"] }) {
         <Link href="/" className="font-medium text-foreground hover:underline">
           Resume Canvas
         </Link>{" "}
-        — a free resume builder that never sees your resume.
+        — a free resume builder that keeps your resume on your device.
       </footer>
     </div>
   );
